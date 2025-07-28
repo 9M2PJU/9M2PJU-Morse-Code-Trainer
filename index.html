@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>9M2PJU Simple Morse Code Trainer</title>
+  <meta name="description" content="An interactive Morse Code Trainer by 9M2PJU. Practice and learn CW for amateur radio, military communications, and aviation. Improve your Morse code reception and sending skills."/>
+  <meta name="keywords" content="Morse Code, CW, Trainer, Ham Radio, Amateur Radio, Military Comms, Aviation, Learn Morse, Practice Morse, 9M2PJU, Radio Communication, Telegraphy"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    input[type="range"] {
+      height: 8px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: #4a5568;
+      border-radius: 5px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #4CAF50;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    .tab-btn {
+      transition: background-color 0.3s ease;
+    }
+  </style>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='40' fill='%23007bff'/%3E%3C/svg%3E" type="image/svg+xml">
+</head>
+<body class="bg-gray-900 text-white flex flex-col items-center min-h-screen p-6">
+  <h1 class="text-4xl font-bold text-blue-400 mb-2">9M2PJU</h1>
+  <p class="text-2xl text-gray-300 mb-6">Simple Morse Code Trainer</p>
+
+  <!-- Tabs -->
+  <div class="flex space-x-4 mb-6">
+    <button id="tabEncode" class="tab-btn bg-blue-500 px-4 py-2 rounded-lg" aria-label="Switch to Text to Morse mode">Text → Morse</button>
+    <button id="tabPractice" class="tab-btn bg-gray-700 px-4 py-2 rounded-lg" aria-label="Switch to Listen and Type mode">Listen & Type</button>
+    <button id="showAlphabet" class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded-lg" aria-label="Show Morse code alphabet">Morse Alphabet</button>
+  </div>
+
+  <!-- ENCODE MODE -->
+  <div id="encodeMode" class="w-full max-w-xl bg-gray-800 p-6 rounded-2xl shadow-lg">
+    <h2 class="text-xl font-semibold mb-4">Convert Text to Morse & Play</h2>
+    <textarea id="textInput" placeholder="Enter text (A-Z, 0-9, spaces only)..." class="w-full p-3 rounded-lg bg-gray-700 text-white mb-4" aria-label="Enter text to convert to Morse code"></textarea>
+    <p id="morseOutput" class="text-gray-300 mb-4"></p>
+
+    <!-- Sliders and Settings -->
+    <div class="mb-4">
+      <label for="freqSlider" class="block text-sm mb-1">Tone Frequency: <span id="freqValue">600</span> Hz</label>
+      <input id="freqSlider" type="range" min="300" max="1000" value="600" class="w-full" aria-label="Adjust tone frequency">
+    </div>
+    <div class="mb-4">
+      <label for="wpmSlider" class="block text-sm mb-1">Speed: <span id="wpmValue">20</span> WPM</label>
+      <input id="wpmSlider" type="range" min="5" max="40" value="20" class="w-full" aria-label="Adjust Morse code speed">
+    </div>
+    <div class="mb-4">
+      <label for="charSpeedSlider" class="block text-sm mb-1">Character Speed: <span id="charSpeedValue">20</span> WPM</label>
+      <input id="charSpeedSlider" type="range" min="5" max="40" value="20" class="w-full" aria-label="Adjust character speed for Farnsworth spacing">
+    </div>
+    <div class="mb-4">
+      <label for="waveformSelect" class="block text-sm mb-1">Waveform Type:</label>
+      <select id="waveformSelect" class="w-full p-3 rounded-lg bg-gray-700 text-white" aria-label="Select waveform type">
+        <option value="sine">Sine (Clean)</option>
+        <option value="triangle">Triangle (Warm)</option>
+        <option value="filteredSine">Filtered Sine (Radio-like)</option>
+      </select>
+    </div>
+    <div class="mb-4">
+      <label for="backgroundNoise" class="block text-sm mb-1">Background Noise:</label>
+      <input id="backgroundNoise" type="checkbox" class="mr-2" aria-label="Enable background noise">
+      <span class="text-sm text-gray-400">Simulate radio static</span>
+    </div>
+    <p class="mt-2 text-gray-400 text-sm">Adjust settings for optimal audio experience.</p>
+
+    <div class="flex space-x-4 mt-4">
+      <button id="playBtn" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg" aria-label="Play Morse code for entered text">Play Morse</button>
+      <button id="stopBtn" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg hidden" aria-label="Stop Morse code playback">Stop Playback</button>
+      <button id="clearBtn" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg" aria-label="Clear text input">Clear</button>
+    </div>
+  </div>
+
+  <!-- PRACTICE MODE -->
+  <div id="practiceMode" class="hidden w-full max-w-xl bg-gray-800 p-6 rounded-2xl shadow-lg">
+    <h2 class="text-xl font-semibold mb-4">Listen & Type Practice</h2>
+    <div class="mb-4">
+      <label for="wordCategory" class="block text-sm mb-1">Practice Category:</label>
+      <select id="wordCategory" class="w-full p-3 rounded-lg bg-gray-700 text-white" aria-label="Select practice word category">
+        <option value="all">All Words</option>
+        <option value="letters">Letters Only</option>
+        <option value="numbers">Numbers Only</option>
+        <option value="qcodes">Q-Codes</option>
+        <option value="ham">Ham Radio Terms</option>
+        <option value="phonetic">Phonetic Alphabet</option>
+        <option value="maritime">Maritime Terms</option>
+        <option value="military">Military Terms</option>
+        <option value="aviation">Aviation Terms</option>
+        <option value="random">Random 5-Character Groups</option>
+        <option value="custom">Custom Words</option>
+      </select>
+    </div>
+    <div id="customWordsDiv" class="hidden mb-4">
+      <label for="customWords" class="block text-sm mb-1">Custom Words (comma-separated):</label>
+      <input id="customWords" type="text" placeholder="e.g., HELLO,CQ,TEST" class="w-full p-3 rounded-lg bg-gray-700 text-white" aria-label="Enter custom words for practice">
+    </div>
+    <div class="mb-4">
+      <label for="difficultyLevel" class="block text-sm mb-1">Difficulty Level:</label>
+      <select id="difficultyLevel" class="w-full p-3 rounded-lg bg-gray-700 text-white" aria-label="Select difficulty level">
+        <option value="beginner">Beginner (Single Letters/Numbers)</option>
+        <option value="intermediate">Intermediate (Short Words)</option>
+        <option value="advanced">Advanced (Phrases/QSO)</option>
+      </select>
+    </div>
+    <div class="mb-4">
+      <label for="freqSliderPractice" class="block text-sm mb-1">Tone Frequency: <span id="freqValuePractice">600</span> Hz</label>
+      <input id="freqSliderPractice" type="range" min="300" max="1000" value="600" class="w-full" aria-label="Adjust tone frequency">
+    </div>
+    <div class="mb-4">
+      <label for="wpmSliderPractice" class="block text-sm mb-1">Speed: <span id="wpmValuePractice">20</span> WPM</label>
+      <input id="wpmSliderPractice" type="range" min="5" max="40" value="20" class="w-full" aria-label="Adjust Morse code speed">
+    </div>
+    <div class="mb-4">
+      <label for="charSpeedSliderPractice" class="block text-sm mb-1">Character Speed: <span id="charSpeedValuePractice">20</span> WPM</label>
+      <input id="charSpeedSliderPractice" type="range" min="5" max="40" value="20" class="w-full" aria-label="Adjust character speed for Farnsworth spacing">
+    </div>
+    <div class="mb-4">
+      <label for="waveformSelectPractice" class="block text-sm mb-1">Waveform Type:</label>
+      <select id="waveformSelectPractice" class="w-full p-3 rounded-lg bg-gray-700 text-white" aria-label="Select waveform type">
+        <option value="sine">Sine (Clean)</option>
+        <option value="triangle">Triangle (Warm)</option>
+        <option value="filteredSine">Filtered Sine (Radio-like)</option>
+      </select>
+    </div>
+    <div class="mb-4">
+      <label for="backgroundNoisePractice" class="block text-sm mb-1">Background Noise:</label>
+      <input id="backgroundNoisePractice" type="checkbox" class="mr-2" aria-label="Enable background noise">
+      <span class="text-sm text-gray-400">Simulate radio static</span>
+    </div>
+    <div class="flex space-x-4 mb-4">
+      <button id="startPractice" class="bg-purple-500 hover:bg-purple-600 px-4 py-2 rounded-lg" aria-label="Start practice session">Start Practice</button>
+      <button id="stopPracticeBtn" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg hidden" aria-label="Stop practice playback">Stop Playback</button>
+    </div>
+    <input id="practiceInput" type="text" placeholder="Type what you hear..." class="w-full p-3 rounded-lg bg-gray-700 text-white mb-4" disabled aria-label="Type the Morse code you hear">
+    <p id="practiceResult" class="text-lg font-semibold text-blue-400"></p>
+    <div id="progressSection" class="mt-4">
+      <h3 class="text-lg font-semibold mb-2">Your Progress</h3>
+      <p id="sessionStats" class="text-gray-300"></p>
+      <canvas id="progressChart" class="mt-4"></canvas>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div id="alphabetModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50" aria-hidden="true">
+    <div class="bg-gray-800 p-6 rounded-xl w-11/12 max-w-2xl">
+      <h3 class="text-2xl font-bold mb-4 text-yellow-400">Morse Code Alphabet</h3>
+      <div class="grid grid-cols-4 gap-4 text-center">
+        <div>A<br><span class="text-green-400">.-</span></div>
+        <div>B<br><span class="text-green-400">-...</span></div>
+        <div>C<br><span class="text-green-400">-.-.</span></div>
+        <div>D<br><span class="text-green-400">-..</span></div>
+        <div>E<br><span class="text-green-400">.</span></div>
+        <div>F<br><span class="text-green-400">..-.</span></div>
+        <div>G<br><span class="text-green-400">--.</span></div>
+        <div>H<br><span class="text-green-400">....</span></div>
+        <div>I<br><span class="text-green-400">..</span></div>
+        <div>J<br><span class="text-green-400">.---</span></div>
+        <div>K<br><span class="text-green-400">-.-</span></div>
+        <div>L<br><span class="text-green-400">.-..</span></div>
+        <div>M<br><span class="text-green-400">--</span></div>
+        <div>N<br><span class="text-green-400">-.</span></div>
+        <div>O<br><span class="text-green-400">---</span></div>
+        <div>P<br><span class="text-green-400">.--.</span></div>
+        <div>Q<br><span class="text-green-400">--.-</span></div>
+        <div>R<br><span class="text-green-400">.-.</span></div>
+        <div>S<br><span class="text-green-400">...</span></div>
+        <div>T<br><span class="text-green-400">-</span></div>
+        <div>U<br><span class="text-green-400">..-</span></div>
+        <div>V<br><span class="text-green-400">...-</span></div>
+        <div>W<br><span class="text-green-400">.--</span></div>
+        <div>X<br><span class="text-green-400">-..-</span></div>
+        <div>Y<br><span class="text-green-400">-.--</span></div>
+        <div>Z<br><span class="text-green-400">--..</span></div>
+        <div>0<br><span class="text-green-400">-----</span></div>
+        <div>1<br><span class="text-green-400">.----</span></div>
+        <div>2<br><span class="text-green-400">..---</span></div>
+        <div>3<br><span class="text-green-400">...--</span></div>
+        <div>4<br><span class="text-green-400">....-</span></div>
+        <div>5<br><span class="text-green-400">.....</span></div>
+        <div>6<br><span class="text-green-400">-....</span></div>
+        <div>7<br><span class="text-green-400">--...</span></div>
+        <div>8<br><span class="text-green-400">---..</span></div>
+        <div>9<br><span class="text-green-400">----.</span></div>
+      </div>
+      <div class="text-center mt-6">
+        <button id="closeModal" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg" aria-label="Close Morse code alphabet modal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Morse Map
+    const morseMap = {
+      'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.',
+      'F': '..-.', 'G': '--.', 'H': '....', 'I': '..', 'J': '.---',
+      'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---',
+      'P': '.--.', 'Q': '--.-', 'R': '.-.', 'S': '...', 'T': '-',
+      'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-', 'Y': '-.--',
+      'Z': '--..', '0': '-----', '1': '.----', '2': '..---', '3': '...--',
+      '4': '....-', '5': '.....', '6': '-....', '7': '--...', '8': '---..',
+      '9': '----.', ' ': '/'
+    };
+
+    // Word Categories
+    const wordCategories = {
+      letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
+      numbers: '0123456789'.split(''),
+      qcodes: [
+        'QAB', 'QAP', 'QAZ', 'QBG', 'QCH', 'QCI', 'QCL', 'QCN', 'QCO', 'QCR',
+        'QCS', 'QCT', 'QCU', 'QCV', 'QCY', 'QCZ', 'QDA', 'QDB', 'QDC', 'QDD',
+        'QDF', 'QDG', 'QDH', 'QDI', 'QDJ', 'QDK', 'QDL', 'QDM', 'QDN', 'QDO',
+        'QDP', 'QDQ', 'QDR', 'QDS', 'QDT', 'QDU', 'QDV', 'QDW', 'QDX', 'QDY',
+        'QDZ', 'QFA', 'QFB', 'QFC', 'QFD', 'QFE', 'QFF', 'QFG', 'QFH', 'QFI',
+        'QFJ', 'QFK', 'QFL', 'QFM', 'QFN', 'QFO', 'QFP', 'QFQ', 'QFR', 'QFS',
+        'QFT', 'QFU', 'QFV', 'QFW', 'QFX', 'QFY', 'QFZ', 'QGA', 'QGB', 'QGC',
+        'QGD', 'QGE', 'QGF', 'QGG', 'QGH', 'QGI', 'QGJ', 'QGK', 'QGL', 'QGM',
+        'QGN', 'QGO', 'QGP', 'QGQ', 'QGR', 'QGS', 'QGT', 'QGU', 'QGV', 'QGW',
+        'QGX', 'QGY', 'QGZ', 'QIA', 'QIB', 'QIC', 'QID', 'QIE', 'QIF', 'QIG',
+        'QIH', 'QII', 'QIJ', 'QIK', 'QIL', 'QIM', 'QIN', 'QIO', 'QIP', 'QIQ',
+        'QIR', 'QIS', 'QIT', 'QIU', 'QIV', 'QIW', 'QIX', 'QIY', 'QIZ', 'QJA',
+        'QJB', 'QJC', 'QJD', 'QJE', 'QJF', 'QJG', 'QJH', 'QJI', 'QJJ', 'QJK',
+        'QJL', 'QJM', 'QJN', 'QJO', 'QJP', 'QJQ', 'QJR', 'QJS', 'QJT', 'QJU',
+        'QJV', 'QJW', 'QJX', 'QJY', 'QJZ', 'QKA', 'QKB', 'QKC', 'QKD', 'QKE',
+        'QKF', 'QKG', 'QKH', 'QKI', 'QKJ', 'QKK', 'QKL', 'QKM', 'QKN', 'QKO',
+        'QKP', 'QKQ', 'QKR', 'QKS', 'QKT', 'QKU', 'QKV', 'QKW', 'QKX', 'QKY',
+        'QKZ', 'QLA', 'QLB', 'QLC', 'QLD', 'QLE', 'QLF', 'QLG', 'QLH', 'QLI',
+        'QLJ', 'QLK', 'QLL', 'QLM', 'QLN', 'QLO', 'QLP', 'QLQ', 'QLR', 'QLS',
+        'QLT', 'QLU', 'QLV', 'QLW', 'QLX', 'QLY', 'QLZ', 'QMA', 'QMB', 'QMC',
+        'QMD', 'QME', 'QMF', 'QMG', 'QMH', 'QMI', 'QMJ', 'QMK', 'QML', 'QMM',
+        'QMN', 'QMO', 'QMP', 'QMQ', 'QMR', 'QMS', 'QMT', 'QMU', 'QMV', 'QMW',
+        'QMX', 'QMY', 'QMZ', 'QNA', 'QNB', 'QNC', 'QND', 'QNE', 'QNF', 'QNG',
+        'QNH', 'QNI', 'QNJ', 'QNK', 'QNL', 'QNM', 'QNN', 'QNO', 'QNP', 'QNQ',
+        'QNR', 'QNS', 'QNT', 'QNU', 'QNV', 'QNW', 'QNX', 'QNY', 'QNZ', 'QOA',
+        'QOB', 'QOC', 'QOD', 'QOE', 'QOF', 'QOG', 'QOH', 'QOI', 'QOJ', 'QOK',
+        'QOL', 'QOM', 'QON', 'QOO', 'QOP', 'QOQ', 'QOR', 'QOS', 'QOT', 'QOU',
+        'QOV', 'QOW', 'QOX', 'QOY', 'QOZ', 'QPA', 'QPB', 'QPC', 'QPD', 'QPE',
+        'QPF', 'QPG', 'QPH', 'QPI', 'QPJ', 'QPK', 'QPL', 'QPM', 'QPN', 'QPO',
+        'QPP', 'QPQ', 'QPR', 'QPS', 'QPT', 'QPU', 'QPV', 'QPW', 'QPX', 'QPY',
+        'QPZ', 'QRA', 'QRB', 'QRC', 'QRD', 'QRE', 'QRF', 'QRG', 'QRH', 'QRI',
+        'QRJ', 'QRK', 'QRL', 'QRM', 'QRN', 'QRO', 'QRP', 'QRQ', 'QRS', 'QRT',
+        'QRU', 'QRV', 'QRW', 'QRX', 'QRY', 'QRZ', 'QSA', 'QSB', 'QSC', 'QSD',
+        'QSE', 'QSF', 'QSG', 'QSH', 'QSI', 'QSJ', 'QSK', 'QSL', 'QSM', 'QSN',
+        'QSO', 'QSP', 'QSQ', 'QSR', 'QSS', 'QST', 'QSU', 'QSV', 'QSW', 'QSX',
+        'QSY', 'QSZ', 'QTA', 'QTB', 'QTC', 'QTD', 'QTE', 'QTF', 'QTG', 'QTH',
+        'QTI', 'QTJ', 'QTK', 'QTL', 'QTM', 'QTN', 'QTO', 'QTP', 'QTQ', 'QTR',
+        'QTS', 'QTT', 'QTU', 'QTV', 'QTW', 'QTX', 'QTY', 'QTZ', 'QUA', 'QUB',
+        'QUC', 'QUD', 'QUE', 'QUF', 'QUG', 'QUH', 'QUI', 'QUJ', 'QUK', 'QUL',
+        'QUM', 'QUN', 'QUO', 'QUP', 'QUQ', 'QUR', 'QUS', 'QUT', 'QUU', 'QUV',
+        'QUW', 'QUX', 'QUY', 'QUZ', 'ZAA', 'ZAB', 'ZAC', 'ZAD', 'ZAE', 'ZAF',
+        'ZAG', 'ZAH', 'ZAI', 'ZAJ', 'ZAK', 'ZAL', 'ZAM', 'ZAN', 'ZAO', 'ZAP',
+        'ZAQ', 'ZAR', 'ZAS', 'ZAT', 'ZAU', 'ZAV', 'ZAW', 'ZAX', 'ZAY', 'ZAZ',
+        'ZBA', 'ZBB', 'ZBC', 'ZBD', 'ZBE', 'ZBF', 'ZBG', 'ZBH', 'ZBI', 'ZBJ',
+        'ZBK', 'ZBL', 'ZBM', 'ZBN', 'ZBO', 'ZBP', 'ZBQ', 'ZBR', 'ZBS', 'ZBT',
+        'ZBU', 'ZBV', 'ZBW', 'ZBX', 'ZBY', 'ZBZ', 'ZCA', 'ZCB', 'ZCC', 'ZCD',
+        'ZCE', 'ZCF', 'ZCG', 'ZCH', 'ZCI', 'ZCJ', 'ZCK', 'ZCL', 'ZCM', 'ZCN',
+        'ZCO', 'ZCP', 'ZCQ', 'ZCR', 'ZCS', 'ZCT', 'ZCU', 'ZCV', 'ZCW', 'ZCX',
+        'ZCY', 'ZCZ', 'ZDA', 'ZDB', 'ZDC', 'ZDD', 'ZDE', 'ZDF', 'ZDG', 'ZDH',
+        'ZDI', 'ZDJ', 'ZDK', 'ZDL', 'ZDM', 'ZDN', 'ZDO', 'ZDP', 'ZDQ', 'ZDR',
+        'ZDS', 'ZDT', 'ZDU', 'ZDV', 'ZDW', 'ZDX', 'ZDY', 'ZDZ', 'ZEA', 'ZEB',
+        'ZEC', 'ZED', 'ZEE', 'ZEF', 'ZEG', 'ZEH', 'ZEI', 'ZEJ', 'ZEK', 'ZEL',
+        'ZEM', 'ZEN', 'ZEO', 'ZEP', 'ZEQ', 'ZER', 'ZES', 'ZET', 'ZEU', 'ZEV',
+        'ZEW', 'ZEX', 'ZEY', 'ZEZ', 'ZFA', 'ZFB', 'ZFC', 'ZFD', 'ZFE', 'ZFF',
+        'ZFG', 'ZFH', 'ZFI', 'ZFJ', 'ZFK', 'ZFL', 'ZFM', 'ZFN', 'ZFO', 'ZFP',
+        'ZFQ', 'ZFR', 'ZFS', 'ZFT', 'ZFU', 'ZFV', 'ZFW', 'ZFX', 'ZFY', 'ZFZ',
+        'ZGA', 'ZGB', 'ZGC', 'ZGD', 'ZGE', 'ZGF', 'ZGG', 'ZGH', 'ZGI', 'ZGJ',
+        'ZGK', 'ZGL', 'ZGM', 'ZGN', 'ZGO', 'ZGP', 'ZGQ', 'ZGR', 'ZGS', 'ZGT',
+        'ZGU', 'ZGV', 'ZGW', 'ZGX', 'ZGY', 'ZGZ', 'ZHA', 'ZHB', 'ZHC', 'ZHD',
+        'ZHE', 'ZHF', 'ZHG', 'ZHH', 'ZHI', 'ZHJ', 'ZHK', 'ZHL', 'ZHM', 'ZHN',
+        'ZHO', 'ZHP', 'ZHQ', 'ZHR', 'ZHS', 'ZHT', 'ZHU', 'ZHV', 'ZHW', 'ZHX',
+        'ZHY', 'ZHZ', 'ZIA', 'ZIB', 'ZIC', 'ZID', 'ZIE', 'ZIF', 'ZIG', 'ZIH',
+        'ZII', 'ZIJ', 'ZIK', 'ZIL', 'ZIM', 'ZIN', 'ZIO', 'ZIP', 'ZIQ', 'ZIR',
+        'ZIS', 'ZIT', 'ZIU', 'ZIV', 'ZIW', 'ZIX', 'ZIY', 'ZIZ', 'ZJA', 'ZJB',
+        'ZJC', 'ZJD', 'ZJE', 'ZJF', 'ZJG', 'ZJH', 'ZJI', 'ZJJ', 'ZJK', 'ZJL',
+        'ZJM', 'ZJN', 'ZJO', 'ZJP', 'ZJQ', 'ZJR', 'ZJS', 'ZJT', 'ZJU', 'ZJV',
+        'ZJW', 'ZJX', 'ZJY', 'ZJZ', 'ZKA', 'ZKB', 'ZKC', 'ZKD', 'ZKE', 'ZKF',
+        'ZKG', 'ZKH', 'ZKI', 'ZKJ', 'ZKK', 'ZKL', 'ZKM', 'ZKN', 'ZKO', 'ZKP',
+        'ZKQ', 'ZKR', 'ZKS', 'ZKT', 'ZKU', 'ZKV', 'ZKW', 'ZKX', 'ZKY', 'ZKZ',
+        'ZLA', 'ZLB', 'ZLC', 'ZLD', 'ZLE', 'ZLF', 'ZLG', 'ZLH', 'ZLI', 'ZLJ',
+        'ZLK', 'ZLL', 'ZLM', 'ZLN', 'ZLO', 'ZLP', 'ZLQ', 'ZLR', 'ZLS', 'ZLT',
+        'ZLU', 'ZLV', 'ZLW', 'ZLX', 'ZLY', 'ZLZ', 'ZMA', 'ZMB', 'ZMC', 'ZMD',
+        'ZME', 'ZMF', 'ZMG', 'ZMH', 'ZMI', 'ZMJ', 'ZMK', 'ZML', 'ZMM', 'ZMN',
+        'ZMO', 'ZMP', 'ZMQ', 'ZMR', 'ZMS', 'ZMT', 'ZMU', 'ZMV', 'ZMW', 'ZMX',
+        'ZMY', 'ZMZ', 'ZNA', 'ZNB', 'ZNC', 'ZND', 'ZNE', 'ZNF', 'ZNG', 'ZNH',
+        'ZNI', 'ZNJ', 'ZNK', 'ZNL', 'ZNM', 'ZNN', 'ZNO', 'ZNP', 'ZNQ', 'ZNR',
+        'ZNS', 'ZNT', 'ZNU', 'ZNV', 'ZNW', 'ZNX', 'ZNY', 'ZNZ', 'ZOA', 'ZOB',
+        'ZOC', 'ZOD', 'ZOE', 'ZOF', 'ZOG', 'ZOH', 'ZOI', 'ZOJ', 'ZOK', 'ZOL',
+        'ZOM', 'ZON', 'ZOO', 'ZOP', 'ZOQ', 'ZOR', 'ZOS', 'ZOT', 'ZOU', 'ZOV',
+        'ZOW', 'ZOX', 'ZOY', 'ZOZ', 'ZPA', 'ZPB', 'ZPC', 'ZPD', 'ZPE', 'ZPF',
+        'ZPG', 'ZPH', 'ZPI', 'ZPJ', 'ZPK', 'ZPL', 'ZPM', 'ZPN', 'ZPO', 'ZPP',
+        'ZPQ', 'ZPR', 'ZPS', 'ZPT', 'ZPU', 'ZPV', 'ZPW', 'ZPX', 'ZPY', 'ZPZ',
+        'ZQA', 'ZQB', 'ZQC', 'ZQD', 'ZQE', 'ZQF', 'ZQG', 'ZQH', 'ZQI', 'ZQJ',
+        'ZQK', 'ZQL', 'ZQM', 'ZQN', 'ZQO', 'ZQP', 'ZQQ', 'ZQR', 'ZQS', 'ZQT',
+        'ZQU', 'ZQV', 'ZQW', 'ZQX', 'ZQY', 'ZQZ', 'ZRA', 'ZRB', 'ZRC', 'ZRD',
+        'ZRE', 'ZRF', 'ZRG', 'ZRH', 'ZRI', 'ZRJ', 'ZRK', 'ZRL', 'ZRM', 'ZRN',
+        'ZRO', 'ZRP', 'ZRQ', 'ZRR', 'ZRS', 'ZRT', 'ZRU', 'ZRV', 'ZRW', 'ZRX',
+        'ZRY', 'ZRZ', 'ZSA', 'ZSB', 'ZSC', 'ZSD', 'ZSE', 'ZSF', 'ZSG', 'ZSH',
+        'ZSI', 'ZSJ', 'ZSK', 'ZSL', 'ZSM', 'ZSN', 'ZSO', 'ZSP', 'ZSQ', 'ZSR',
+        'ZSS', 'ZST', 'ZSU', 'ZSV', 'ZSW', 'ZSX', 'ZSY', 'ZSZ', 'ZTA', 'ZTB',
+        'ZTC', 'ZTD', 'ZTE', 'ZTF', 'ZTG', 'ZTH', 'ZTI', 'ZTJ', 'ZTK', 'ZTL',
+        'ZTM', 'ZTN', 'ZTO', 'ZTP', 'ZTQ', 'ZTR', 'ZTS', 'ZTT', 'ZTU', 'ZTV',
+        'ZTW', 'ZTX', 'ZTY', 'ZTZ', 'ZUA', 'ZUB', 'ZUC', 'ZUD', 'ZUE', 'ZUF',
+        'ZUG', 'ZUH', 'ZUI', 'ZUJ', 'ZUK', 'ZUL', 'ZUM', 'ZUN', 'ZUO', 'ZUP',
+        'ZUQ', 'ZUR', 'ZUS', 'ZUT', 'ZUU', 'ZUV', 'ZUW', 'ZUX', 'ZUY', 'ZUZ',
+        'ZVA', 'ZVB', 'ZVC', 'ZVD', 'ZVE', 'ZVF', 'ZVG', 'ZVH', 'ZVI', 'ZVJ',
+        'ZVK', 'ZVL', 'ZVM', 'ZVN', 'ZVO', 'ZVP', 'ZVQ', 'ZVR', 'ZVS', 'ZVT',
+        'ZVU', 'ZVV', 'ZVW', 'ZVX', 'ZVY', 'ZVZ', 'ZWA', 'ZWB', 'ZWC', 'ZWD',
+        'ZWE', 'ZWF', 'ZWG', 'ZWH', 'ZWI', 'ZWJ', 'ZWK', 'ZWL', 'ZWM', 'ZWN',
+        'ZWO', 'ZWP', 'ZWQ', 'ZWR', 'ZWS', 'ZWT', 'ZWU', 'ZWV', 'ZWW', 'ZWX',
+        'ZWY', 'ZWZ', 'ZXA', 'ZXB', 'ZXC', 'ZXD', 'ZXE', 'ZXF', 'ZXG', 'ZXH',
+        'ZXI', 'ZXJ', 'ZXK', 'ZXL', 'ZXM', 'ZXN', 'ZXO', 'ZXP', 'ZXQ', 'ZXR',
+        'ZXS', 'ZXT', 'ZXU', 'ZXV', 'ZXW', 'ZXX', 'ZXY', 'ZXZ', 'ZYA', 'ZYB',
+        'ZYC', 'ZYD', 'ZYE', 'ZYF', 'ZYG', 'ZYH', 'ZYI', 'ZYJ', 'ZYK', 'ZYL',
+        'ZYM', 'ZYN', 'ZYO', 'ZYP', 'ZYQ', 'ZYR', 'ZYS', 'ZYT', 'ZYU', 'ZYV',
+        'ZYW', 'ZYX', 'ZYY', 'ZYZ'
+      ],
+      ham: [
+        'CQ', 'TEST', 'HAM', 'RADIO', 'MORSE', 'HELLO', 'WORLD', 'AMATEUR', 'COMMUNICATION',
+        'ANTENNA', 'TRANSCEIVER', 'REPEATER', 'DX', 'CONTEST', 'OPERATOR', 'QSO', '73', 'RIG',
+        'CW', 'SSB', 'FREQUENCY', 'BAND', 'UHF', 'VHF', 'HF', 'SATELLITE', 'APRS', 'EMERGENCY',
+        'NET', 'CALLSIGN', 'QTH', 'QRT', 'QSY', 'QRP', 'RECEIVER', 'TRANSMITTER', 'MODULATION',
+        'DIGITAL', 'ANALOG', 'SIGNAL', 'NOISE', 'PROPAGATION', 'IONOSPHERE', 'SUNSPOT',
+        'BATTERY', 'POWER', 'GROUND', 'COAX', 'CONNECTOR', 'SWR', 'LOGBOOK', 'LICENSE',
+        'ELMER', 'ARRL', 'ITU', 'FCC', 'IARU', 'COPY', 'LOUD AND CLEAR', 'READ YOU',
+        'SAY AGAIN', 'AFFIRMATIVE', 'NEGATIVE', 'OVER AND OUT', 'ROGER WILCO', 'BREAK BREAK',
+        'ALL STATIONS', 'THIS IS', 'FOR YOUR INFORMATION', 'DO YOU COPY', 'GO AHEAD',
+        'OUT CONTACT', 'STAND BY', 'WAIT ONE', 'CHECK', 'RADIO CHECK', 'HOW COPY',
+        'FIVE BY FIVE', 'RADIO SILENCE', 'OPSEC', 'COMSEC', 'SITREP', 'PROWORD', 'MNEMONIC',
+        'PHRASEOLOGY', 'CALLSIGN', 'NET CONTROL', 'AUTHENTICATION', 'CHALLENGE', 'RESPONSE',
+        'CIPHER', 'DECRYPT', 'TRAFFIC', 'MESSAGE', 'PREAMBLE', 'TEXT', 'POSTAMBLE', 'FLASH',
+        'IMMEDIATE', 'PRIORITY', 'ROUTINE', 'DEFERRED', 'CODE WORD', 'PASSCODE', 'DEAD DROP',
+        'ONE TIME PAD', 'COVERT', 'OVERT', 'RENDEZVOUS', 'SCRAMBLE', 'UNSCRAMBLE', 'DIT',
+        'DAH', 'KEYER', 'PADDLE', 'STRAIGHT KEY', 'BUG', 'VFO', 'XTAL', 'FILTER', 'TUNER',
+        'ANTENNA TUNER', 'DIPOLE', 'YAGI', 'VERTICAL', 'BEAM', 'LOOP', 'BALUN', 'UNUN',
+        'FEEDLINE', 'GRID DIPPER', 'SPECTRUM ANALYZER', 'OSCILLOSCOPE', 'CONTESTING',
+        'FIELD DAY', 'SSTV', 'RTTY', 'FT8', 'PSK31', 'JS8CALL', 'WINLINK', 'ECHOLINK',
+        'IRLP', 'DSTAR', 'FUSION', 'SYSTEM FUSION', 'REFLECTOR', 'HOTSPOT', 'NODE', 'MESH',
+        'PACKET RADIO', 'NET CONTROL', 'TRAFFIC NET', 'EMCOMM', 'AREC', 'RACES', 'LOGGING',
+        'DXCC', 'WAS', 'WAC', 'WSPR', 'LICENSED', 'TECHNICIAN', 'GENERAL', 'EXTRA', 'NOVICE',
+        'CALLBOOK', 'QSL CARD', 'BUREAU', 'SWL', 'FONE', 'MIC', 'VOICE', 'CARRIER', 'SIDEBAND',
+        'IONOSPHERIC', 'AURORA', 'TROPOSPHERIC', 'DUCTING', 'SKIP', 'GRAY LINE', 'MUF',
+        'LUF', 'FADE', 'BURST', 'VOLTS', 'AMPS', 'WATTS', 'OHMS', 'RESISTANCE',
+        'CAPACITANCE', 'INDUCTANCE', 'CIRCUIT', 'SCHEMATIC', 'COMPONENT', 'SOLDERING',
+        'PROTOTYPE', 'MICROPHONE', 'HEADPHONES', 'RECEIVE', 'TRANSMIT', 'BAUD', 'BPS',
+        'KILOBAUD', 'MEGAHERTZ', 'GIGAHERTZ', 'KILOHERTZ', 'S-METER', 'ALC', 'AGC', 'VOX',
+        'COMPRESSOR', 'EQUALIZER', 'GROUND PLANE', 'RADIALS', 'COUPLER', 'LINEAR AMPLIFIER',
+        'BAREFOOT', 'FINAL', 'BIAS', 'GRID', 'PLATE', 'CATHODE', 'ESCAPEMENT', 'WEIGHTS',
+        'PENDULUM', 'KEYING', 'DECODE', 'ENCODE', 'CHIRP', 'DRIFT', 'VFO', 'PTO',
+        'SYNTHESIZER', 'QSL VIA', 'PSE', 'OM', 'YL', 'XYL', 'UR', 'HW', 'WX', 'FB', 'CU',
+        'CUL', 'SK', 'SN', 'TU', 'AGN', 'K', 'KN', 'AR', 'BT', 'VA'
+      ],
+      phonetic: [
+        'ALPHA', 'BRAVO', 'CHARLIE', 'DELTA', 'ECHO', 'FOXTROT', 'GOLF', 'HOTEL', 'INDIA',
+        'JULIETT', 'KILO', 'LIMA', 'MIKE', 'NOVEMBER', 'OSCAR', 'PAPA', 'QUEBEC', 'ROMEO',
+        'SIERRA', 'TANGO', 'UNIFORM', 'VICTOR', 'WHISKEY', 'XRAY', 'YANKEE', 'ZULU'
+      ],
+      maritime: [
+        'MAYDAY', 'PAN PAN', 'SECURITE', 'DISTRESS', 'URGENCY', 'SAFETY', 'GMDSS', 'DSC',
+        'EPIRB', 'SART', 'AIS', 'VHF MARINE', 'MF HF MARINE', 'INMARSAT', 'SHIP-TO-SHIP',
+        'SHIP-TO-SHORE', 'PORT OPERATIONS', 'PILOT', 'BRIDGE', 'CHANNEL 16', 'CHANNEL 70',
+        'CALLING CHANNEL', 'WORKING CHANNEL', 'SEAWARD', 'LANDWARD', 'COURSE', 'BEARING',
+        'POSITION', 'LATITUDE', 'LONGITUDE', 'WAYPOINT', 'NAVIGATION', 'CHART', 'GPS',
+        'ROUTINE', 'URGENT', 'CRITICAL', 'ALERT', 'FOG HORN', 'BELL', 'WHISTLE', 'ANCHORAGE',
+        'BERTH', 'DOCK', 'HARBOR', 'MARINA', 'VESSEL', 'SHIP', 'BOAT', 'YACHT', 'TANKER',
+        'CARGO', 'FERRY', 'MASTER', 'CAPTAIN', 'FIRST MATE', 'ENGINEER', 'CREW', 'SEAS',
+        'WAVE HEIGHT', 'SWELL', 'WIND SPEED', 'DIRECTION', 'VISIBILITY', 'FLOATING',
+        'DRIFTING', 'SINKING', 'MAN OVERBOARD', 'ALL MESSAGES', 'ACKNOWLEDGE', 'STAND CLEAR',
+        'HEARING YOU', 'OVER AND OUT', 'ROGER', 'BREAK', 'REPAIR', 'MAINTAIN', 'SAIL',
+        'PORT', 'STARBOARD', 'BOW', 'STERN', 'AFT', 'FORWARD', 'KNOTS', 'CABLE',
+        'NAUTICAL MILE'
+      ],
+      military: [
+        'MISSION', 'INTEL', 'GRID', 'HOSTILE', 'FRIENDLY', 'CONTACT', 'ENGAGE', 'DISENGAGE',
+        'SECURE', 'CLEARED', 'ETA', 'ETD', 'LOX', 'CLANDESTINE', 'INTERDICTION',
+        'TACTICAL DATA LINK', 'JTIDS', 'LINK 16', 'CHOKEPOINT', 'EMCON',
+        'ELECTRONIC WARFARE', 'EW', 'ISR', 'C2', 'C3', 'C4I', 'SOP', 'TTP', 'JOC', 'TOC',
+        'COC', 'AOR', 'AO', 'ROE', 'MICS', 'BLACKOUT', 'WHITE NOISE', 'BURST TRANSMISSION',
+        'ECCM', 'ECM', 'AUTHENTICATOR', 'CHALLENGE WORD', 'RESPONSE WORD', 'KEY LIST',
+        'TRAFFIC ANALYSIS', 'COMINT', 'SIGINT', 'ELINT', 'DEAD RECKONING', 'FIRE MISSION',
+        'ADJUST FIRE', 'SHOT', 'SPLASH', 'ACK ACK', 'NEGATIVE CONTACT', 'LOST CONTACT',
+        'GOOD COPY', 'HOLD FIRE', 'CEASE FIRE', 'COMMENCE FIRING', 'SQUAD', 'PLATOON',
+        'COMPANY', 'BATTALION', 'BRIGADE', 'DIVISION', 'CORPS', 'ELEMENT', 'UNIT',
+        'COMMANDER', 'EXECUTIVE OFFICER', 'NCOIC', 'SITREP', 'CASREP', 'MEDEVAC',
+        'CASEVAC', 'SITUATION REPORT', 'INTEL REPORT', 'FRIENDLY FIRE', 'COLLATERAL DAMAGE',
+        'ROE', 'RULES OF ENGAGEMENT', 'NET ID', 'CRYPTO', 'KEYING MATERIAL', 'SECURE VOICE',
+        'CLEAR VOICE', 'HOT MIC', 'COLD MIC', 'MUTE', 'GUARD CHANNEL', 'DISCRETE CHANNEL',
+        'TRUNKED RADIO', 'IED', 'EOB', 'FRIENDLY TRACK', 'UNKNOWN TRACK', 'HOSTILE TRACK',
+        'GRID COORDINATES', 'MGRS', 'ASAP', 'ETA', 'RTB', 'SNAFU', 'FUBAR', 'POOPED',
+        'WET OPS', 'DRY OPS', 'SENTRY', 'RECON', 'PATROL', 'SWEEP', 'CLEAR', 'LOITER',
+        'ORBIT', 'HOLDING', 'ENGAGED', 'PREPARE TO COPY', 'SENDING NOW', 'I SAY AGAIN',
+        'CORRECTION', 'FIGURES', 'WORDS', 'INITIALS', 'GROUPS', 'DISPATCH', 'RELAY',
+        'RELAY STATION', 'MESSAGE CENTER', 'VOICE PROCEDURE', 'PROCEDURE WORDS', 'PROWORDS',
+        'TOP SECRET', 'SECRET', 'CONFIDENTIAL', 'CLASSIFIED', 'UNCLASSIFIED',
+        'FOR OFFICIAL USE ONLY', 'FOUO', 'CBRN', 'OPCON', 'TACON', 'ADCON', 'LNO', 'ROE'
+      ],
+      aviation: [
+        'ATC', 'CLEARANCE', 'CLEARED TO', 'HOLD SHORT', 'HOLDING POINT', 'TAKEOFF',
+        'LANDING', 'APPROACH', 'DEPARTURE', 'FLIGHT LEVEL', 'ALTITUDE', 'HEADING',
+        'BEARING', 'COURSE', 'AIRSPEED', 'GROUND SPEED', 'RUNWAY', 'TAXIWAY', 'APRON',
+        'GATE', 'RAMP', 'SQUAWK', 'TRANSPONDER', 'MODE C', 'IDENT',
+        'MAYDAY MAYDAY MAYDAY', 'PAN-PAN PAN-PAN PAN-PAN', 'AFFIRM', 'NEGATIVE',
+        'UNABLE', 'WILCO', 'ROGER', 'REPORTING POINT', 'FIX', 'WAYPOINT', 'VISIBILITY',
+        'CEILING', 'METAR', 'TAF', 'FLAPS', 'GEAR', 'DOWN AND LOCKED', 'ENGINE',
+        'PROPELLER', 'JET', 'AVIONICS', 'INSTRUMENTS', 'AUTOPILOT', 'FMS', 'VMC', 'IMC',
+        'IFR', 'VFR', 'VOR', 'NDB', 'ILS', 'GPS', 'EMERGENCY', 'DIVERSION',
+        'FUEL EMERGENCY', 'FIRE', 'ENGINE FAILURE', 'TRAFFIC', 'LOOKOUT', 'SCAN',
+        'BLOCKED', 'GARBLED', 'BROKEN', 'READABILITY', 'RADAR CONTACT',
+        'RADAR SERVICE TERMINATED', 'SQUAWKING', 'ALTIMETER SETTING', 'QNH', 'QFE',
+        'WINDSOCK', 'TURBULENCE', 'WIND SHEAR', 'OVERHEAD', 'DOWNWIND', 'BASE', 'FINAL',
+        'GO AROUND', 'TOUCH AND GO', 'FULL STOP', 'DEPARTURE CONTROL', 'CENTER',
+        'APPROACH CONTROL', 'TOWER', 'GROUND', 'CLEARANCE DELIVERY', 'FLIGHT PLAN',
+        'FLIGHT NUMBER', 'AIRCRAFT TYPE', 'CREW', 'PILOT', 'CO-PILOT', 'CAPTAIN',
+        'FIRST OFFICER', 'FLIGHT ATTENDANT', 'DISPATCH', 'MAINTENANCE',
+        'RUNWAY INCURSION', 'BIRD STRIKE', 'FOD', 'SAR', 'ELT', 'MAYDAY RELAY',
+        'URGENCY MESSAGE', 'SAFETY MESSAGE', 'STANDBY FOR COPY', 'READY TO COPY',
+        'PASS YOUR MESSAGE', 'FREQUENCY CHANGE APPROVED', 'CONTACT', 'MONITOR',
+        'RADIAL', 'DISTANCE', 'DME', 'TRANSMISSION', 'RECEIVING', 'DISTORTION',
+        'WEAK SIGNAL', 'AFFIRMATIVE', 'NEGATIVE', 'DISREGARD', 'CORRECTION',
+        'MAINTAIN', 'CLIMB TO', 'DESCEND TO', 'EXPECT', 'SAY AGAIN ALL AFTER',
+        'SAY AGAIN ALL BEFORE', 'SAY AGAIN WORD', 'CALLSIGN SUFFIX',
+        'FULL CALLSIGN', 'ABBREVIATED CALLSIGN'
+      ],
+      all: []
+    };
+    wordCategories.all = [
+      ...wordCategories.letters,
+      ...wordCategories.numbers,
+      ...wordCategories.qcodes,
+      ...wordCategories.ham,
+      ...wordCategories.phonetic,
+      ...wordCategories.maritime,
+      ...wordCategories.military,
+      ...wordCategories.aviation
+    ];
+
+    // Audio setup
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioContext();
+    let isPlaying = false;
+    let stopPlayback = false;
+    let toneFreq = 600;
+    let wpm = 20;
+    let charSpeed = 20;
+    let waveformType = 'sine';
+    let noiseNode = null;
+
+    // Scoring variables
+    let correctAnswers = 0;
+    let totalAttempts = 0;
+    let sessionStartTime = null;
+    let progressHistory = JSON.parse(localStorage.getItem('morseProgress')) || [];
+    let currentWord = '';
+
+    // UI elements
+    const encodeMode = document.getElementById('encodeMode');
+    const practiceMode = document.getElementById('practiceMode');
+    const tabEncode = document.getElementById('tabEncode');
+    const tabPractice = document.getElementById('tabPractice');
+    const playBtn = document.getElementById('playBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const textInput = document.getElementById('textInput');
+    const morseOutput = document.getElementById('morseOutput');
+    const startPractice = document.getElementById('startPractice');
+    const stopPracticeBtn = document.getElementById('stopPracticeBtn');
+    const practiceInput = document.getElementById('practiceInput');
+    const practiceResult = document.getElementById('practiceResult');
+    const showAlphabet = document.getElementById('showAlphabet');
+    const alphabetModal = document.getElementById('alphabetModal');
+    const closeModal = document.getElementById('closeModal');
+    const freqSlider = document.getElementById('freqSlider');
+    const wpmSlider = document.getElementById('wpmSlider');
+    const freqValue = document.getElementById('freqValue');
+    const wpmValue = document.getElementById('wpmValue');
+    const charSpeedSlider = document.getElementById('charSpeedSlider');
+    const charSpeedValue = document.getElementById('charSpeedValue');
+    const waveformSelect = document.getElementById('waveformSelect');
+    const backgroundNoise = document.getElementById('backgroundNoise');
+    const wordCategory = document.getElementById('wordCategory');
+    const customWords = document.getElementById('customWords');
+    const customWordsDiv = document.getElementById('customWordsDiv');
+    const difficultyLevel = document.getElementById('difficultyLevel');
+    const sessionStats = document.getElementById('sessionStats');
+    const progressChart = document.getElementById('progressChart');
+    const freqSliderPractice = document.getElementById('freqSliderPractice');
+    const wpmSliderPractice = document.getElementById('wpmSliderPractice');
+    const freqValuePractice = document.getElementById('freqValuePractice');
+    const wpmValuePractice = document.getElementById('wpmValuePractice');
+    const charSpeedSliderPractice = document.getElementById('charSpeedSliderPractice');
+    const charSpeedValuePractice = document.getElementById('charSpeedValuePractice');
+    const waveformSelectPractice = document.getElementById('waveformSelectPractice');
+    const backgroundNoisePractice = document.getElementById('backgroundNoisePractice');
+
+    // Generate random 5-character group
+    function generateRandomGroup(length = 5) {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
+      return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    }
+
+    // Convert text to Morse for display
+    function textToMorse(text) {
+      return text.toUpperCase().split('').map(char => morseMap[char] || '').join(' ');
+    }
+
+    // Create background noise
+    function createNoise() {
+      const bufferSize = audioCtx.sampleRate * 5;
+      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      const source = audioCtx.createBufferSource();
+      source.buffer = buffer;
+      source.loop = true;
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+      source.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      return { source, gainNode };
+    }
+
+    // Audio handling with fade-in/out
+    function playTone(duration, startTime) {
