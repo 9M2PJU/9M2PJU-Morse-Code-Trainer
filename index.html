@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Morse Code Trainer</title>
+  <title>9M2PJU Morse Code Trainer</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-white flex flex-col items-center min-h-screen p-6">
-  <h1 class="text-4xl font-bold mb-6 text-blue-400">Morse Code Trainer</h1>
+  <h1 class="text-4xl font-bold mb-6 text-blue-400">9M2PJU Morse Code Trainer</h1>
 
   <!-- Tabs -->
   <div class="flex space-x-4 mb-6">
@@ -201,7 +201,68 @@
       textInput.value = '';
     });
 
-    const words = ['CQ', 'TEST', 'HAM', 'RADIO', 'MORSE', 'HELLO', 'WORLD'];
+    const words = [
+  'CQ', 'TEST', 'HAM', 'RADIO', 'MORSE', 'HELLO', 'WORLD',
+  'AMATEUR', 'COMMUNICATION', 'ANTENNA', 'TRANSCEIVER', 'REPEATER',
+  'DX', 'CONTEST', 'OPERATOR', 'QSO', '73', 'RIG', 'CW', 'SSB',
+  'FREQUENCY', 'BAND', 'UHF', 'VHF', 'HF', 'SATELLITE', 'APRS',
+  'EMERGENCY', 'NET', 'CALLSIGN', 'QTH', 'QRT', 'QSY', 'QRP',
+  'RECEIVER', 'TRANSMITTER', 'MODULATION', 'DIGITAL', 'ANALOG',
+  'SIGNAL', 'NOISE', 'PROPAGATION', 'IONOSPHERE', 'SUNSPOT',
+  'BATTERY', 'POWER', 'GROUND', 'COAX', 'CONNECTOR', 'SWR',
+  'LOGBOOK', 'LICENSE', 'ELMER', 'ARRL', 'ITU', 'FCC', 'IARU',
+  'MILITARY', 'TACTICAL', 'COMMAND', 'CONTROL', 'ENCRYPTION',
+  'DECRYPT', 'SECURE', 'SATELLITE', 'SURVEILLANCE', 'INTERCEPT',
+  'CODING', 'DECODING', 'SPECTRUM', 'JAMMING', 'RADAR', 'SONAR',
+  'COMMSEC', 'COMMS', 'CHANNEL', 'VOX', 'PTT', 'KEY', 'MICROPHONE',
+  'SPEAKER', 'HEADSET', 'HANDHELD', 'MOBILE', 'BASE', 'FIELD',
+  'DEPLOY', 'EXERCISE', 'TRAINING', 'RESCUE', 'DISASTER', 'WEATHER',
+  'GEOCACHING', 'FOXHUNT', 'SSTV', 'RTTY', 'FT8', 'PSK31', 'WINLINK',
+  'ECHOLINK', 'IRLP', 'DSTAR', 'FUSION', 'P25', 'TETRA', 'TRUNKING',
+  'RECONNAISSANCE', 'INTELLIGENCE', 'CYPHER', 'ROGER', 'OVER', 'OUT',
+  'BREAK', 'STANDBY', 'AFFIRMATIVE', 'NEGATIVE', 'WILCO', 'ROGER THAT',
+
+  // Q Codes (common in amateur radio)
+  'QRA', 'QRB', 'QRG', 'QRH', 'QRI', 'QRJ', 'QRK', 'QRL', 'QRM', 'QRN',
+  'QRO', 'QRP', 'QRQ', 'QRS', 'QRT', 'QRU', 'QRV', 'QRW', 'QRX', 'QRY',
+  'QRZ', 'QSA', 'QSB', 'QSD', 'QSG', 'QSK', 'QSL', 'QSM', 'QSN', 'QSO',
+  'QSP', 'QST', 'QSU', 'QSW', 'QSX', 'QSY', 'QSZ', 'QTA', 'QTC', 'QTH',
+  'QTR', 'QUA',
+
+  // NATO Z Codes (military communications) - a selection of common ones
+  'ZAA', 'ZAB', 'ZAC', 'ZAD', 'ZAE', 'ZAF', 'ZAG', 'ZAH', 'ZAI', 'ZAJ',
+  'ZAK', 'ZAL', 'ZAM', 'ZAN', 'ZAO', 'ZAP', 'ZAQ', 'ZAR', 'ZAS', 'ZAT',
+  'ZAU', 'ZAV', 'ZAW', 'ZAX', 'ZAY', 'ZAZ',
+
+  // Common Military Radio Proverbs, Words, and Phrases
+  'COPY', 'LOUD AND CLEAR', 'READ YOU', 'SAY AGAIN', 'AFFIRMATIVE', 'NEGATIVE',
+  'OVER AND OUT', 'ROGER WILCO', 'BREAK BREAK', 'ALL STATIONS', 'THIS IS',
+  'FOR YOUR INFORMATION', 'DO YOU COPY', 'GO AHEAD', 'OUT CONTACT',
+  'MISSION', 'INTEL', 'GRID', 'SITREP', 'HOSTILE', 'FRIENDLY',
+  'CONTACT', 'ENGAGE', 'DISENGAGE', 'SECURE', 'CLEARED', 'ETA', 'ETD',
+  'ALPHA', 'BRAVO', 'CHARLIE', 'DELTA', 'ECHO', 'FOXTROT', 'GOLF',
+  'HOTEL', 'INDIA', 'JULIETT', 'KILO', 'LIMA', 'MIKE', 'NOVEMBER',
+  'OSCAR', 'PAPA', 'QUEBEC', 'ROMEO', 'SIERRA', 'TANGO', 'UNIFORM',
+  'VICTOR', 'WHISKEY', 'XRAY', 'YANKEE', 'ZULU', // Phonetic Alphabet
+  'STAND BY', 'WAIT ONE', 'CHECK', 'RADIO CHECK', 'HOW COPY', 'FIVE BY FIVE',
+  'RADIO SILENCE', 'OPSEC', 'COMSEC', 'SITREP', 'LOX', // Liquid Oxygen, common in some comms contexts
+  'CLANDESTINE', 'INTERDICTION', 'TACTICAL DATA LINK', 'JTIDS', 'LINK 16',
+  'CHOKEPOINT', 'EMCON', 'ELECTRONIC WARFARE', 'EW', 'ISR', // Intelligence, Surveillance, Reconnaissance
+  'C2', // Command and Control
+  'SOP', // Standard Operating Procedure
+  'JOC', // Joint Operations Center
+  'AOR', // Area Of Responsibility
+  'ROE', // Rules Of Engagement
+  'MICS', // Military Information Classification System
+  'BLACKOUT', 'WHITE NOISE', 'BURST TRANSMISSION', 'ECCM', // Electronic Counter-Countermeasures
+  'ECM', // Electronic Countermeasures
+  'PROWORD', 'MNEMONIC', 'PHRASEOLOGY', 'CALLSIGN', 'NET CONTROL',
+  'AUTHENTICATION', 'CHALLENGE', 'RESPONSE', 'CIPHER', 'DECRYPT',
+  'TRAFFIC', 'MESSAGE', 'PREAMBLE', 'TEXT', 'POSTAMBLE', 'FLASH',
+  'IMMEDIATE', 'PRIORITY', 'ROUTINE', 'DEFERRED', // Message Precedence
+  'CODE WORD', 'PASSCODE', 'DEAD DROP', 'ONE TIME PAD',
+  'COVERT', 'OVERT', 'RENDEZVOUS', 'SCRAMBLE', 'UNSCRAMBLE'
+];
     let currentWord = '';
 
     startPractice.addEventListener('click', async () => {
