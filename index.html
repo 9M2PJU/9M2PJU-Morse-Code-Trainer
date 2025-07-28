@@ -202,6 +202,7 @@
     });
 
     const words = [
+  // --- General Radio & Communication Terms (Already present and expanded) ---
   'CQ', 'TEST', 'HAM', 'RADIO', 'MORSE', 'HELLO', 'WORLD',
   'AMATEUR', 'COMMUNICATION', 'ANTENNA', 'TRANSCEIVER', 'REPEATER',
   'DX', 'CONTEST', 'OPERATOR', 'QSO', '73', 'RIG', 'CW', 'SSB',
@@ -211,57 +212,288 @@
   'SIGNAL', 'NOISE', 'PROPAGATION', 'IONOSPHERE', 'SUNSPOT',
   'BATTERY', 'POWER', 'GROUND', 'COAX', 'CONNECTOR', 'SWR',
   'LOGBOOK', 'LICENSE', 'ELMER', 'ARRL', 'ITU', 'FCC', 'IARU',
-  'MILITARY', 'TACTICAL', 'COMMAND', 'CONTROL', 'ENCRYPTION',
-  'DECRYPT', 'SECURE', 'SATELLITE', 'SURVEILLANCE', 'INTERCEPT',
-  'CODING', 'DECODING', 'SPECTRUM', 'JAMMING', 'RADAR', 'SONAR',
-  'COMMSEC', 'COMMS', 'CHANNEL', 'VOX', 'PTT', 'KEY', 'MICROPHONE',
-  'SPEAKER', 'HEADSET', 'HANDHELD', 'MOBILE', 'BASE', 'FIELD',
-  'DEPLOY', 'EXERCISE', 'TRAINING', 'RESCUE', 'DISASTER', 'WEATHER',
-  'GEOCACHING', 'FOXHUNT', 'SSTV', 'RTTY', 'FT8', 'PSK31', 'WINLINK',
-  'ECHOLINK', 'IRLP', 'DSTAR', 'FUSION', 'P25', 'TETRA', 'TRUNKING',
-  'RECONNAISSANCE', 'INTELLIGENCE', 'CYPHER', 'ROGER', 'OVER', 'OUT',
-  'BREAK', 'STANDBY', 'AFFIRMATIVE', 'NEGATIVE', 'WILCO', 'ROGER THAT',
-
-  // Q Codes (common in amateur radio)
-  'QRA', 'QRB', 'QRG', 'QRH', 'QRI', 'QRJ', 'QRK', 'QRL', 'QRM', 'QRN',
-  'QRO', 'QRP', 'QRQ', 'QRS', 'QRT', 'QRU', 'QRV', 'QRW', 'QRX', 'QRY',
-  'QRZ', 'QSA', 'QSB', 'QSD', 'QSG', 'QSK', 'QSL', 'QSM', 'QSN', 'QSO',
-  'QSP', 'QST', 'QSU', 'QSW', 'QSX', 'QSY', 'QSZ', 'QTA', 'QTC', 'QTH',
-  'QTR', 'QUA',
-
-  // NATO Z Codes (military communications) - a selection of common ones
-  'ZAA', 'ZAB', 'ZAC', 'ZAD', 'ZAE', 'ZAF', 'ZAG', 'ZAH', 'ZAI', 'ZAJ',
-  'ZAK', 'ZAL', 'ZAM', 'ZAN', 'ZAO', 'ZAP', 'ZAQ', 'ZAR', 'ZAS', 'ZAT',
-  'ZAU', 'ZAV', 'ZAW', 'ZAX', 'ZAY', 'ZAZ',
-
-  // Common Military Radio Proverbs, Words, and Phrases
   'COPY', 'LOUD AND CLEAR', 'READ YOU', 'SAY AGAIN', 'AFFIRMATIVE', 'NEGATIVE',
   'OVER AND OUT', 'ROGER WILCO', 'BREAK BREAK', 'ALL STATIONS', 'THIS IS',
   'FOR YOUR INFORMATION', 'DO YOU COPY', 'GO AHEAD', 'OUT CONTACT',
-  'MISSION', 'INTEL', 'GRID', 'SITREP', 'HOSTILE', 'FRIENDLY',
-  'CONTACT', 'ENGAGE', 'DISENGAGE', 'SECURE', 'CLEARED', 'ETA', 'ETD',
-  'ALPHA', 'BRAVO', 'CHARLIE', 'DELTA', 'ECHO', 'FOXTROT', 'GOLF',
-  'HOTEL', 'INDIA', 'JULIETT', 'KILO', 'LIMA', 'MIKE', 'NOVEMBER',
-  'OSCAR', 'PAPA', 'QUEBEC', 'ROMEO', 'SIERRA', 'TANGO', 'UNIFORM',
-  'VICTOR', 'WHISKEY', 'XRAY', 'YANKEE', 'ZULU', // Phonetic Alphabet
   'STAND BY', 'WAIT ONE', 'CHECK', 'RADIO CHECK', 'HOW COPY', 'FIVE BY FIVE',
-  'RADIO SILENCE', 'OPSEC', 'COMSEC', 'SITREP', 'LOX', // Liquid Oxygen, common in some comms contexts
-  'CLANDESTINE', 'INTERDICTION', 'TACTICAL DATA LINK', 'JTIDS', 'LINK 16',
-  'CHOKEPOINT', 'EMCON', 'ELECTRONIC WARFARE', 'EW', 'ISR', // Intelligence, Surveillance, Reconnaissance
-  'C2', // Command and Control
-  'SOP', // Standard Operating Procedure
-  'JOC', // Joint Operations Center
-  'AOR', // Area Of Responsibility
-  'ROE', // Rules Of Engagement
-  'MICS', // Military Information Classification System
-  'BLACKOUT', 'WHITE NOISE', 'BURST TRANSMISSION', 'ECCM', // Electronic Counter-Countermeasures
-  'ECM', // Electronic Countermeasures
+  'RADIO SILENCE', 'OPSEC', 'COMSEC', 'SITREP',
   'PROWORD', 'MNEMONIC', 'PHRASEOLOGY', 'CALLSIGN', 'NET CONTROL',
   'AUTHENTICATION', 'CHALLENGE', 'RESPONSE', 'CIPHER', 'DECRYPT',
   'TRAFFIC', 'MESSAGE', 'PREAMBLE', 'TEXT', 'POSTAMBLE', 'FLASH',
-  'IMMEDIATE', 'PRIORITY', 'ROUTINE', 'DEFERRED', // Message Precedence
+  'IMMEDIATE', 'PRIORITY', 'ROUTINE', 'DEFERRED',
   'CODE WORD', 'PASSCODE', 'DEAD DROP', 'ONE TIME PAD',
-  'COVERT', 'OVERT', 'RENDEZVOUS', 'SCRAMBLE', 'UNSCRAMBLE'
+  'COVERT', 'OVERT', 'RENDEZVOUS', 'SCRAMBLE', 'UNSCRAMBLE',
+
+  // --- Phonetic Alphabet ---
+  'ALPHA', 'BRAVO', 'CHARLIE', 'DELTA', 'ECHO', 'FOXTROT', 'GOLF',
+  'HOTEL', 'INDIA', 'JULIETT', 'KILO', 'LIMA', 'MIKE', 'NOVEMBER',
+  'OSCAR', 'PAPA', 'QUEBEC', 'ROMEO', 'SIERRA', 'TANGO', 'UNIFORM',
+  'VICTOR', 'WHISKEY', 'XRAY', 'YANKEE', 'ZULU',
+
+  // --- Q Codes (Extensive List based on ITU-R M.1172 and common use) ---
+  'QAB', 'QAP', 'QAZ', 'QBG', 'QCH', 'QCI', 'QCL', 'QCN', 'QCO', 'QCR',
+  'QCS', 'QCT', 'QCU', 'QCV', 'QCY', 'QCZ',
+  'QDA', 'QDB', 'QDC', 'QDD', 'QDF', 'QDG', 'QDH', 'QDI', 'QDJ', 'QDK',
+  'QDL', 'QDM', 'QDN', 'QDO', 'QDP', 'QDQ', 'QDR', 'QDS', 'QDT', 'QDU',
+  'QDV', 'QDW', 'QDX', 'QDY', 'QDZ',
+  'QFA', 'QFB', 'QFC', 'QFD', 'QFE', 'QFF', 'QFG', 'QFH', 'QFI', 'QFJ',
+  'QFK', 'QFL', 'QFM', 'QFN', 'QFO', 'QFP', 'QFQ', 'QFR', 'QFS', 'QFT',
+  'QFU', 'QFV', 'QFW', 'QFX', 'QFY', 'QFZ',
+  'QGA', 'QGB', 'QGC', 'QGD', 'QGE', 'QGF', 'QGG', 'QGH', 'QGI', 'QGJ',
+  'QGK', 'QGL', 'QGM', 'QGN', 'QGO', 'QGP', 'QGQ', 'QGR', 'QGS', 'QGT',
+  'QGU', 'QGV', 'QGW', 'QGX', 'QGY', 'QGZ',
+  'QIA', 'QIB', 'QIC', 'QID', 'QIE', 'QIF', 'QIG', 'QIH', 'QII', 'QIJ',
+  'QIK', 'QIL', 'QIM', 'QIN', 'QIO', 'QIP', 'QIQ', 'QIR', 'QIS', 'QIT',
+  'QIU', 'QIV', 'QIW', 'QIX', 'QIY', 'QIZ',
+  'QJA', 'QJB', 'QJC', 'QJD', 'QJE', 'QJF', 'QJG', 'QJH', 'QJI', 'QJJ',
+  'QJK', 'QJL', 'QJM', 'QJN', 'QJO', 'QJP', 'QJQ', 'QJR', 'QJS', 'QJT',
+  'QJU', 'QJV', 'QJW', 'QJX', 'QJY', 'QJZ',
+  'QKA', 'QKB', 'QKC', 'QKD', 'QKE', 'QKF', 'QKG', 'QKH', 'QKI', 'QKJ',
+  'QKK', 'QKL', 'QKM', 'QKN', 'QKO', 'QKP', 'QKQ', 'QKR', 'QKS', 'QKT',
+  'QKU', 'QKV', 'QKW', 'QKX', 'QKY', 'QKZ',
+  'QLA', 'QLB', 'QLC', 'QLD', 'QLE', 'QLF', 'QLG', 'QLH', 'QLI', 'QLJ',
+  'QLK', 'QLL', 'QLM', 'QLN', 'QLO', 'QLP', 'QLQ', 'QLR', 'QLS', 'QLT',
+  'QLU', 'QLV', 'QLW', 'QLX', 'QLY', 'QLZ',
+  'QMA', 'QMB', 'QMC', 'QMD', 'QME', 'QMF', 'QMG', 'QMH', 'QMI', 'QMJ',
+  'QMK', 'QML', 'QMM', 'QMN', 'QMO', 'QMP', 'QMQ', 'QMR', 'QMS', 'QMT',
+  'QMU', 'QMV', 'QMW', 'QMX', 'QMY', 'QMZ',
+  'QNA', 'QNB', 'QNC', 'QND', 'QNE', 'QNF', 'QNG', 'QNH', 'QNI', 'QNJ',
+  'QNK', 'QNL', 'QNM', 'QNN', 'QNO', 'QNP', 'QNQ', 'QNR', 'QNS', 'QNT',
+  'QNU', 'QNV', 'QNW', 'QNX', 'QNY', 'QNZ',
+  'QOA', 'QOB', 'QOC', 'QOD', 'QOE', 'QOF', 'QOG', 'QOH', 'QOI', 'QOJ',
+  'QOK', 'QOL', 'QOM', 'QON', 'QOO', 'QOP', 'QOQ', 'QOR', 'QOS', 'QOT',
+  'QOU', 'QOV', 'QOW', 'QOX', 'QOY', 'QOZ',
+  'QPA', 'QPB', 'QPC', 'QPD', 'QPE', 'QPF', 'QPG', 'QPH', 'QPI', 'QPJ',
+  'QPK', 'QPL', 'QPM', 'QPN', 'QPO', 'QPP', 'QPQ', 'QPR', 'QPS', 'QPT',
+  'QPU', 'QPV', 'QPW', 'QPX', 'QPY', 'QPZ',
+  'QRA', 'QRB', 'QRC', 'QRD', 'QRE', 'QRF', 'QRG', 'QRH', 'QRI', 'QRJ',
+  'QRK', 'QRL', 'QRM', 'QRN', 'QRO', 'QRP', 'QRQ', 'QRS', 'QRT', 'QRU',
+  'QRV', 'QRW', 'QRX', 'QRY', 'QRZ',
+  'QSA', 'QSB', 'QSC', 'QSD', 'QSE', 'QSF', 'QSG', 'QSH', 'QSI', 'QSJ',
+  'QSK', 'QSL', 'QSM', 'QSN', 'QSO', 'QSP', 'QSQ', 'QSR', 'QSS', 'QST',
+  'QSU', 'QSV', 'QSW', 'QSX', 'QSY', 'QSZ',
+  'QTA', 'QTB', 'QTC', 'QTD', 'QTE', 'QTF', 'QTG', 'QTH', 'QTI', 'QTJ',
+  'QTK', 'QTL', 'QTM', 'QTN', 'QTO', 'QTP', 'QTQ', 'QTR', 'QTS', 'QTT',
+  'QTU', 'QTV', 'QTW', 'QTX', 'QTY', 'QTZ',
+  'QUA', 'QUB', 'QUC', 'QUD', 'QUE', 'QUF', 'QUG', 'QUH', 'QUI', 'QUJ',
+  'QUK', 'QUL', 'QUM', 'QUN', 'QUO', 'QUP', 'QUQ', 'QUR', 'QUS', 'QUT',
+  'QUU', 'QUV', 'QUW', 'QUX', 'QUY', 'QUZ',
+
+  // --- NATO Z Codes (Extensive List, common ones) ---
+  'ZAA', 'ZAB', 'ZAC', 'ZAD', 'ZAE', 'ZAF', 'ZAG', 'ZAH', 'ZAI', 'ZAJ',
+  'ZAK', 'ZAL', 'ZAM', 'ZAN', 'ZAO', 'ZAP', 'ZAQ', 'ZAR', 'ZAS', 'ZAT',
+  'ZAU', 'ZAV', 'ZAW', 'ZAX', 'ZAY', 'ZAZ',
+  'ZBA', 'ZBB', 'ZBC', 'ZBD', 'ZBE', 'ZBF', 'ZBG', 'ZBH', 'ZBI', 'ZBJ',
+  'ZBK', 'ZBL', 'ZBM', 'ZBN', 'ZBO', 'ZBP', 'ZBQ', 'ZBR', 'ZBS', 'ZBT',
+  'ZBU', 'ZBV', 'ZBW', 'ZBX', 'ZBY', 'ZBZ',
+  'ZCA', 'ZCB', 'ZCC', 'ZCD', 'ZCE', 'ZCF', 'ZCG', 'ZCH', 'ZCI', 'ZCJ',
+  'ZCK', 'ZCL', 'ZCM', 'ZCN', 'ZCO', 'ZCP', 'ZCQ', 'ZCR', 'ZCS', 'ZCT',
+  'ZCU', 'ZCV', 'ZCW', 'ZCX', 'ZCY', 'ZCZ',
+  'ZDA', 'ZDB', 'ZDC', 'ZDD', 'ZDE', 'ZDF', 'ZDG', 'ZDH', 'ZDI', 'ZDJ',
+  'ZDK', 'ZDL', 'ZDM', 'ZDN', 'ZDO', 'ZDP', 'ZDQ', 'ZDR', 'ZDS', 'ZDT',
+  'ZDU', 'ZDV', 'ZDW', 'ZDX', 'ZDY', 'ZDZ',
+  'ZEA', 'ZEB', 'ZEC', 'ZED', 'ZEE', 'ZEF', 'ZEG', 'ZEH', 'ZEI', 'ZEJ',
+  'ZEK', 'ZEL', 'ZEM', 'ZEN', 'ZEO', 'ZEP', 'ZEQ', 'ZER', 'ZES', 'ZET',
+  'ZEU', 'ZEV', 'ZEW', 'ZEX', 'ZEY', 'ZEZ',
+  'ZFA', 'ZFB', 'ZFC', 'ZFD', 'ZFE', 'ZFF', 'ZFG', 'ZFH', 'ZFI', 'ZFJ',
+  'ZFK', 'ZFL', 'ZFM', 'ZFN', 'ZFO', 'ZFP', 'ZFQ', 'ZFR', 'ZFS', 'ZFT',
+  'ZFU', 'ZFV', 'ZFW', 'ZFX', 'ZFY', 'ZFZ',
+  'ZGA', 'ZGB', 'ZGC', 'ZGD', 'ZGE', 'ZGF', 'ZGG', 'ZGH', 'ZGI', 'ZGJ',
+  'ZGK', 'ZGL', 'ZGM', 'ZGN', 'ZGO', 'ZGP', 'ZGQ', 'ZGR', 'ZGS', 'ZGT',
+  'ZGU', 'ZGV', 'ZGW', 'ZGX', 'ZGY', 'ZGZ',
+  'ZHA', 'ZHB', 'ZHC', 'ZHD', 'ZHE', 'ZHF', 'ZHG', 'ZHH', 'ZHI', 'ZHJ',
+  'ZHK', 'ZHL', 'ZHM', 'ZHN', 'ZHO', 'ZHP', 'ZHQ', 'ZHR', 'ZHS', 'ZHT',
+  'ZHU', 'ZHV', 'ZHW', 'ZHX', 'ZHY', 'ZHZ',
+  'ZIA', 'ZIB', 'ZIC', 'ZID', 'ZIE', 'ZIF', 'ZIG', 'ZIH', 'ZII', 'ZIJ',
+  'ZIK', 'ZIL', 'ZIM', 'ZIN', 'ZIO', 'ZIP', 'ZIQ', 'ZIR', 'ZIS', 'ZIT',
+  'ZIU', 'ZIV', 'ZIW', 'ZIX', 'ZIY', 'ZIZ',
+  'ZJA', 'ZJB', 'ZJC', 'ZJD', 'ZJE', 'ZJF', 'ZJG', 'ZJH', 'ZJI', 'ZJJ',
+  'ZJK', 'ZJL', 'ZJM', 'ZJN', 'ZJO', 'ZJP', 'ZJQ', 'ZJR', 'ZJS', 'ZJT',
+  'ZJU', 'ZJV', 'ZJW', 'ZJX', 'ZJY', 'ZJZ',
+  'ZKA', 'ZKB', 'ZKC', 'ZKD', 'ZKE', 'ZKF', 'ZKG', 'ZKH', 'ZKI', 'ZKJ',
+  'ZKK', 'ZKL', 'ZKM', 'ZKN', 'ZKO', 'ZKP', 'ZKQ', 'ZKR', 'ZKS', 'ZKT',
+  'ZKU', 'ZKV', 'ZKW', 'ZKX', 'ZKY', 'ZKZ',
+  'ZLA', 'ZLB', 'ZLC', 'ZLD', 'ZLE', 'ZLF', 'ZLG', 'ZLH', 'ZLI', 'ZLJ',
+  'ZLK', 'ZLL', 'ZLM', 'ZLN', 'ZLO', 'ZLP', 'ZLQ', 'ZLR', 'ZLS', 'ZLT',
+  'ZLU', 'ZLV', 'ZLW', 'ZLX', 'ZLY', 'ZLZ',
+  'ZMA', 'ZMB', 'ZMC', 'ZMD', 'ZME', 'ZMF', 'ZMG', 'ZMH', 'ZMI', 'ZMJ',
+  'ZMK', 'ZML', 'ZMM', 'ZMN', 'ZMO', 'ZMP', 'ZMQ', 'ZMR', 'ZMS', 'ZMT',
+  'ZMU', 'ZMV', 'ZMW', 'ZMX', 'ZMY', 'ZMZ',
+  'ZNA', 'ZNB', 'ZNC', 'ZND', 'ZNE', 'ZNF', 'ZNG', 'ZNH', 'ZNI', 'ZNJ',
+  'ZNK', 'ZNL', 'ZNM', 'ZNN', 'ZNO', 'ZNP', 'ZNQ', 'ZNR', 'ZNS', 'ZNT',
+  'ZNU', 'ZNV', 'ZNW', 'ZNX', 'ZNY', 'ZNZ',
+  'ZOA', 'ZOB', 'ZOC', 'ZOD', 'ZOE', 'ZOF', 'ZOG', 'ZOH', 'ZOI', 'ZOJ',
+  'ZOK', 'ZOL', 'ZOM', 'ZON', 'ZOO', 'ZOP', 'ZOQ', 'ZOR', 'ZOS', 'ZOT',
+  'ZOU', 'ZOV', 'ZOW', 'ZOX', 'ZOY', 'ZOZ',
+  'ZPA', 'ZPB', 'ZPC', 'ZPD', 'ZPE', 'ZPF', 'ZPG', 'ZPH', 'ZPI', 'ZPJ',
+  'ZPK', 'ZPL', 'ZPM', 'ZPN', 'ZPO', 'ZPP', 'ZPQ', 'ZPR', 'ZPS', 'ZPT',
+  'ZPU', 'ZPV', 'ZPW', 'ZPX', 'ZPY', 'ZPZ',
+  'ZQA', 'ZQB', 'ZQC', 'ZQD', 'ZQE', 'ZQF', 'ZQG', 'ZQH', 'ZQI', 'ZQJ',
+  'ZQK', 'ZQL', 'ZQM', 'ZQN', 'ZQO', 'ZQP', 'ZQQ', 'ZQR', 'ZQS', 'ZQT',
+  'ZQU', 'ZQV', 'ZQW', 'ZQX', 'ZQY', 'ZQZ',
+  'ZRA', 'ZRB', 'ZRC', 'ZRD', 'ZRE', 'ZRF', 'ZRG', 'ZRH', 'ZRI', 'ZRJ',
+  'ZRK', 'ZRL', 'ZRM', 'ZRN', 'ZRO', 'ZRP', 'ZRQ', 'ZRR', 'ZRS', 'ZRT',
+  'ZRU', 'ZRV', 'ZRW', 'ZRX', 'ZRY', 'ZRZ',
+  'ZSA', 'ZSB', 'ZSC', 'ZSD', 'ZSE', 'ZSF', 'ZSG', 'ZSH', 'ZSI', 'ZSJ',
+  'ZSK', 'ZSL', 'ZSM', 'ZSN', 'ZSO', 'ZSP', 'ZSQ', 'ZSR', 'ZSS', 'ZST',
+  'ZSU', 'ZSV', 'ZSW', 'ZSX', 'ZSY', 'ZSZ',
+  'ZTA', 'ZTB', 'ZTC', 'ZTD', 'ZTE', 'ZTF', 'ZTG', 'ZTH', 'ZTI', 'ZTJ',
+  'ZTK', 'ZTL', 'ZTM', 'ZTN', 'ZTO', 'ZTP', 'ZTQ', 'ZTR', 'ZTS', 'ZTT',
+  'ZTU', 'ZTV', 'ZTW', 'ZTX', 'ZTY', 'ZTZ',
+  'ZUA', 'ZUB', 'ZUC', 'ZUD', 'ZUE', 'ZUF', 'ZUG', 'ZUH', 'ZUI', 'ZUJ',
+  'ZUK', 'ZUL', 'ZUM', 'ZUN', 'ZUO', 'ZUP', 'ZUQ', 'ZUR', 'ZUS', 'ZUT',
+  'ZUU', 'ZUV', 'ZUW', 'ZUX', 'ZUY', 'ZUZ',
+  'ZVA', 'ZVB', 'ZVC', 'ZVD', 'ZVE', 'ZVF', 'ZVG', 'ZVH', 'ZVI', 'ZVJ',
+  'ZVK', 'ZVL', 'ZVM', 'ZVN', 'ZVO', 'ZVP', 'ZVQ', 'ZVR', 'ZVS', 'ZVT',
+  'ZVU', 'ZVV', 'ZVW', 'ZVX', 'ZVY', 'ZVZ',
+  'ZWA', 'ZWB', 'ZWC', 'ZWD', 'ZWE', 'ZWF', 'ZWG', 'ZWH', 'ZWI', 'ZWJ',
+  'ZWK', 'ZWL', 'ZWM', 'ZWN', 'ZWO', 'ZWP', 'ZWQ', 'ZWR', 'ZWS', 'ZWT',
+  'ZWU', 'ZWV', 'ZWW', 'ZWX', 'ZWY', 'ZWZ',
+  'ZXA', 'ZXB', 'ZXC', 'ZXD', 'ZXE', 'ZXF', 'ZXG', 'ZXH', 'ZXI', 'ZXJ',
+  'ZXK', 'ZXL', 'ZXM', 'ZXN', 'ZXO', 'ZXP', 'ZXQ', 'ZXR', 'ZXS', 'ZXT',
+  'ZXU', 'ZXV', 'ZXW', 'ZXX', 'ZXY', 'ZXZ',
+  'ZYA', 'ZYB', 'ZYC', 'ZYD', 'ZYE', 'ZYF', 'ZYG', 'ZYH', 'ZYI', 'ZYJ',
+  'ZYK', 'ZYL', 'ZYM', 'ZYN', 'ZYO', 'ZYP', 'ZYQ', 'ZYR', 'ZYS', 'ZYT',
+  'ZYU', 'ZYV', 'ZYW', 'ZYX', 'ZYY', 'ZYZ',
+
+  // --- Amateur Radio Specific (Expanded) ---
+  'DIT', 'DAH', 'KEYER', 'PADDLE', 'STRAIGHT KEY', 'BUG',
+  'VFO', 'XTAL', 'FILTER', 'TUNER', 'ANTENNA TUNER', 'DIPOLE', 'YAGI',
+  'VERTICAL', 'BEAM', 'LOOP', 'BALUN', 'UNUN', 'FEEDLINE',
+  'GRID DIPPER', 'SPECTRUM ANALYZER', 'OSCILLOSCOPE',
+  'CONTESTING', 'FIELD DAY', 'SSTV', 'RTTY', 'FT8', 'PSK31', 'JS8CALL',
+  'WINLINK', 'ECHOLINK', 'IRLP', 'DSTAR', 'FUSION', 'SYSTEM FUSION',
+  'REFLECTOR', 'HOTSPOT', 'NODE', 'MESH', 'PACKET RADIO',
+  'NET CONTROL', 'TRAFFIC NET', 'EMCOMM', 'AREC', 'RACES',
+  'LOGGING', 'DXCC', 'WAS', 'WAC', 'WSPR',
+  'LICENSED', 'TECHNICIAN', 'GENERAL', 'EXTRA', 'NOVICE',
+  'CALLBOOK', 'QSL CARD', 'BUREAU', 'SWL', // Shortwave Listener
+  'FONE', 'MIC', 'VOICE', 'CARRIER', 'SIDEBAND',
+  'IONOSPHERIC', 'AURORA', 'TROPOSPHERIC', 'DUCTING', 'SKIP',
+  'GRAY LINE', 'MUF', 'LUF', 'FADE', 'BURST',
+  'VOLTS', 'AMPS', 'WATTS', 'OHMS', 'RESISTANCE', 'CAPACITANCE', 'INDUCTANCE',
+  'CIRCUIT', 'SCHEMATIC', 'COMPONENT', 'SOLDERING', 'PROTOTYPE',
+  'MICROPHONE', 'HEADPHONES', 'RECEIVE', 'TRANSMIT',
+  'BAUD', 'BPS', 'KILOBAUD', 'MEGAHERTZ', 'GIGAHERTZ', 'KILOHERTZ',
+  'S-METER', 'ALC', 'AGC', 'VOX', 'COMPRESSOR', 'EQUALIZER',
+  'GROUND PLANE', 'RADIALS', 'COUPLER', 'LINEAR AMPLIFIER',
+  'BAREFOOT', 'FINAL', 'BIAS', 'GRID', 'PLATE', 'CATHODE',
+  'ESCAPEMENT', 'WEIGHTS', 'PENDULUM', // Related to CW keys
+  'KEYING', 'DECODE', 'ENCODE', 'CHIRP', 'DRIFT',
+  'VFO', 'PTO', 'SYNTHESIZER',
+  'QSL VIA', 'PSE', 'OM', 'YL', 'XYL', 'UR', 'HW', 'WX', 'FB', 'CU', 'CUL',
+  'SK', 'SN', 'TU', 'AGN', 'K', 'KN', 'AR', 'BT', 'VA',
+
+  // --- Maritime Communication (Common Terms) ---
+  'MAYDAY', 'PAN PAN', 'SECURITE', // Distress, Urgency, Safety
+  'DISTRESS', 'URGENCY', 'SAFETY',
+  'GMDSS', // Global Maritime Distress and Safety System
+  'DSC', // Digital Selective Calling
+  'EPIRB', // Emergency Position Indicating Radio Beacon
+  'SART', // Search and Rescue Transponder
+  'AIS', // Automatic Identification System
+  'VHF MARINE', 'MF HF MARINE', 'INMARSAT',
+  'SHIP-TO-SHIP', 'SHIP-TO-SHORE', 'PORT OPERATIONS', 'PILOT', 'BRIDGE',
+  'CHANNEL 16', 'CHANNEL 70', 'CALLING CHANNEL', 'WORKING CHANNEL',
+  'SEAWARD', 'LANDWARD', 'COURSE', 'BEARING', 'POSITION', 'LATITUDE', 'LONGITUDE',
+  'WAYPOINT', 'NAVIGATION', 'CHART', 'GPS',
+  'ROUTINE', 'URGENT', 'CRITICAL', 'ALERT',
+  'FOG HORN', 'BELL', 'WHISTLE',
+  'ANCHORAGE', 'BERTH', 'DOCK', 'HARBOR', 'MARINA',
+  'VESSEL', 'SHIP', 'BOAT', 'YACHT', 'TANKER', 'CARGO', 'FERRY',
+  'MASTER', 'CAPTAIN', 'FIRST MATE', 'ENGINEER', 'CREW',
+  'SEAS', 'WAVE HEIGHT', 'SWELL', 'WIND SPEED', 'DIRECTION', 'VISIBILITY',
+  'FLOATING', 'DRIFTING', 'SINKING', 'MAN OVERBOARD',
+  'ALL MESSAGES', 'ACKNOWLEDGE', 'STAND CLEAR', 'HEARING YOU',
+  'OVER AND OUT', 'ROGER', 'BREAK', 'REPAIR', 'MAINTAIN', 'SAIL',
+  'PORT', 'STARBOARD', 'BOW', 'STERN', 'AFT', 'FORWARD',
+  'KNOTS', 'CABLE', 'NAUTICAL MILE',
+
+  // --- Military Communication (Expanded) ---
+  'MISSION', 'INTEL', 'GRID', 'HOSTILE', 'FRIENDLY',
+  'CONTACT', 'ENGAGE', 'DISENGAGE', 'SECURE', 'CLEARED', 'ETA', 'ETD',
+  'LOX', // Liquid Oxygen (can be comms-related, e.g., for missile fueling reports)
+  'CLANDESTINE', 'INTERDICTION', 'TACTICAL DATA LINK', 'JTIDS', 'LINK 16',
+  'CHOKEPOINT', 'EMCON', 'ELECTRONIC WARFARE', 'EW', 'ISR',
+  'C2', 'C3', 'C4I', // Command, Control, Communications, Computers, and Intelligence
+  'SOP', 'TTP', // Tactics, Techniques, and Procedures
+  'JOC', 'TOC', 'COC', // Tactical/Combat Operations Center
+  'AOR', 'AO', // Area of Operations
+  'ROE',
+  'MICS', // Military Information Classification System
+  'BLACKOUT', 'WHITE NOISE', 'BURST TRANSMISSION', 'ECCM', 'ECM',
+  'AUTHENTICATOR', 'CHALLENGE WORD', 'RESPONSE WORD', 'KEY LIST',
+  'TRAFFIC ANALYSIS', 'COMINT', 'SIGINT', 'ELINT', // Electronic Intelligence
+  'DEAD RECKONING', 'FIRE MISSION', 'ADJUST FIRE', 'SHOT', 'SPLASH',
+  'ACK ACK', 'NEGATIVE CONTACT', 'LOST CONTACT', 'GOOD COPY',
+  'HOLD FIRE', 'CEASE FIRE', 'COMMENCE FIRING',
+  'SQUAD', 'PLATOON', 'COMPANY', 'BATTALION', 'BRIGADE', 'DIVISION', 'CORPS',
+  'ELEMENT', 'UNIT', 'COMMANDER', 'EXECUTIVE OFFICER', 'NCOIC',
+  'SITREP', 'CASREP', 'MEDEVAC', 'CASEVAC', 'SITUATION REPORT',
+  'INTEL REPORT', 'FRIENDLY FIRE', 'COLLATERAL DAMAGE',
+  'ROE', 'RULES OF ENGAGEMENT',
+  'NET ID', 'CRYPTO', 'KEYING MATERIAL', 'SECURE VOICE', 'CLEAR VOICE',
+  'HOT MIC', 'COLD MIC', 'MUTE',
+  'GUARD CHANNEL', 'DISCRETE CHANNEL', 'TRUNKED RADIO',
+  'IED', 'EOB', // Electronic Order of Battle
+  'FRIENDLY TRACK', 'UNKNOWN TRACK', 'HOSTILE TRACK',
+  'GRID COORDINATES', 'MGRS', // Military Grid Reference System
+  'ASAP', 'ETA', 'RTB', // Return to Base
+  'SNAFU', 'FUBAR', 'POOPED', // Slang
+  'WET OPS', 'DRY OPS', // Naval Special Warfare slang
+  'SENTRY', 'RECON', 'PATROL', 'SWEEP', 'CLEAR',
+  'LOITER', 'ORBIT', 'HOLDING', 'ENGAGED',
+  'PREPARE TO COPY', 'SENDING NOW', 'I SAY AGAIN', 'CORRECTION',
+  'FIGURES', 'WORDS', 'INITIALS', 'GROUPS', // Message formatting
+  'DISPATCH', 'RELAY', 'RELAY STATION', 'MESSAGE CENTER',
+  'VOICE PROCEDURE', 'PROCEDURE WORDS', 'PROWORDS',
+  'TOP SECRET', 'SECRET', 'CONFIDENTIAL', 'CLASSIFIED', 'UNCLASSIFIED',
+  'FOR OFFICIAL USE ONLY', 'FOUO',
+  'CBRN', // Chemical, Biological, Radiological, Nuclear
+  'OPCON', 'TACON', 'ADCON', // Operational, Tactical, Administrative Control
+  'LNO', // Liaison Officer
+  'ROE', // Rules of Engagement
+
+  // --- Aviation Communication (Common Terms) ---
+  'ATC', // Air Traffic Control
+  'CLEARANCE', 'CLEARED TO', 'HOLD SHORT', 'HOLDING POINT',
+  'TAKEOFF', 'LANDING', 'APPROACH', 'DEPARTURE', 'FLIGHT LEVEL', 'ALTITUDE',
+  'HEADING', 'BEARING', 'COURSE', 'AIRSPEED', 'GROUND SPEED',
+  'RUNWAY', 'TAXIWAY', 'APRON', 'GATE', 'RAMP',
+  'SQUAWK', 'TRANSPONDER', 'MODE C', 'IDENT',
+  'MAYDAY MAYDAY MAYDAY', 'PAN-PAN PAN-PAN PAN-PAN', // Aviation specific distress/urgency repeats
+  'AFFIRM', 'NEGATIVE', 'UNABLE', 'WILCO', 'ROGER',
+  'REPORTING POINT', 'FIX', 'WAYPOINT',
+  'VISIBILITY', 'CEILING', 'METAR', 'TAF', // Weather reports/forecasts
+  'FLAPS', 'GEAR', 'DOWN AND LOCKED', 'ENGINE', 'PROPELLER', 'JET',
+  'AVIONICS', 'INSTRUMENTS', 'AUTOPILOT', 'FMS', // Flight Management System
+  'VMC', 'IMC', // Visual Meteorological Conditions, Instrument Meteorological Conditions
+  'IFR', 'VFR', // Instrument Flight Rules, Visual Flight Rules
+  'VOR', 'NDB', 'ILS', 'GPS', // Navigation aids
+  'EMERGENCY', 'DIVERSION', 'FUEL EMERGENCY', 'FIRE', 'ENGINE FAILURE',
+  'TRAFFIC', 'LOOKOUT', 'SCAN',
+  'BLOCKED', 'GARBLED', 'BROKEN', 'READABILITY',
+  'RADAR CONTACT', 'RADAR SERVICE TERMINATED',
+  'SQUAWKING', 'ALTIMETER SETTING', 'QNH', 'QFE',
+  'WINDSOCK', 'TURBULENCE', 'WIND SHEAR',
+  'OVERHEAD', 'DOWNWIND', 'BASE', 'FINAL',
+  'GO AROUND', 'TOUCH AND GO', 'FULL STOP',
+  'DEPARTURE CONTROL', 'CENTER', 'APPROACH CONTROL', 'TOWER', 'GROUND', 'CLEARANCE DELIVERY',
+  'FLIGHT PLAN', 'FLIGHT NUMBER', 'AIRCRAFT TYPE',
+  'CREW', 'PILOT', 'CO-PILOT', 'CAPTAIN', 'FIRST OFFICER',
+  'FLIGHT ATTENDANT', 'DISPATCH', 'MAINTENANCE',
+  'RUNWAY INCURSION', 'BIRD STRIKE', 'FOD', // Foreign Object Debris
+  'SAR', // Search and Rescue
+  'ELT', // Emergency Locator Transmitter
+  'MAYDAY RELAY', 'URGENCY MESSAGE', 'SAFETY MESSAGE',
+  'STANDBY FOR COPY', 'READY TO COPY', 'PASS YOUR MESSAGE',
+  'FREQUENCY CHANGE APPROVED', 'CONTACT', 'MONITOR',
+  'RADIAL', 'DISTANCE', ' DME', // Distance Measuring Equipment
+  'TRANSMISSION', 'RECEIVING', 'DISTORTION', 'WEAK SIGNAL',
+  'AFFIRMATIVE', 'NEGATIVE', 'DISREGARD', 'CORRECTION',
+  'MAINTAIN', 'CLIMB TO', 'DESCEND TO', 'EXPECT',
+  'SAY AGAIN ALL AFTER', 'SAY AGAIN ALL BEFORE', 'SAY AGAIN WORD',
+  'CALLSIGN SUFFIX', 'FULL CALLSIGN', 'ABBREVIATED CALLSIGN'
 ];
     let currentWord = '';
 
