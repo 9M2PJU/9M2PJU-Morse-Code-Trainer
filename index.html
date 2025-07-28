@@ -2,203 +2,173 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>9M2PJU Morse Code Trainer</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Morse Code Trainer</title>
+  <meta name="description" content="Practice and learn Morse code with live audio and random word training.">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .modal {
+      display: none;
+    }
+    .modal.active {
+      display: block;
+    }
+  </style>
 </head>
-<body class="bg-gray-900 text-white flex flex-col items-center min-h-screen p-6">
-  <h1 class="text-4xl font-bold mb-6 text-blue-400">9M2PJU Morse Code Trainer</h1>
+<body class="bg-gray-50 text-gray-900 p-4 max-w-2xl mx-auto">
+  <h1 class="text-3xl font-bold text-center mb-4">🎙️ Live Morse Code Trainer</h1>
+  <p class="text-center mb-6 text-sm">A modern, web-based Morse Code learning tool. Built with ❤️ by 9M2PJU, based on the work of the original developer <a href="https://github.com/xcash" class="text-blue-600 underline">xcash</a>.</p>
 
-  <!-- Tabs -->
-  <div class="flex space-x-4 mb-6">
-    <button id="tabEncode" class="tab-btn bg-blue-500 px-4 py-2 rounded-lg">Text → Morse</button>
-    <button id="tabPractice" class="tab-btn bg-gray-700 px-4 py-2 rounded-lg">Listen & Type</button>
-    <button id="showAlphabet" class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded-lg">Morse Alphabet</button>
-  </div>
-
-  <!-- ENCODE MODE -->
-  <div id="encodeMode" class="w-full max-w-xl bg-gray-800 p-6 rounded-2xl shadow-lg">
-    <h2 class="text-xl font-semibold mb-4">Convert Text to Morse & Play</h2>
-    <textarea id="textInput" placeholder="Enter text..." class="w-full p-3 rounded-lg bg-gray-700 text-white mb-4"></textarea>
-
-    <!-- Sliders -->
-    <div class="mb-4">
-      <label for="freqSlider" class="block text-sm mb-1">Tone Frequency: <span id="freqValue">600</span> Hz</label>
-      <input id="freqSlider" type="range" min="300" max="1000" value="600" class="w-full">
+  <!-- Text to Morse -->
+  <section class="mb-8">
+    <h2 class="text-xl font-semibold mb-2">📝 Text → Morse</h2>
+    <textarea id="textInput" class="w-full p-2 border rounded mb-2" rows="3" placeholder="Type your message..."></textarea>
+    <div class="flex gap-2">
+      <button onclick="playMorseText()" class="bg-blue-600 text-white px-4 py-2 rounded">▶ Play Morse</button>
+      <button onclick="document.getElementById('textInput').value=''" class="bg-gray-300 px-4 py-2 rounded">Clear</button>
     </div>
-    <div class="mb-4">
-      <label for="wpmSlider" class="block text-sm mb-1">Speed: <span id="wpmValue">20</span> WPM</label>
-      <input id="wpmSlider" type="range" min="5" max="40" value="20" class="w-full">
-    </div>
-    <p class="mt-2 text-gray-400 text-sm">Adjust tone and speed to suit your preference.</p>
+  </section>
 
-    <div class="flex space-x-4 mt-4">
-      <button id="playBtn" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg">Play Morse</button>
-      <button id="clearBtn" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg">Clear</button>
-    </div>
-  </div>
-
-  <!-- PRACTICE MODE -->
-  <div id="practiceMode" class="hidden w-full max-w-xl bg-gray-800 p-6 rounded-2xl shadow-lg">
-    <h2 class="text-xl font-semibold mb-4">Listen & Type Practice</h2>
-    <div class="flex space-x-4 mb-4">
-      <button id="startPractice" class="bg-purple-500 hover:bg-purple-600 px-4 py-2 rounded-lg">Start Practice</button>
-    </div>
-    <input id="practiceInput" type="text" placeholder="Type what you hear..." class="w-full p-3 rounded-lg bg-gray-700 text-white mb-4" disabled>
-    <p id="practiceResult" class="text-lg font-semibold text-blue-400"></p>
-  </div>
-
-  <!-- MODAL -->
-  <div id="alphabetModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-    <div class="bg-gray-800 p-6 rounded-xl w-11/12 max-w-2xl">
-      <h3 class="text-2xl font-bold mb-4 text-yellow-400">Morse Code Alphabet</h3>
-      <div class="grid grid-cols-4 gap-4 text-center">
-        <!-- Morse alphabet goes here (unchanged from your version) -->
-        <!-- [ ... same character blocks ... ] -->
-        <!-- You can keep your existing A–Z and 0–9 blocks unchanged -->
-        <!-- omitted for brevity -->
+  <!-- Practice Mode -->
+  <section class="mb-8">
+    <h2 class="text-xl font-semibold mb-2">🎧 Listen & Type Practice</h2>
+    <div class="space-y-2">
+      <div class="flex gap-2">
+        <button id="startBtn" onclick="startPractice()" class="bg-green-600 text-white px-4 py-2 rounded">▶ Start</button>
+        <button id="stopBtn" onclick="stopPractice()" class="bg-red-600 text-white px-4 py-2 rounded" disabled>⏹ Stop</button>
       </div>
-      <div class="text-center mt-6">
-        <button id="closeModal" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg">Close</button>
-      </div>
+      <input id="practiceInput" class="w-full p-2 border rounded" placeholder="Type the word you hear..." oninput="checkInput()" disabled>
+      <p id="feedback" class="text-blue-700 font-semibold"></p>
+    </div>
+  </section>
+
+  <!-- Morse Code Reference -->
+  <section class="mb-6">
+    <button onclick="toggleModal()" class="text-indigo-700 underline">📖 Morse Alphabet</button>
+  </section>
+
+  <!-- Modal -->
+  <div id="morseModal" class="modal fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded shadow max-w-sm w-full relative">
+      <button onclick="toggleModal()" class="absolute top-2 right-3 text-xl text-gray-500">✖</button>
+      <h3 class="text-lg font-bold mb-4">Morse Code Chart</h3>
+      <pre class="text-sm font-mono">
+A .-     B -...   C -.-.   D -..    E .      F ..-.
+G --.    H ....   I ..     J .---   K -.-    L .-..
+M --     N -.     O ---    P .--.   Q --.-   R .-.
+S ...    T -      U ..-    V ...-   W .--    X -..-
+Y -.--   Z --..   1 .----  2 ..---  3 ...--  4 ....-
+5 .....  6 -....  7 --...  8 ---..  9 ----.  0 -----
+      </pre>
     </div>
   </div>
+
+  <footer class="text-center text-sm mt-12 text-gray-500">
+    &copy; 2025 <a href="https://hamradio.my" class="underline text-blue-600">hamradio.my</a> · <a href="https://github.com/9M2PJU/9M2PJU-Morse-Code-Trainer" class="underline">Source Code</a>
+  </footer>
 
   <script>
-    // Morse Map
-    const morseMap = {
-      'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.',
-      'F': '..-.', 'G': '--.', 'H': '....', 'I': '..', 'J': '.---',
-      'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---',
-      'P': '.--.', 'Q': '--.-', 'R': '.-.', 'S': '...', 'T': '-',
-      'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-', 'Y': '-.--',
-      'Z': '--..', '0': '-----', '1': '.----', '2': '..---', '3': '...--',
-      '4': '....-', '5': '.....', '6': '-....', '7': '--...', '8': '---..',
-      '9': '----.', ' ': '/'
+    const morseCodeMap = {
+      A: ".-", B: "-...", C: "-.-.", D: "-..", E: ".", F: "..-.",
+      G: "--.", H: "....", I: "..", J: ".---", K: "-.-", L: ".-..",
+      M: "--", N: "-.", O: "---", P: ".--.", Q: "--.-", R: ".-.",
+      S: "...", T: "-", U: "..-", V: "...-", W: ".--", X: "-..-",
+      Y: "-.--", Z: "--..",
+      1: ".----", 2: "..---", 3: "...--", 4: "....-", 5: ".....",
+      6: "-....", 7: "--...", 8: "---..", 9: "----.", 0: "-----"
     };
 
-    // Audio setup
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    const audioCtx = new AudioContext();
+    function playMorse(message) {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const dot = 0.1;
+      const dash = dot * 3;
+      const space = dot;
+      const freq = 600;
+      let time = ctx.currentTime;
 
-    let toneFreq = 600;
-    let wpm = 20;
-
-    const freqSlider = document.getElementById('freqSlider');
-    const wpmSlider = document.getElementById('wpmSlider');
-    const freqValue = document.getElementById('freqValue');
-    const wpmValue = document.getElementById('wpmValue');
-
-    freqSlider.addEventListener('input', () => {
-      toneFreq = parseInt(freqSlider.value);
-      freqValue.textContent = toneFreq;
-    });
-
-    wpmSlider.addEventListener('input', () => {
-      wpm = parseInt(wpmSlider.value);
-      wpmValue.textContent = wpm;
-    });
-
-    function playTone(duration) {
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      oscillator.type = 'sine';
-      oscillator.frequency.value = toneFreq;
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+      oscillator.frequency.value = freq;
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
       oscillator.start();
-      oscillator.stop(audioCtx.currentTime + duration);
-    }
 
-    async function playMorse(text) {
-      const unit = 1.2 / wpm; // time for one dot in seconds
-      for (const char of text.toUpperCase()) {
-        if (morseMap[char]) {
-          for (const symbol of morseMap[char]) {
-            if (symbol === '.') {
-              playTone(unit);
-              await new Promise(r => setTimeout(r, unit * 1000 * 2));
-            } else if (symbol === '-') {
-              playTone(unit * 3);
-              await new Promise(r => setTimeout(r, unit * 1000 * 4));
-            }
-          }
-          await new Promise(r => setTimeout(r, unit * 1000 * 4));
+      function beep(duration) {
+        gain.gain.setValueAtTime(1, time);
+        time += duration;
+        gain.gain.setValueAtTime(0, time);
+        time += space;
+      }
+
+      message.toUpperCase().split('').forEach(c => {
+        if (c === ' ') time += dot * 4;
+        else if (morseCodeMap[c]) {
+          morseCodeMap[c].split('').forEach(s => beep(s === '.' ? dot : dash));
+          time += dot * 2;
         }
+      });
+
+      oscillator.stop(time);
+    }
+
+    function playMorseText() {
+      const text = document.getElementById('textInput').value;
+      playMorse(text);
+    }
+
+    function toggleModal() {
+      document.getElementById('morseModal').classList.toggle('active');
+    }
+
+    let currentWord = '';
+    let practiceActive = false;
+    const input = () => document.getElementById('practiceInput');
+    const feedback = () => document.getElementById('feedback');
+
+    async function getRandomWord() {
+      try {
+        const res = await fetch('https://random-word-api.herokuapp.com/word?number=1');
+        const [word] = await res.json();
+        return word.toUpperCase();
+      } catch {
+        return ['CQ', 'HELLO', 'WORLD'][Math.floor(Math.random() * 3)];
       }
     }
 
-    // UI logic
-    const encodeMode = document.getElementById('encodeMode');
-    const practiceMode = document.getElementById('practiceMode');
-    const tabEncode = document.getElementById('tabEncode');
-    const tabPractice = document.getElementById('tabPractice');
-    const playBtn = document.getElementById('playBtn');
-    const clearBtn = document.getElementById('clearBtn');
-    const textInput = document.getElementById('textInput');
-    const startPractice = document.getElementById('startPractice');
-    const practiceInput = document.getElementById('practiceInput');
-    const practiceResult = document.getElementById('practiceResult');
-    const showAlphabet = document.getElementById('showAlphabet');
-    const alphabetModal = document.getElementById('alphabetModal');
-    const closeModal = document.getElementById('closeModal');
+    async function startPractice() {
+      if (practiceActive) return;
+      practiceActive = true;
 
-    // Tab switching
-    tabEncode.addEventListener('click', () => {
-      encodeMode.classList.remove('hidden');
-      practiceMode.classList.add('hidden');
-      tabEncode.classList.add('bg-blue-500');
-      tabPractice.classList.remove('bg-blue-500');
-      tabPractice.classList.add('bg-gray-700');
-    });
+      document.getElementById('startBtn').disabled = true;
+      document.getElementById('stopBtn').disabled = false;
 
-    tabPractice.addEventListener('click', () => {
-      encodeMode.classList.add('hidden');
-      practiceMode.classList.remove('hidden');
-      tabPractice.classList.add('bg-blue-500');
-      tabEncode.classList.remove('bg-blue-500');
-      tabEncode.classList.add('bg-gray-700');
-    });
+      input().disabled = false;
+      input().value = '';
+      feedback().textContent = '🔊 Listen and type the word...';
 
-    playBtn.addEventListener('click', () => {
-      const text = textInput.value.trim();
-      if (text) playMorse(text);
-    });
+      currentWord = await getRandomWord();
+      playMorse(currentWord);
+      input().focus();
+    }
 
-    clearBtn.addEventListener('click', () => {
-      textInput.value = '';
-    });
+    function stopPractice() {
+      practiceActive = false;
+      currentWord = '';
+      input().disabled = true;
+      feedback().textContent = 'Practice stopped.';
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('stopBtn').disabled = true;
+    }
 
-    const words = ['CQ', 'TEST', 'HAM', 'RADIO', 'MORSE', 'HELLO', 'WORLD'];
-    let currentWord = '';
-
-    startPractice.addEventListener('click', async () => {
-      currentWord = words[Math.floor(Math.random() * words.length)];
-      practiceInput.value = '';
-      practiceInput.disabled = false;
-      practiceInput.focus();
-      practiceResult.textContent = '';
-      await playMorse(currentWord);
-    });
-
-    practiceInput.addEventListener('input', () => {
-      if (practiceInput.value.toUpperCase() === currentWord) {
-        practiceResult.textContent = '✅ Correct!';
-        practiceResult.classList.add('text-green-400');
+    function checkInput() {
+      const typed = input().value.trim().toUpperCase();
+      if (typed === currentWord) {
+        feedback().textContent = `✅ Correct: ${currentWord}`;
+        setTimeout(() => {
+          if (practiceActive) startPractice();
+        }, 1000);
       }
-    });
-
-    showAlphabet.addEventListener('click', () => {
-      alphabetModal.classList.remove('hidden');
-    });
-
-    closeModal.addEventListener('click', () => {
-      alphabetModal.classList.add('hidden');
-    });
-
-    alphabetModal.addEventListener('click', (e) => {
-      if (e.target === alphabetModal) alphabetModal.classList.add('hidden');
-    });
+    }
   </script>
 </body>
 </html>
