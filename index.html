@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>9M2PJU Morse Code Trainer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white flex flex-col items-center min-h-screen p-6">
+  <h1 class="text-4xl font-bold mb-6 text-center">9M2PJU Morse Code Trainer</h1>
+
+  <div class="flex space-x-4 mb-6">
+    <button id="tabEncode" class="px-4 py-2 rounded bg-blue-500">Text → Morse</button>
+    <button id="tabPractice" class="px-4 py-2 rounded bg-gray-700">Practice</button>
+  </div>
+
+  <div id="encodeMode" class="w-full max-w-md">
+    <textarea id="textInput" class="w-full p-2 text-black rounded mb-4" rows="3" placeholder="Enter text here..."></textarea>
+    <label class="block mb-2">WPM: <input type="number" id="wpmInput" class="text-black p-1 rounded" value="20" min="5" max="40" /></label>
+    <label class="block mb-4">Frequency (Hz): <input type="number" id="freqInput" class="text-black p-1 rounded" value="600" min="300" max="1500" /></label>
+    <button id="playButton" class="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded">Play Morse</button>
+  </div>
+
+  <div id="practiceMode" class="hidden w-full max-w-md">
+    <label class="block mb-2">WPM: <input type="number" id="practiceWpm" class="text-black p-1 rounded" value="20" min="5" max="40" /></label>
+    <label class="block mb-4">Frequency (Hz): <input type="number" id="practiceFreq" class="text-black p-1 rounded" value="600" min="300" max="1500" /></label>
+    <button id="startPractice" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">Play Random Word</button>
+    <p id="morseWord" class="text-center mt-4 text-yellow-300 text-xl"></p>
+  </div>
+
+  <footer class="mt-10 text-sm text-gray-500">
+    Made with ❤️ by <a href="https://hamradio.my" class="text-blue-300 underline">9M2PJU</a>
+  </footer>
+
+  <script>
+    const tabEncode = document.getElementById('tabEncode');
+    const tabPractice = document.getElementById('tabPractice');
+    const encodeMode = document.getElementById('encodeMode');
+    const practiceMode = document.getElementById('practiceMode');
+
+    tabEncode.addEventListener('click', () => {
+      tabEncode.classList.replace('bg-gray-700', 'bg-blue-500');
+      tabPractice.classList.replace('bg-blue-500', 'bg-gray-700');
+      encodeMode.classList.remove('hidden');
+      practiceMode.classList.add('hidden');
+    });
+
+    tabPractice.addEventListener('click', () => {
+      tabPractice.classList.replace('bg-gray-700', 'bg-blue-500');
+      tabEncode.classList.replace('bg-blue-500', 'bg-gray-700');
+      practiceMode.classList.remove('hidden');
+      encodeMode.classList.add('hidden');
+    });
+
+    const morseMap = {
+      A: ".-", B: "-...", C: "-.-.", D: "-..", E: ".", F: "..-.",
+      G: "--.", H: "....", I: "..", J: ".---", K: "-.-", L: ".-..",
+      M: "--", N: "-.", O: "---", P: ".--.", Q: "--.-", R: ".-.",
+      S: "...", T: "-", U: "..-", V: "...-", W: ".--", X: "-..-",
+      Y: "-.--", Z: "--..",
+      0: "-----", 1: ".----", 2: "..---", 3: "...--", 4: "....-",
+      5: ".....", 6: "-....", 7: "--...", 8: "---..", 9: "----.",
+      ' ': ' '
+    };
+
+    const wordList = [
+      "HELLO", "WORLD", "CQ", "CQ CQ DE", "CQ DE 9M2PJU", "9M2PJU",
+      "TEST", "MORSE", "CODE", "HAM", "RADIO", "CALLSIGN", "QSO",
+      "SIGNAL", "STATION", "PRACTICE", "LEARN", "EASY", "TRAINER",
+      "CW", "DX", "DE", "FROM", "YOU", "ME", "K", "KN", "BK", "TU",
+      "QRZ", "RIG", "ANTENNA", "POWER", "WATT", "QRP", "QTH", "WX",
+      "RST", "NAME", "QSL", "VY 73", "GL", "OM", "YL", "FB", "AGN",
+      "NOW", "SOON", "WAIT", "OVER"
+    ];
+
+    const context = new (window.AudioContext || window.webkitAudioContext)();
+
+    function wait(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function playTone(duration, freq) {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+
+      oscillator.type = 'sine';
+      oscillator.frequency.value = freq;
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+
+      const now = context.currentTime;
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(1, now + 0.01);
+      gain.gain.linearRampToValueAtTime(0, now + duration - 0.01);
+
+      oscillator.start(now);
+      oscillator.stop(now + duration);
+    }
+
+    async function playMorse(text, wpm, freq) {
+      const unit = 1.2 / wpm; // seconds per dot
+
+      for (let char of text.toUpperCase()) {
+        if (char === ' ') {
+          await wait(unit * 7 * 1000); // word gap
+          continue;
+        }
+        const morse = morseMap[char];
+        if (!morse) continue;
+
+        for (let i = 0; i < morse.length; i++) {
+          const toneLength = morse[i] === '.' ? unit : unit * 3;
+          playTone(toneLength, freq);
+          await wait(toneLength * 1000);
+          if (i < morse.length - 1) await wait(unit * 1000); // intra-char
+        }
+        await wait(unit * 3 * 1000); // inter-char gap
+      }
+    }
+
+    document.getElementById('playButton').addEventListener('click', async () => {
+      const text = document.getElementById('textInput').value;
+      const wpm = parseInt(document.getElementById('wpmInput').value);
+      const freq = parseInt(document.getElementById('freqInput').value);
+      await playMorse(text, wpm, freq);
+    });
+
+    document.getElementById('startPractice').addEventListener('click', async () => {
+      const word = wordList[Math.floor(Math.random() * wordList.length)];
+      document.getElementById('morseWord').innerText = word;
+      const wpm = parseInt(document.getElementById('practiceWpm').value);
+      const freq = parseInt(document.getElementById('practiceFreq').value);
+      await playMorse(word, wpm, freq);
+    });
+  </script>
+</body>
+</html>
