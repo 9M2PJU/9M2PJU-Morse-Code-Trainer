@@ -35,7 +35,7 @@ These are the key improvements made on top of the original version:
 - 🔊 Improved audio feedback and real-time value display.
 - 💡 Cleaner UI layout with improved readability and dark-mode readiness.
 - 🧼 Refactored and simplified the HTML/JS structure for easier maintenance.
-- 🌐 Hosted via **GitHub Pages** at: [https://morse.hamradio.my](https://morse.hamradio.my)
+- 🌐 Hosted at: [https://morse.hamradio.my](https://morse.hamradio.my)
 
 ---
 
