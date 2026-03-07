@@ -41,9 +41,10 @@ graph TD
 - **Audio Synthesis**: High-fidelity sine wave generation with smooth envelopes.
 - **Visual Signal Lamp**: High-visibility real-time lamp sync for all playback modes.
 
-### 🔦 Visual Morse (NEW)
+### 🔦 Visual Morse
 - **Visual Encoder**: Dedicated "Signal Lamp" mode for maritime signaling practice.
 - **Visual Decoder**: Interactive trainer to master receiving visual Morse pulses.
+- **Mute Toggle**: Sound off by default — lamp-only mode for silent practice. Enable audio with one click.
 
 ### 🎓 Advanced Trainer (Practice Mode)
 - **Continuous Mode**: Auto-advance to the next challenge after a correct answer (1.5s delay).
@@ -63,10 +64,17 @@ graph TD
   - **QSB (Fading)**: Simulated ionospheric signal drifting.
 - **Continuous Mode**: Rapid-fire contest simulation.
 
+### 🎙 Audio Morse Decoder
+- **Microphone Input**: Real-time Morse decoding from audio via the Goertzel algorithm.
+- **Waveform Visualization**: Live audio waveform display with glow effects.
+- **Auto-Calibration**: Automatic dot/dash duration calibration from incoming signal.
+- **Tunable Detection**: Adjustable target frequency and detection threshold.
+
 ### ⚙️ Professional UX
 - **Localized Settings**: No more tab-switching! Every panel has its own speed and frequency controls.
 - **Persistence**: All settings and scores are saved automatically via `localStorage`.
-- **Reference Hub**: Instant access to the Morse Code Reference Chart in a dedicated tab.
+- **Reference Chart**: Collapsible Morse Code Reference Chart always accessible at the bottom of the page.
+- **Keyboard Shortcuts**: Ctrl+1/2/3/4 for quick tab switching.
 
 ---
 
