@@ -105,7 +105,9 @@ body {
     line-height: 1.6;
     min-height: 100vh;
     overflow-x: hidden;
+    overflow-y: auto;
     position: relative;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* Screen reader only */
@@ -1284,14 +1286,20 @@ details[open] > .reference__content,
 
 /* ---------- Responsive ---------- */
 @media (max-width: 768px) {
+    html, body {
+        overflow-x: hidden;
+        width: 100%;
+    }
+
     .app {
-        padding: var(--space-md) var(--space-sm);
+        padding: var(--space-sm);
+        max-width: 100vw;
     }
 
     .header {
         flex-direction: column;
         align-items: flex-start;
-        gap: var(--space-md);
+        gap: var(--space-sm);
     }
 
     .header__controls {
@@ -1308,39 +1316,76 @@ details[open] > .reference__content,
         min-width: 50px;
     }
 
+    /* Scrollable tabs for mobile */
     .tabs {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
         border-radius: var(--radius-md);
+        flex-wrap: nowrap;
+    }
+
+    .tabs::-webkit-scrollbar {
+        display: none;
     }
 
     .tab {
-        padding: var(--space-sm);
-        font-size: 0.8rem;
-        gap: 4px;
+        padding: var(--space-sm) var(--space-sm);
+        font-size: 0.75rem;
+        gap: 2px;
         flex-direction: column;
+        flex: 0 0 auto;
+        min-width: 64px;
+        white-space: nowrap;
+    }
+
+    .tab span {
+        font-size: 0.65rem;
     }
 
     .tab__icon {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
+    }
+
+    /* Panel controls stack on mobile */
+    .panel__controls {
+        grid-template-columns: 1fr;
+    }
+
+    .panel__header {
+        text-align: center;
+    }
+
+    .panel__desc {
+        font-size: 0.85rem;
     }
 
     .challenge-card {
-        padding: var(--space-lg) var(--space-md);
+        padding: var(--space-md);
     }
 
     .challenge-card__morse {
-        font-size: 1.3rem;
-        letter-spacing: 4px;
+        font-size: 1.2rem;
+        letter-spacing: 3px;
+        word-break: break-all;
     }
 
     .morse-output, .text-output {
-        font-size: 1rem;
+        font-size: 0.95rem;
         letter-spacing: 2px;
+        word-break: break-all;
+        max-width: 100%;
     }
 
     .input--lg {
         font-size: 1rem;
         letter-spacing: 2px;
+    }
+
+    textarea, input[type="text"] {
+        max-width: 100%;
     }
 
     .trainer__score {
@@ -1352,12 +1397,12 @@ details[open] > .reference__content,
     }
 
     .reference__chart {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
     }
 
     .trainer__difficulty {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
     }
 
     .audio-decoder__controls {
@@ -1379,6 +1424,19 @@ details[open] > .reference__content,
 
     .contest__fields {
         grid-template-columns: 1fr;
+    }
+
+    .encoder__actions, .decoder__actions {
+        flex-wrap: wrap;
+    }
+
+    .btn-group {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        min-height: 44px; /* Touch-friendly */
     }
 }
 
@@ -1427,6 +1485,15 @@ details[open] > .reference__content,
 
     .contest__fields {
         grid-template-columns: 1fr;
+    }
+
+    .tab {
+        min-width: 56px;
+        padding: 6px 4px;
+    }
+
+    .tab span {
+        font-size: 0.6rem;
     }
 }
 
