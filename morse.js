@@ -660,6 +660,7 @@
     const scoreCorrect = document.getElementById('score-correct');
     const scoreWrong = document.getElementById('score-wrong');
     const scoreAccuracy = document.getElementById('score-accuracy');
+    const scoreStreak = document.getElementById('score-streak');
     const trainerStop = document.getElementById('trainer-stop');
 
     function saveAllSettings() {
@@ -713,7 +714,7 @@
         if (data.stats) Object.assign(stats, data.stats);
         if (data.contestStats) Object.assign(contestStats, data.contestStats);
         
-        updateStatsView();
+        updateScore();
         updateContestStats();
         updateHFNoise();
         updateQSB();
