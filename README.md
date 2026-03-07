@@ -6,6 +6,23 @@ A professional-grade, interactive **Morse Code Trainer, Encoder, and Decoder** �
 
 ![Morse Code Trainer](https://img.shields.io/badge/Morse-Code%20Trainer-blue?style=for-the-badge)
 ![Built By](https://img.shields.io/badge/Built%20By-9M2PJU-orange?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-2.6.0-green?style=for-the-badge)
+
+[![GitHub stars](https://img.shields.io/github/stars/9M2PJU/9M2PJU-Morse-Code-Trainer?style=social)](https://github.com/9M2PJU/9M2PJU-Morse-Code-Trainer/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/9M2PJU/9M2PJU-Morse-Code-Trainer?style=social)](https://github.com/9M2PJU/9M2PJU-Morse-Code-Trainer/network)
+[![Last Commit](https://img.shields.io/github/last-commit/9M2PJU/9M2PJU-Morse-Code-Trainer)](https://github.com/9M2PJU/9M2PJU-Morse-Code-Trainer/commits/main)
+[![Repo Size](https://img.shields.io/github/repo-size/9M2PJU/9M2PJU-Morse-Code-Trainer)](https://github.com/9M2PJU/9M2PJU-Morse-Code-Trainer)
+[![License](https://img.shields.io/github/license/9M2PJU/9M2PJU-Morse-Code-Trainer)](LICENSE)
+
+### 📊 Project Stats
+
+| Metric | Value |
+|--------|-------|
+| Total Lines of Code | ~3,700 |
+| Dependencies | **Zero** — pure vanilla JS |
+| Core Files | 3 (`index.html`, `style.css`, `morse.js`) |
+| Total Size | ~131 KB (uncompressed) |
+| Browser Support | All modern browsers (Chrome, Firefox, Safari, Edge) |
 
 ---
 
