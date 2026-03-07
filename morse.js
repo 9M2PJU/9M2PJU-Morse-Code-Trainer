@@ -341,6 +341,51 @@
     }
 
     const audio = new MorseAudio();
+    
+    // ─── Global State ──────────────────────────────
+    let stats = { correct: 0, wrong: 0, streak: 0, maxStreak: 0 };
+    let contestStats = { qsos: 0, busted: 0, streak: 0 };
+    let currentChallenge = '';
+    let currentChallengeMorse = '';
+    let difficulty = 'letters';
+    let isContinuous = false;
+    let autoNextTimeout = null;
+
+    let currentContestQSO = { callsign: '', rst: '', exchange: '', morse: '' };
+    let contestType = 'general';
+    let qsoHistory = [];
+    let isContestContinuous = false;
+    let autoNextContestTimeout = null;
+
+    const KOCH_SEQUENCE = "KMRSUAPTLOWI.NJEF0Y,VG5/Q9ZH38B?427C1D6X@";
+    const CALLSIGN_PREFIXES = ['K', 'W', 'N', 'A', 'G', 'M', '2', '9V', '9M2', 'YB', 'DU', 'JA', 'HS', 'DL', 'F', 'I', 'EA', 'HL', 'VR2', 'XX9'];
+    const CALLSIGN_SUFFIXES = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+    // ─── DOM Elements ──────────────────────────────
+    // Nav
+    const tabs = document.querySelectorAll('.tab');
+    const panels = document.querySelectorAll('.panel');
+
+    // Global Settings (Sync-linked)
+    const encoderWpm = document.getElementById('wpm-slider-encoder');
+    const encoderFreq = document.getElementById('freq-slider-encoder');
+    const decoderFreq = document.getElementById('freq-slider-decoder');
+    const trainerWpm = document.getElementById('wpm-slider-trainer');
+    const trainerFreq = document.getElementById('freq-slider-trainer');
+    
+    // App Settings
+    const kochLevelSlider = document.getElementById('koch-level-slider');
+    const farnsworthSlider = document.getElementById('farnsworth-slider');
+
+    // Contest Settings & Effects
+    const contestWpmSlider = document.getElementById('contest-wpm-slider');
+    const contestWpmValue = document.getElementById('contest-wpm-value');
+    const contestFreqSlider = document.getElementById('contest-freq-slider');
+    const contestFreqValue = document.getElementById('contest-freq-value');
+    const noiseToggle = document.getElementById('noise-toggle');
+    const noiseVolume = document.getElementById('noise-volume');
+    const qsbToggle = document.getElementById('qsb-toggle');
+    const qsbLevel = document.getElementById('qsb-level');
 
     // ─── Utility Functions ─────────────────────────
     function textToMorse(text) {
@@ -400,16 +445,13 @@
     }
 
     // ─── Tab Navigation ────────────────────────────
-    const tabs = document.querySelectorAll('.tab');
-    const panels = document.querySelectorAll('.panel');
-
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
             audio.stop();
             // Stop noise if switching away from contest
-            if (tab.dataset.tab !== 'contest' && audio.updateNoise) {
+            if (tab.dataset.tab !== 'contest') {
                 audio.updateNoise(false, 0);
-                if (typeof noiseToggle !== 'undefined') noiseToggle.checked = false;
+                if (noiseToggle) noiseToggle.checked = false;
             }
             tabs.forEach(t => { t.classList.remove('tab--active'); t.setAttribute('aria-selected', 'false'); });
             panels.forEach(p => p.classList.remove('panel--active'));
@@ -447,11 +489,7 @@
         saveAllSettings();
     }
 
-    const encoderWpm = document.getElementById('wpm-slider-encoder');
-    const encoderFreq = document.getElementById('freq-slider-encoder');
-    const decoderFreq = document.getElementById('freq-slider-decoder');
-    const trainerWpm = document.getElementById('wpm-slider-trainer');
-    const trainerFreq = document.getElementById('freq-slider-trainer');
+    // no-op (moved to top)
 
     if (encoderWpm) encoderWpm.addEventListener('input', (e) => syncGlobalSettings('wpm', e.target.value));
     if (encoderFreq) encoderFreq.addEventListener('input', (e) => syncGlobalSettings('freq', e.target.value));
@@ -652,16 +690,6 @@
         updateQSB();
     }
 
-    let currentChallenge = '';
-    let currentChallengeMorse = '';
-    let difficulty = 'letters';
-    let isContinuous = false;
-    let autoNextTimeout = null;
-    let stats = { correct: 0, wrong: 0, streak: 0, maxStreak: 0 };
-
-    const KOCH_SEQUENCE = "KMRSUAPTLOWI.NJEF0Y,VG5/Q9ZH38B?427C1D6X@";
-    const kochLevelSlider = document.getElementById('koch-level-slider');
-    const farnsworthSlider = document.getElementById('farnsworth-slider');
 
     const COMMON_WORDS = [
         'CQ', 'DE', 'THE', 'AND', 'FOR', 'ARE', 'BUT', 'NOT', 'YOU',
@@ -673,7 +701,6 @@
         'ROGER', 'OVER', 'BREAK', 'TEST', 'CALL', 'BAND', 'WAVE'
     ];
 
-    const CALLSIGN_SUFFIXES = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
     const PROSIGNS = [
         { text: 'BT', meaning: 'Break' },
@@ -1257,14 +1284,7 @@
     const contestStreakValue = document.getElementById('contest-streak');
     const contestAccuracyValue = document.getElementById('contest-accuracy');
     const contestLogBody = document.getElementById('contest-log-body');
-    const contestWpmSlider = document.getElementById('contest-wpm-slider');
-    const contestWpmValue = document.getElementById('contest-wpm-value');
-    const contestFreqSlider = document.getElementById('contest-freq-slider');
-    const contestFreqValue = document.getElementById('contest-freq-value');
-    const noiseToggle = document.getElementById('noise-toggle');
-    const noiseVolume = document.getElementById('noise-volume');
-    const qsbToggle = document.getElementById('qsb-toggle');
-    const qsbLevel = document.getElementById('qsb-level');
+    // no-op (moved to top)
 
     contestWpmSlider.addEventListener('input', () => {
         contestWpmValue.textContent = `${contestWpmSlider.value} WPM`;
@@ -1289,12 +1309,7 @@
     qsbToggle.addEventListener('change', () => { updateQSB(); saveAllSettings(); });
     qsbLevel.addEventListener('input', () => { updateQSB(); saveAllSettings(); });
 
-    let currentContestQSO = { callsign: '', rst: '', exchange: '', morse: '' };
-    let contestType = 'general';
-    let contestStats = { qsos: 0, busted: 0, streak: 0 };
-    let qsoHistory = [];
-    let isContestContinuous = false;
-    let autoNextContestTimeout = null;
+    // no-op (moved to top)
 
     const US_STATES = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'];
     const FIELD_DAY_CLASSES = ['1A', '2A', '3A', '4A', '5A', '1B', '2B', '1C', '1D', '1E', '1F'];
