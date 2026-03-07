@@ -235,6 +235,8 @@
                             <button class="btn btn--sm btn--toggle" data-difficulty="mixed">Mixed</button>
                             <button class="btn btn--sm btn--toggle" data-difficulty="words">Words</button>
                             <button class="btn btn--sm btn--toggle" data-difficulty="callsigns">Callsigns</button>
+                            <button class="btn btn--sm btn--toggle" data-difficulty="prosigns">Prosigns</button>
+                            <button class="btn btn--sm btn--toggle" data-difficulty="abbreviations">Abbreviations</button>
                         </div>
                     </div>
 
@@ -324,6 +326,11 @@
                             <input type="checkbox" id="noise-toggle" class="toggle-checkbox">
                             <input type="range" id="noise-volume" class="audio-control__slider" min="0" max="100" value="30">
                         </div>
+                        <div class="audio-control">
+                            <label class="audio-control__label" for="qsb-toggle">QSB Fading</label>
+                            <input type="checkbox" id="qsb-toggle" class="toggle-checkbox">
+                            <input type="range" id="qsb-level" class="audio-control__slider" min="0" max="100" value="40">
+                        </div>
                     </div>
 
                     <!-- Contest type selector -->
@@ -371,10 +378,17 @@
                             <button class="btn btn--accent" id="contest-log" disabled>
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>
                                 Log QSO
-                            </button>
                             <button class="btn btn--ghost" id="contest-replay">
                                 <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5,3 19,12 5,21"/></svg>
                                 Replay
+                            </button>
+                            <button class="btn btn--accent btn--lg" id="contest-log" disabled>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                Log QSO
+                            </button>
+                            <button class="btn btn--ghost btn--lg" id="contest-stop" style="display: none;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+                                Stop
                             </button>
                             <button class="btn btn--ghost" id="contest-reveal">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>

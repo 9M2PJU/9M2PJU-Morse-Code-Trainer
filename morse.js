@@ -41,9 +41,14 @@
             this.lampTimers = [];
             
             // HF Noise components
-            this.noiseNode = null;
             this.noiseGain = null;
             this.isNoiseEnabled = false;
+
+            // QSB (Fading) components
+            this.qsbGain = null;
+            this.qsbModulator = null;
+            this.qsbDepthGain = null;
+            this.isQSBEnabled = false;
         }
 
         init() {
@@ -97,7 +102,14 @@
             gain.gain.linearRampToValueAtTime(0, startTime + duration);
 
             osc.connect(gain);
-            gain.connect(this.ctx.destination);
+            
+            // Connect to QSB gain if enabled, otherwise directly to destination
+            if (this.isQSBEnabled && this.qsbGain) {
+                gain.connect(this.qsbGain);
+                this.qsbGain.connect(this.ctx.destination);
+            } else {
+                gain.connect(this.ctx.destination);
+            }
 
             osc.start(startTime);
             osc.stop(startTime + duration);
@@ -135,7 +147,13 @@
 
             this.noiseNode.connect(filter);
             filter.connect(this.noiseGain);
-            this.noiseGain.connect(this.ctx.destination);
+            
+            // Connect noise through QSB as well for atmospheric realism
+            if (this.isQSBEnabled && this.qsbGain) {
+                this.noiseGain.connect(this.qsbGain);
+            } else {
+                this.noiseGain.connect(this.ctx.destination);
+            }
             
             this.noiseNode.start();
         }
@@ -148,6 +166,49 @@
             } else if (this.noiseGain) {
                 this.noiseGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.1);
                 this.isNoiseEnabled = false;
+            }
+        }
+
+        // --- QSB (Fading) Simulation ---
+        setupQSB() {
+            this.init();
+            if (this.qsbGain) return;
+
+            // Create a gain node for fading
+            this.qsbGain = this.ctx.createGain();
+            this.qsbGain.gain.value = 1.0;
+
+            // Create a slow modulator (Sine wave at ~0.2Hz to 0.5Hz)
+            this.qsbModulator = this.ctx.createOscillator();
+            this.qsbModulator.type = 'sine';
+            this.qsbModulator.frequency.value = 0.3; // Very slow fade
+            
+            // Modulation gain (controls depth)
+            this.qsbDepthGain = this.ctx.createGain();
+            this.qsbDepthGain.gain.value = 0; // Default no depth
+
+            this.qsbModulator.connect(this.qsbDepthGain);
+            this.qsbDepthGain.connect(this.qsbGain.gain);
+            
+            this.qsbModulator.start();
+        }
+
+        updateQSB(enabled, depthPercent) {
+            if (enabled) {
+                this.setupQSB();
+                this.isQSBEnabled = true;
+                
+                // depth 100% means signal can drop to almost zero.
+                // Variation depth around the baseline.
+                const depth = (depthPercent / 100) * 0.8; 
+                const baseline = 1.0 - (depth / 2);
+                
+                this.qsbGain.gain.setTargetAtTime(baseline, this.ctx.currentTime, 0.2);
+                this.qsbDepthGain.gain.setTargetAtTime(depth / 2, this.ctx.currentTime, 0.2);
+            } else if (this.qsbGain) {
+                this.isQSBEnabled = false;
+                this.qsbGain.gain.setTargetAtTime(1.0, this.ctx.currentTime, 0.2);
+                this.qsbDepthGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.2);
             }
         }
 
@@ -450,8 +511,23 @@
         'ROGER', 'OVER', 'BREAK', 'TEST', 'CALL', 'BAND', 'WAVE'
     ];
 
-    const CALLSIGN_PREFIXES = ['9M2', '9W2', 'W', 'K', 'N', 'VE', 'VK', 'JA', 'G', 'F', 'DL', 'OH', 'SM', 'EA'];
     const CALLSIGN_SUFFIXES = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+    const PROSIGNS = [
+        { text: 'BT', meaning: 'Break' },
+        { text: 'AR', meaning: 'End of message' },
+        { text: 'K', meaning: 'Go ahead' },
+        { text: 'KN', meaning: 'Go ahead (specific station)' },
+        { text: 'SK', meaning: 'End of contact' },
+        { text: 'R', meaning: 'Roger/Received' },
+        { text: 'AS', meaning: 'Wait' }
+    ];
+
+    const ABBREVIATIONS = [
+        'RST', 'QTH', 'RIG', 'ANT', 'WX', 'TEMP', 'NAME', 'OP', 'HW', 'CPY',
+        'FB', 'OM', 'XYL', 'YL', 'GM', 'GA', 'GE', 'GN', '73', '88', 'GL',
+        'SKED', 'FER', 'AGN', 'SNR', 'TU', 'UR', 'VY', 'WID', 'ES'
+    ];
 
     function generateChallenge() {
         switch (difficulty) {
@@ -496,6 +572,12 @@
                     return prefix + suffix;
                 }
                 return prefix + numPart + suffix;
+            }
+            case 'prosigns': {
+                return PROSIGNS[Math.floor(Math.random() * PROSIGNS.length)].text;
+            }
+            case 'abbreviations': {
+                return ABBREVIATIONS[Math.floor(Math.random() * ABBREVIATIONS.length)];
             }
             default:
                 return 'A';
@@ -993,6 +1075,7 @@
     const contestExchangeInput = document.getElementById('contest-exchange');
     const contestNewBtn = document.getElementById('contest-new');
     const contestLogBtn = document.getElementById('contest-log');
+    const contestStopBtn = document.getElementById('contest-stop');
     const contestReplayBtn = document.getElementById('contest-replay');
     const contestRevealBtn = document.getElementById('contest-reveal');
     const contestLamp = document.getElementById('contest-lamp');
@@ -1008,6 +1091,8 @@
     const contestFreqValue = document.getElementById('contest-freq-value');
     const noiseToggle = document.getElementById('noise-toggle');
     const noiseVolume = document.getElementById('noise-volume');
+    const qsbToggle = document.getElementById('qsb-toggle');
+    const qsbLevel = document.getElementById('qsb-level');
 
     contestWpmSlider.addEventListener('input', () => {
         contestWpmValue.textContent = `${contestWpmSlider.value} WPM`;
@@ -1024,10 +1109,19 @@
     noiseToggle.addEventListener('change', updateHFNoise);
     noiseVolume.addEventListener('input', updateHFNoise);
 
+    const updateQSB = () => {
+        audio.updateQSB(qsbToggle.checked, parseInt(qsbLevel.value, 10));
+    };
+
+    qsbToggle.addEventListener('change', updateQSB);
+    qsbLevel.addEventListener('input', updateQSB);
+
     let currentContestQSO = { callsign: '', rst: '', exchange: '', morse: '' };
     let contestType = 'general';
     let contestStats = { qsos: 0, busted: 0, streak: 0 };
     let qsoHistory = [];
+    let isContestContinuous = false;
+    let autoNextContestTimeout = null;
 
     const US_STATES = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'];
     const FIELD_DAY_CLASSES = ['1A', '2A', '3A', '4A', '5A', '1B', '2B', '1C', '1D', '1E', '1F'];
@@ -1064,8 +1158,29 @@
         return { callsign, rst: rst.replace(/n/g, '9'), exchange, morse: textToMorse(morse) };
     }
 
+    function stopContestContinuous() {
+        isContestContinuous = false;
+        if (autoNextContestTimeout) {
+            clearTimeout(autoNextContestTimeout);
+            autoNextContestTimeout = null;
+        }
+        contestStopBtn.style.display = 'none';
+        contestNewBtn.style.display = 'inline-flex';
+    }
+
     function startNewQSO() {
         audio.stop();
+        if (autoNextContestTimeout) {
+            clearTimeout(autoNextContestTimeout);
+            autoNextContestTimeout = null;
+        }
+
+        // Show stop button if in continuous mode
+        if (isContestContinuous) {
+            contestStopBtn.style.display = 'inline-flex';
+            contestNewBtn.style.display = 'none';
+        }
+
         currentContestQSO = generateContestQSO();
         
         contestMorse.innerHTML = formatMorseHTML(currentContestQSO.morse);
@@ -1101,6 +1216,10 @@
             contestFeedback.textContent = `✅ QSO Logged! ${correctCall} ${correctRst} ${correctExch}`;
             contestFeedback.className = 'trainer__feedback trainer__feedback--correct';
             addQSOToHistory(currentContestQSO, 'Correct');
+
+            if (isContestContinuous) {
+                autoNextContestTimeout = setTimeout(startNewQSO, 2000);
+            }
         } else {
             contestStats.busted++;
             contestStats.streak = 0;
@@ -1147,7 +1266,13 @@
         contestType = btn.dataset.contest;
     });
 
-    contestNewBtn.addEventListener('click', startNewQSO);
+    contestNewBtn.addEventListener('click', () => {
+        isContestContinuous = true;
+        startNewQSO();
+    });
+
+    contestStopBtn.addEventListener('click', stopContestContinuous);
+
     contestLogBtn.addEventListener('click', logQSO);
     contestReplayBtn.addEventListener('click', () => {
         if (currentContestQSO.morse) audio.playMorse(currentContestQSO.morse, contestLamp);
