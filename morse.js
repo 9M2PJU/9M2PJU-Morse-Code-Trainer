@@ -289,11 +289,12 @@
             );
         }
 
-        async playMorse(morseString, lampElement) {
+        async playMorse(morseString, lampElement, options = {}) {
             this.init();
             this.stop();
             this.isPlaying = true;
             this.lampElement = lampElement;
+            const muted = !!options.muted;
 
             const s = this.getSettings(lampElement);
             let currentTime = this.ctx.currentTime + 0.05;
@@ -305,11 +306,11 @@
 
                 const ch = chars[i];
                 if (ch === '.') {
-                    this.playTone(currentTime, s.dot, s.freq);
+                    if (!muted) this.playTone(currentTime, s.dot, s.freq);
                     if (lampElement) this.scheduleLamp(lampElement, currentTime, s.dot);
                     currentTime += s.dot + s.symbolGap;
                 } else if (ch === '-') {
-                    this.playTone(currentTime, s.dash, s.freq);
+                    if (!muted) this.playTone(currentTime, s.dash, s.freq);
                     if (lampElement) this.scheduleLamp(lampElement, currentTime, s.dash);
                     currentTime += s.dash + s.symbolGap;
                 } else if (ch === '/') {
@@ -408,6 +409,8 @@
     const vDecodeReplay = document.getElementById('v-decode-replay');
     const vDecodeWpm = document.getElementById('wpm-slider-v-decode');
     const vDecodeWpmValue = document.getElementById('wpm-value-v-decode');
+    const vEncodeSoundToggle = document.getElementById('v-encode-sound');
+    const vDecodeSoundToggle = document.getElementById('v-decode-sound');
 
     // ─── Utility Functions ─────────────────────────
     function textToMorse(text) {
@@ -1551,7 +1554,8 @@
         vEncodeStop.disabled = false;
         
         const morse = textToMorse(text);
-        await audio.playMorse(morse, vEncodeLamp);
+        const muted = !vEncodeSoundToggle.checked;
+        await audio.playMorse(morse, vEncodeLamp, { muted });
         
         vEncodePlay.disabled = false;
         vEncodeStop.disabled = true;
@@ -1574,14 +1578,14 @@
         vDecodeFeedback.textContent = 'Signaling...';
         vDecodeFeedback.className = 'feedback-msg';
         
-        audio.playMorse(visualChallengeMorse, vDecodeLamp);
+        audio.playMorse(visualChallengeMorse, vDecodeLamp, { muted: !vDecodeSoundToggle.checked });
     }
 
     vDecodeNew.addEventListener('click', startNewVisualChallenge);
     vDecodeReplay.addEventListener('click', () => {
         if (visualChallengeMorse) {
             audio.stop();
-            audio.playMorse(visualChallengeMorse, vDecodeLamp);
+            audio.playMorse(visualChallengeMorse, vDecodeLamp, { muted: !vDecodeSoundToggle.checked });
         }
     });
 
