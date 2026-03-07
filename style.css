@@ -999,6 +999,49 @@ body {
     font-weight: 600;
 }
 
+.contest__settings {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-md);
+    background: rgba(15, 23, 42, 0.4);
+    padding: var(--space-md);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+}
+
+.toggle-checkbox {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 40px;
+    height: 20px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    position: relative;
+    cursor: pointer;
+    transition: background var(--transition);
+}
+
+.toggle-checkbox:checked {
+    background: var(--accent);
+}
+
+.toggle-checkbox::before {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform var(--transition);
+}
+
+.toggle-checkbox:checked::before {
+    transform: translateX(20px);
+}
+
 /* ---------- Reference Chart ---------- */
 .reference {
     margin-top: var(--space-xl);

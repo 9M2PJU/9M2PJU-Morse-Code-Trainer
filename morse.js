@@ -39,6 +39,11 @@
             this.scheduledNodes = [];
             this.lampElement = null;
             this.lampTimers = [];
+            
+            // HF Noise components
+            this.noiseNode = null;
+            this.noiseGain = null;
+            this.isNoiseEnabled = false;
         }
 
         init() {
@@ -50,10 +55,26 @@
             }
         }
 
-        getTimings() {
-            const wpm = parseInt(document.getElementById('wpm-slider').value, 10);
+        // Get effective settings (check if local overrides exist for given lamp element)
+        getSettings(lampElement) {
+            let wpmSlider = document.getElementById('wpm-slider');
+            let freqSlider = document.getElementById('freq-slider');
+
+            // If lamp belongs to Contest Trainer, use contest-specific sliders
+            if (lampElement && lampElement.id === 'contest-lamp') {
+                const localWpm = document.getElementById('contest-wpm-slider');
+                const localFreq = document.getElementById('contest-freq-slider');
+                if (localWpm) wpmSlider = localWpm;
+                if (localFreq) freqSlider = localFreq;
+            }
+
+            const wpm = parseInt(wpmSlider.value, 10);
+            const freq = parseInt(freqSlider.value, 10);
             const dotDuration = 1.2 / wpm;
+
             return {
+                wpm,
+                freq,
                 dot: dotDuration,
                 dash: dotDuration * 3,
                 symbolGap: dotDuration,
@@ -62,12 +83,7 @@
             };
         }
 
-        getFrequency() {
-            return parseInt(document.getElementById('freq-slider').value, 10);
-        }
-
-        playTone(startTime, duration) {
-            const freq = this.getFrequency();
+        playTone(startTime, duration, freq) {
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
 
@@ -76,8 +92,8 @@
 
             // Smooth envelope to avoid clicks
             gain.gain.setValueAtTime(0, startTime);
-            gain.gain.linearRampToValueAtTime(0.6, startTime + 0.005);
-            gain.gain.setValueAtTime(0.6, startTime + duration - 0.005);
+            gain.gain.linearRampToValueAtTime(0.6, startTime + 0.002);
+            gain.gain.setValueAtTime(0.6, startTime + duration - 0.002);
             gain.gain.linearRampToValueAtTime(0, startTime + duration);
 
             osc.connect(gain);
@@ -88,6 +104,51 @@
 
             this.scheduledNodes.push(osc);
             return duration;
+        }
+
+        // --- HF Noise Simulation ---
+        setupNoise() {
+            this.init();
+            if (this.noiseNode) return;
+
+            const bufferSize = 2 * this.ctx.sampleRate;
+            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            
+            // Simple white noise
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+
+            this.noiseNode = this.ctx.createBufferSource();
+            this.noiseNode.buffer = buffer;
+            this.noiseNode.loop = true;
+
+            this.noiseGain = this.ctx.createGain();
+            this.noiseGain.gain.value = 0;
+
+            // Optional: Bandpass filter for more realistic HF sound
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.value = 800;
+            filter.Q.value = 0.5;
+
+            this.noiseNode.connect(filter);
+            filter.connect(this.noiseGain);
+            this.noiseGain.connect(this.ctx.destination);
+            
+            this.noiseNode.start();
+        }
+
+        updateNoise(enabled, volumePercent) {
+            if (enabled) {
+                this.setupNoise();
+                this.noiseGain.gain.setTargetAtTime((volumePercent / 100) * 0.15, this.ctx.currentTime, 0.1);
+                this.isNoiseEnabled = true;
+            } else if (this.noiseGain) {
+                this.noiseGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.1);
+                this.isNoiseEnabled = false;
+            }
         }
 
         scheduleLamp(lamp, startTime, duration) {
@@ -108,7 +169,7 @@
             this.isPlaying = true;
             this.lampElement = lampElement;
 
-            const t = this.getTimings();
+            const s = this.getSettings(lampElement);
             let currentTime = this.ctx.currentTime + 0.05;
 
             const chars = morseString.replace(/\s+/g, ' ').trim();
@@ -118,17 +179,17 @@
 
                 const ch = chars[i];
                 if (ch === '.') {
-                    this.playTone(currentTime, t.dot);
-                    this.scheduleLamp(lampElement, currentTime, t.dot);
-                    currentTime += t.dot + t.symbolGap;
+                    this.playTone(currentTime, s.dot, s.freq);
+                    this.scheduleLamp(lampElement, currentTime, s.dot);
+                    currentTime += s.dot + s.symbolGap;
                 } else if (ch === '-') {
-                    this.playTone(currentTime, t.dash);
-                    this.scheduleLamp(lampElement, currentTime, t.dash);
-                    currentTime += t.dash + t.symbolGap;
+                    this.playTone(currentTime, s.dash, s.freq);
+                    this.scheduleLamp(lampElement, currentTime, s.dash);
+                    currentTime += s.dash + s.symbolGap;
                 } else if (ch === '/') {
-                    currentTime += t.wordGap - t.symbolGap;
+                    currentTime += s.wordGap - s.symbolGap;
                 } else if (ch === ' ') {
-                    currentTime += t.letterGap - t.symbolGap;
+                    currentTime += s.letterGap - s.symbolGap;
                 }
             }
 
@@ -223,6 +284,11 @@
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
             audio.stop();
+            // Stop noise if switching away from contest
+            if (tab.dataset.tab !== 'contest' && audio.updateNoise) {
+                audio.updateNoise(false, 0);
+                if (typeof noiseToggle !== 'undefined') noiseToggle.checked = false;
+            }
             tabs.forEach(t => { t.classList.remove('tab--active'); t.setAttribute('aria-selected', 'false'); });
             panels.forEach(p => p.classList.remove('panel--active'));
             tab.classList.add('tab--active');
@@ -898,6 +964,27 @@
     const contestStreakValue = document.getElementById('contest-streak');
     const contestAccuracyValue = document.getElementById('contest-accuracy');
     const contestLogBody = document.getElementById('contest-log-body');
+    const contestWpmSlider = document.getElementById('contest-wpm-slider');
+    const contestWpmValue = document.getElementById('contest-wpm-value');
+    const contestFreqSlider = document.getElementById('contest-freq-slider');
+    const contestFreqValue = document.getElementById('contest-freq-value');
+    const noiseToggle = document.getElementById('noise-toggle');
+    const noiseVolume = document.getElementById('noise-volume');
+
+    contestWpmSlider.addEventListener('input', () => {
+        contestWpmValue.textContent = `${contestWpmSlider.value} WPM`;
+    });
+
+    contestFreqSlider.addEventListener('input', () => {
+        contestFreqValue.textContent = `${contestFreqSlider.value} Hz`;
+    });
+
+    const updateHFNoise = () => {
+        audio.updateNoise(noiseToggle.checked, parseInt(noiseVolume.value, 10));
+    };
+
+    noiseToggle.addEventListener('change', updateHFNoise);
+    noiseVolume.addEventListener('input', updateHFNoise);
 
     let currentContestQSO = { callsign: '', rst: '', exchange: '', morse: '' };
     let contestType = 'general';

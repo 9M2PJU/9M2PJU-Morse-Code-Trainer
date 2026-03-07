@@ -303,6 +303,25 @@
                     <p class="panel__desc">Simulate ham radio contest QSO exchanges. Listen to the Morse code, then log the callsign, RST, and exchange info. Practice your pileup skills!</p>
                 </div>
                 <div class="contest">
+                    <!-- Contest Local Audio Settings -->
+                    <div class="contest__settings">
+                        <div class="audio-control">
+                            <span class="audio-control__label">WPM</span>
+                            <input type="range" id="contest-wpm-slider" class="audio-control__slider" min="5" max="60" value="25">
+                            <span class="audio-control__value" id="contest-wpm-value">25 WPM</span>
+                        </div>
+                        <div class="audio-control">
+                            <span class="audio-control__label">Freq</span>
+                            <input type="range" id="contest-freq-slider" class="audio-control__slider" min="300" max="1000" value="600">
+                            <span class="audio-control__value" id="contest-freq-value">600 Hz</span>
+                        </div>
+                        <div class="audio-control">
+                            <label class="audio-control__label" for="noise-toggle">HF Noise</label>
+                            <input type="checkbox" id="noise-toggle" class="toggle-checkbox">
+                            <input type="range" id="noise-volume" class="audio-control__slider" min="0" max="100" value="30">
+                        </div>
+                    </div>
+
                     <!-- Contest type selector -->
                     <div class="contest__type">
                         <span class="field-label">Contest Type</span>
