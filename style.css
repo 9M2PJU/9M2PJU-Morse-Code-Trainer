@@ -1388,3 +1388,67 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* ---------- Visual Morse (Signal Lamp) ---------- */
+.lamp-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xl);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    margin-bottom: var(--space-lg);
+    position: relative;
+    min-height: 200px;
+}
+
+.signal-lamp {
+    width: 80px;
+    height: 80px;
+    background: #333;
+    border-radius: 50%;
+    border: 4px solid #444;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 0 5px rgba(0,0,0,0.2);
+    transition: background 0.05s ease, box-shadow 0.05s ease;
+    position: relative;
+}
+
+.signal-lamp--active {
+    background: #fff;
+    box-shadow: 0 0 40px #fff, 0 0 80px rgba(255,255,255,0.4);
+}
+
+.lamp-replay {
+    position: absolute;
+    bottom: var(--space-md);
+    right: var(--space-md);
+}
+
+.visual-encoder, .visual-decoder {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.feedback-msg {
+    min-height: 1.5rem;
+    font-weight: 500;
+    text-align: center;
+    margin-top: var(--space-sm);
+}
+
+.feedback-msg--success { color: #10b981; }
+.feedback-msg--error { color: #ef4444; }
+
+@media (max-width: 768px) {
+    .signal-lamp {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .lamp-container {
+        min-height: 150px;
+    }
+}

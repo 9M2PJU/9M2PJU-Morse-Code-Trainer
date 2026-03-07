@@ -55,6 +55,14 @@
                 <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 7 7 7 7"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 17 7 17 7"/><path d="M4 22h16"/><path d="M10 22V2h4v20"/><path d="M8 9h8l-1 13H9L8 9z"/></svg>
                 <span>Contest</span>
             </button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="visual-encode" id="tab-visual-encode">
+                <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/><circle cx="12" cy="12" r="4"/></svg>
+                <span>Visual Encode</span>
+            </button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="visual-decode" id="tab-visual-decode">
+                <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                <span>Visual Decode</span>
+            </button>
             <button class="tab" role="tab" aria-selected="false" data-tab="reference" id="tab-reference">
                 <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                 <span>Reference</span>
@@ -466,6 +474,75 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- === VISUAL ENCODE PANEL === -->
+            <section class="panel" id="panel-visual-encode" role="tabpanel" aria-labelledby="tab-visual-encode">
+                <div class="panel__header">
+                    <h2 class="panel__title">Text → Signal Lamp</h2>
+                    <p class="panel__desc">Convert text into visual light pulses. Perfect for practicing maritime signaling.</p>
+                </div>
+
+                <div class="panel__controls">
+                    <label class="audio-control" for="wpm-slider-v-encode">
+                        <span class="audio-control__label">Speed</span>
+                        <input type="range" id="wpm-slider-v-encode" class="audio-control__slider" min="5" max="30" value="10">
+                        <span class="audio-control__value" id="wpm-value-v-encode">10 WPM</span>
+                    </label>
+                </div>
+
+                <div class="visual-encoder">
+                    <div class="lamp-container">
+                        <div id="v-encode-lamp" class="signal-lamp"></div>
+                    </div>
+                    
+                    <div class="encoder__input-group">
+                        <textarea id="v-encode-input" class="textarea" placeholder="Type message for the lamp..." rows="3"></textarea>
+                        <div class="encoder__actions">
+                            <button class="btn btn--primary" id="v-encode-play">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5,3 19,12 5,21"/></svg>
+                                <span>Signal</span>
+                            </button>
+                            <button class="btn btn--ghost" id="v-encode-stop" disabled>
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                                <span>Stop</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- === VISUAL DECODE PANEL === -->
+            <section class="panel" id="panel-visual-decode" role="tabpanel" aria-labelledby="tab-visual-decode">
+                <div class="panel__header">
+                    <h2 class="panel__title">Signal Lamp Receiver</h2>
+                    <p class="panel__desc">Watch the lamp and identify the Morse code being signaled.</p>
+                </div>
+
+                <div class="panel__controls">
+                    <label class="audio-control" for="wpm-slider-v-decode">
+                        <span class="audio-control__label">Speed</span>
+                        <input type="range" id="wpm-slider-v-decode" class="audio-control__slider" min="5" max="30" value="10">
+                        <span class="audio-control__value" id="wpm-value-v-decode">10 WPM</span>
+                    </label>
+                    <div class="btn-group">
+                        <button class="btn btn--sm" id="v-decode-new">New Challenge</button>
+                    </div>
+                </div>
+
+                <div class="visual-decoder">
+                    <div class="lamp-container">
+                        <div id="v-decode-lamp" class="signal-lamp"></div>
+                        <button class="btn btn--icon lamp-replay" id="v-decode-replay" title="Replay signal">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        </button>
+                    </div>
+
+                    <div class="decoder__input-group">
+                        <input type="text" id="v-decode-input" class="input" placeholder="What was signaled?" autocomplete="off" spellcheck="false">
+                        <div id="v-decode-feedback" class="feedback-msg"></div>
                     </div>
                 </div>
             </section>

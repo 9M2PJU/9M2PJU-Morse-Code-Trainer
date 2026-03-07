@@ -46,6 +46,7 @@
                 qsbLevel: 5,
                 contestWpm: 25,
                 contestFreq: 600,
+                visualWpm: 10,
                 stats: { correct: 0, wrong: 0, streak: 0 },
                 contestStats: { qsos: 0, busted: 0, streak: 0 }
             };
@@ -302,11 +303,11 @@
                 const ch = chars[i];
                 if (ch === '.') {
                     this.playTone(currentTime, s.dot, s.freq);
-                    this.scheduleLamp(lampElement, currentTime, s.dot);
+                    if (lampElement) this.scheduleLamp(lampElement, currentTime, s.dot);
                     currentTime += s.dot + s.symbolGap;
                 } else if (ch === '-') {
                     this.playTone(currentTime, s.dash, s.freq);
-                    this.scheduleLamp(lampElement, currentTime, s.dash);
+                    if (lampElement) this.scheduleLamp(lampElement, currentTime, s.dash);
                     currentTime += s.dash + s.symbolGap;
                 } else if (ch === '/') {
                     currentTime += s.wordGap - s.symbolGap;
@@ -335,7 +336,7 @@
             this.lampTimers.forEach(id => clearTimeout(id));
             this.lampTimers = [];
             if (this.lampElement) {
-                this.lampElement.classList.remove('signal-lamp--on');
+                this.lampElement.classList.remove('signal-lamp--active');
             }
         }
     }
@@ -352,6 +353,8 @@
     let autoNextTimeout = null;
 
     let currentContestQSO = { callsign: '', rst: '', exchange: '', morse: '' };
+    let visualChallenge = '';
+    let visualChallengeMorse = '';
     let contestType = 'general';
     let qsoHistory = [];
     let isContestContinuous = false;
@@ -386,6 +389,22 @@
     const noiseVolume = document.getElementById('noise-volume');
     const qsbToggle = document.getElementById('qsb-toggle');
     const qsbLevel = document.getElementById('qsb-level');
+
+    // Visual Morse Elements
+    const vEncodeLamp = document.getElementById('v-encode-lamp');
+    const vEncodeInput = document.getElementById('v-encode-input');
+    const vEncodePlay = document.getElementById('v-encode-play');
+    const vEncodeStop = document.getElementById('v-encode-stop');
+    const vEncodeWpm = document.getElementById('wpm-slider-v-encode');
+    const vEncodeWpmValue = document.getElementById('wpm-value-v-encode');
+
+    const vDecodeLamp = document.getElementById('v-decode-lamp');
+    const vDecodeInput = document.getElementById('v-decode-input');
+    const vDecodeFeedback = document.getElementById('v-decode-feedback');
+    const vDecodeNew = document.getElementById('v-decode-new');
+    const vDecodeReplay = document.getElementById('v-decode-replay');
+    const vDecodeWpm = document.getElementById('wpm-slider-v-decode');
+    const vDecodeWpmValue = document.getElementById('wpm-value-v-decode');
 
     // ─── Utility Functions ─────────────────────────
     function textToMorse(text) {
@@ -459,6 +478,12 @@
             tab.setAttribute('aria-selected', 'true');
             const panel = document.getElementById(`panel-${tab.dataset.tab}`);
             if (panel) panel.classList.add('panel--active');
+
+            // Special handling for new tabs
+            if (tab.dataset.tab === 'visual-decode') {
+                vDecodeInput.value = '';
+                vDecodeFeedback.textContent = '';
+            }
         });
     });
 
@@ -646,6 +671,7 @@
             qsbLevel: parseInt(qsbLevel.value, 10),
             contestWpm: parseInt(contestWpmSlider.value, 10),
             contestFreq: parseInt(contestFreqSlider.value, 10),
+            visualWpm: parseInt(vEncodeWpm.value, 10), // Save visual WPM
             stats: stats,
             contestStats: contestStats
         });
@@ -1495,5 +1521,89 @@
 
     // ─── Load Persistence ──
     loadAllSettings();
+
+    // ─── Visual Morse Logic ────────────────────────
+    vEncodeWpm.addEventListener('input', () => {
+        const val = vEncodeWpm.value;
+        vEncodeWpmValue.textContent = `${val} WPM`;
+        vDecodeWpm.value = val;
+        vDecodeWpmValue.textContent = `${val} WPM`;
+        saveAllSettings();
+    });
+
+    vDecodeWpm.addEventListener('input', () => {
+        const val = vDecodeWpm.value;
+        vDecodeWpmValue.textContent = `${val} WPM`;
+        vEncodeWpm.value = val;
+        vEncodeWpmValue.textContent = `${val} WPM`;
+        saveAllSettings();
+    });
+
+    vEncodePlay.addEventListener('click', async () => {
+        const text = vEncodeInput.value.trim();
+        if (!text) return;
+
+        vEncodePlay.disabled = true;
+        vEncodeStop.disabled = false;
+        
+        const morse = textToMorse(text);
+        await audio.playMorse(morse, vEncodeLamp);
+        
+        vEncodePlay.disabled = false;
+        vEncodeStop.disabled = true;
+    });
+
+    vEncodeStop.addEventListener('click', () => {
+        audio.stop();
+        vEncodePlay.disabled = false;
+        vEncodeStop.disabled = true;
+    });
+
+    function startNewVisualChallenge() {
+        audio.stop();
+        const words = ['SOS', 'HELLO', ' Morse', 'SIGNAL', 'CQ', 'TEST', 'NAVY', '9M2PJU'];
+        visualChallenge = words[Math.floor(Math.random() * words.length)];
+        visualChallengeMorse = textToMorse(visualChallenge);
+        
+        vDecodeInput.value = '';
+        vDecodeInput.focus();
+        vDecodeFeedback.textContent = 'Signaling...';
+        vDecodeFeedback.className = 'feedback-msg';
+        
+        audio.playMorse(visualChallengeMorse, vDecodeLamp);
+    }
+
+    vDecodeNew.addEventListener('click', startNewVisualChallenge);
+    vDecodeReplay.addEventListener('click', () => {
+        if (visualChallengeMorse) {
+            audio.stop();
+            audio.playMorse(visualChallengeMorse, vDecodeLamp);
+        }
+    });
+
+    vDecodeInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const typed = vDecodeInput.value.trim().toUpperCase();
+            if (typed === visualChallenge.trim().toUpperCase()) {
+                vDecodeFeedback.textContent = '✓ Correct!';
+                vDecodeFeedback.className = 'feedback-msg feedback-msg--success';
+                setTimeout(startNewVisualChallenge, 1500);
+            } else {
+                vDecodeFeedback.textContent = '✗ Try again';
+                vDecodeFeedback.className = 'feedback-msg feedback-msg--error';
+            }
+        }
+    });
+
+    // ─── Initialize Visual Settings ────────────────
+    function loadVisualSettings() {
+        const s = persistence.load();
+        vEncodeWpm.value = s.visualWpm || 10;
+        vEncodeWpmValue.textContent = `${vEncodeWpm.value} WPM`;
+        vDecodeWpm.value = vEncodeWpm.value;
+        vDecodeWpmValue.textContent = `${vEncodeWpm.value} WPM`;
+    }
+    
+    loadVisualSettings();
 
 })();

@@ -22,10 +22,11 @@ graph TD
         C --> F[UI Controllers]
     end
     
-    subgraph "Audio Synthesis"
+    subgraph "Audio & Visual Synthesis"
         D --> G[Oscillator]
         D --> H[HF Noise Generator]
         D --> I[QSB Fading Modulator]
+        D --> K[Signal Lamp Animation]
     end
     
     E --> J[(localStorage)]
@@ -38,10 +39,14 @@ graph TD
 ### 🔤 Encoder & Decoder
 - **Real-time Conversion**: Instant Text ↔ Morse translation.
 - **Audio Synthesis**: High-fidelity sine wave generation with smooth envelopes.
-- **Visual Lamp**: Real-time high-visibility lamp sync for all playback.
+- **Visual Signal Lamp**: High-visibility real-time lamp sync for all playback modes.
+
+### 🔦 Visual Morse (NEW)
+- **Visual Encoder**: Dedicated "Signal Lamp" mode for maritime signaling practice.
+- **Visual Decoder**: Interactive trainer to master receiving visual Morse pulses.
 
 ### 🎓 Advanced Trainer (Practice Mode)
-- **Continuous Mode**: Auto-advance to the next challenge for a hands-free training flow.
+- **Continuous Mode**: Auto-advance to the next challenge after a correct answer (1.5s delay).
 - **7 Difficulty Levels**:
   - **Letters, Numbers, Mixed**
   - **Common Words** (CW shorthand)
@@ -58,9 +63,10 @@ graph TD
   - **QSB (Fading)**: Simulated ionospheric signal drifting.
 - **Continuous Mode**: Rapid-fire contest simulation.
 
-### ⚙️ Professional Settings
+### ⚙️ Professional UX
+- **Localized Settings**: No more tab-switching! Every panel has its own speed and frequency controls.
 - **Persistence**: All settings and scores are saved automatically via `localStorage`.
-- **Customizable Audio**: 300Hz–1000Hz frequency control and 5–60 WPM range.
+- **Reference Hub**: Instant access to the Morse Code Reference Chart in a dedicated tab.
 
 ---
 
