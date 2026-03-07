@@ -430,12 +430,14 @@
     const difficultyGroup = document.getElementById('difficulty-group');
     const scoreCorrect = document.getElementById('score-correct');
     const scoreWrong = document.getElementById('score-wrong');
-    const scoreStreak = document.getElementById('score-streak');
     const scoreAccuracy = document.getElementById('score-accuracy');
+    const trainerStop = document.getElementById('trainer-stop');
 
     let currentChallenge = '';
     let currentChallengeMorse = '';
     let difficulty = 'letters';
+    let isContinuous = false;
+    let autoNextTimeout = null;
     let stats = { correct: 0, wrong: 0, streak: 0, maxStreak: 0 };
 
     const COMMON_WORDS = [
@@ -500,8 +502,29 @@
         }
     }
 
+    function stopContinuous() {
+        isContinuous = false;
+        if (autoNextTimeout) {
+            clearTimeout(autoNextTimeout);
+            autoNextTimeout = null;
+        }
+        trainerStop.style.display = 'none';
+        trainerNew.style.display = 'inline-flex';
+    }
+
     function newChallenge() {
         audio.stop();
+        if (autoNextTimeout) {
+            clearTimeout(autoNextTimeout);
+            autoNextTimeout = null;
+        }
+        
+        // Show stop button if in continuous mode
+        if (isContinuous) {
+            trainerStop.style.display = 'inline-flex';
+            trainerNew.style.display = 'none';
+        }
+
         currentChallenge = generateChallenge();
         currentChallengeMorse = textToMorse(currentChallenge);
         challengeMorse.innerHTML = formatMorseHTML(currentChallengeMorse);
@@ -526,10 +549,13 @@
             stats.correct++;
             stats.streak++;
             if (stats.streak > stats.maxStreak) stats.maxStreak = stats.streak;
-            trainerFeedback.textContent = `✅ Correct! "${correct}"`;
             trainerFeedback.className = 'trainer__feedback trainer__feedback--correct';
             trainerInput.disabled = true;
             trainerCheck.disabled = true;
+
+            if (isContinuous) {
+                autoNextTimeout = setTimeout(newChallenge, 1500);
+            }
         } else {
             stats.wrong++;
             stats.streak = 0;
@@ -565,7 +591,13 @@
         difficulty = btn.dataset.difficulty;
     });
 
-    trainerNew.addEventListener('click', newChallenge);
+    trainerNew.addEventListener('click', () => {
+        isContinuous = true;
+        newChallenge();
+    });
+
+    trainerStop.addEventListener('click', stopContinuous);
+    
     trainerCheck.addEventListener('click', checkAnswer);
     trainerReveal.addEventListener('click', revealAnswer);
     trainerReplay.addEventListener('click', () => {
