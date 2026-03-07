@@ -335,7 +335,10 @@
     });
 
     encoderPlay.addEventListener('click', async () => {
-        if (!lastEncoderMorse) return;
+        if (!lastEncoderMorse) {
+            showToast('Please enter some text to encode first!');
+            return;
+        }
         encoderPlay.disabled = true;
         encoderStop.disabled = false;
         await audio.playMorse(lastEncoderMorse, encoderLamp);
@@ -385,7 +388,10 @@
 
     decoderPlay.addEventListener('click', async () => {
         const morse = decoderInput.value.trim();
-        if (!morse) return;
+        if (!morse) {
+            showToast('Please enter some Morse code to decode first!');
+            return;
+        }
         decoderPlay.disabled = true;
         decoderStop.disabled = false;
         await audio.playMorse(morse, decoderLamp);
