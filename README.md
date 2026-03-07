@@ -2,7 +2,7 @@
 
 A free, interactive **Morse Code Trainer, Encoder, and Decoder** — built as a static web app, hosted on GitHub Pages.
 
-🔗 **Live Demo:** [https://9m2pju.github.io/9M2PJU-Morse-Code-Trainer/](https://9m2pju.github.io/9M2PJU-Morse-Code-Trainer/)
+🔗 **Live Demo:** [https://morse.hamradio.my](https://morse.hamradio.my)
 
 ![Morse Code Trainer](https://img.shields.io/badge/Morse-Code%20Trainer-blue?style=for-the-badge)
 
