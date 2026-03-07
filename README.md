@@ -1,105 +1,121 @@
 # 📡 Morse Code Trainer
 
-A free, interactive **Morse Code Trainer, Encoder, and Decoder** — built as a static web app, hosted on GitHub Pages.
+A professional-grade, interactive **Morse Code Trainer, Encoder, and Decoder** — built as a high-performance static web app. Designed for amateur radio operators and CW enthusiasts.
 
 🔗 **Live Demo:** [https://morse.hamradio.my](https://morse.hamradio.my)
 
 ![Morse Code Trainer](https://img.shields.io/badge/Morse-Code%20Trainer-blue?style=for-the-badge)
+![Built By](https://img.shields.io/badge/Built%20By-9M2PJU-orange?style=for-the-badge)
+
+---
+
+## 🏗 Project Architecture
+
+```mermaid
+graph TD
+    A[index.html] --> B[style.css]
+    A --> C[morse.js]
+    
+    subgraph "Logic Layer (morse.js)"
+        C --> D[MorseAudio Engine]
+        C --> E[AppPersistence]
+        C --> F[UI Controllers]
+    end
+    
+    subgraph "Audio Synthesis"
+        D --> G[Oscillator]
+        D --> H[HF Noise Generator]
+        D --> I[QSB Fading Modulator]
+    end
+    
+    E --> J[(localStorage)]
+```
 
 ---
 
 ## ✨ Features
 
-### 🔤 Encoder (Text → Morse)
-- Real-time text-to-Morse conversion as you type
-- Audio playback with adjustable speed (WPM) and tone frequency
-- Visual signal lamp that lights up with each dit/dah
-- Copy Morse code to clipboard
+### 🔤 Encoder & Decoder
+- **Real-time Conversion**: Instant Text ↔ Morse translation.
+- **Audio Synthesis**: High-fidelity sine wave generation with smooth envelopes.
+- **Visual Lamp**: Real-time high-visibility lamp sync for all playback.
 
-### 📖 Decoder (Morse → Text)
-- Convert Morse code back to readable text
-- Supports dots (`.`), dashes (`-`), spaces for letter separation, and `/` or `|` for word breaks
-- Audio playback of the entered Morse code
-- Copy decoded text to clipboard
+### 🎓 Advanced Trainer (Practice Mode)
+- **Continuous Mode**: Auto-advance to the next challenge for a hands-free training flow.
+- **7 Difficulty Levels**:
+  - **Letters, Numbers, Mixed**
+  - **Common Words** (CW shorthand)
+  - **Callsigns** (Realistic prefixes/suffixes)
+  - **Prosigns** (BT, AR, SK, etc.)
+  - **Abbreviations** (RST, QTH, 73, etc.)
+- **Koch Method**: Progressive character learning (Levels 1–40).
+- **Farnsworth Timing**: Decouple character speed from overall WPM to master instant recognition.
 
-### 🎯 Trainer (Practice Mode)
-- **5 Difficulty Levels:**
-  - **Letters** — Random 1–3 letter combinations
-  - **Numbers** — Random 1–3 digit sequences
-  - **Mixed** — Random alphanumeric strings
-  - **Words** — Common CW/ham radio words (CQ, SOS, QTH, etc.)
-  - **Callsigns** — Realistic amateur radio callsigns (9M2, W, VK, JA, etc.)
-- Auto-plays challenge audio on new round
-- Visual Morse code display with animated dots and dashes
-- Score tracking: Correct, Wrong, Streak, and Accuracy
-- Replay and Reveal buttons
+### 🏆 Contest Trainer
+- **QSO Simulation**: Practice logging Callsigns, RST, and Exchange data.
+- **Atmospheric Realism**:
+  - **HF Noise**: Adjustable background static.
+  - **QSB (Fading)**: Simulated ionospheric signal drifting.
+- **Continuous Mode**: Rapid-fire contest simulation.
 
-### 📋 Reference Chart
-- Complete Morse code reference (A–Z, 0–9, punctuation)
-- Click any character to hear it played
-
-### ⚙️ Audio Controls
-- **Speed:** 5–40 WPM (words per minute)
-- **Tone:** 400–900 Hz frequency
-- Smooth audio envelope (no clicks)
-
----
-
-## 🚀 Getting Started
-
-### GitHub Pages (Recommended)
-This app is designed to be hosted on GitHub Pages. Simply enable Pages in your repository settings and point it to the `main` branch.
-
-### Local Development
-```bash
-# Clone the repository
-git clone https://github.com/9M2PJU/9M2PJU-Morse-Code-Trainer.git
-cd 9M2PJU-Morse-Code-Trainer
-
-# Open in browser
-open index.html
-# or
-python3 -m http.server 8000
-```
-
----
-
-## 📁 Project Structure
-
-```
-├── index.html    # Main HTML structure
-├── style.css     # Design system & responsive styles
-├── morse.js      # Core logic, audio engine, UI controllers
-└── README.md     # This file
-```
-
----
-
-## 📱 Mobile Support
-
-Fully responsive design optimized for:
-- Desktop browsers
-- Tablets
-- Mobile phones (portrait & landscape)
+### ⚙️ Professional Settings
+- **Persistence**: All settings and scores are saved automatically via `localStorage`.
+- **Customizable Audio**: 300Hz–1000Hz frequency control and 5–60 WPM range.
 
 ---
 
 ## 🛠 Tech Stack
 
-- **HTML5** — Semantic structure
-- **CSS3** — Custom properties, Grid, Flexbox, animations
-- **Vanilla JavaScript** — No dependencies
-- **Web Audio API** — Real-time Morse code audio synthesis
+- **Core**: Vanilla HTML5/CSS3/JS (Zero dependencies, incredibly fast).
+- **Audio**: Web Audio API for custom synthesis and real-time gain modulation.
+- **Design**: Modern dark-mode aesthetic with custom premium scrollbars and responsive glassmorphism elements.
+
+---
+
+## 🚀 Getting Started
+
+```bash
+# Clone the repository
+git clone https://github.com/9M2PJU/9M2PJU-Morse-Code-Trainer.git
+cd 9M2PJU-Morse-Code-Trainer
+
+# Open directly or serve
+python3 -m http.server 8000
+```
+
+---
+
+## 📈 Trainer Logic Flow
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant T as Trainer Logic
+    participant A as Audio Engine
+    
+    U->>T: Click "New Challenge"
+    T->>T: Generate Challenge (Koch/Word/etc)
+    T->>A: playMorse(Challenge)
+    A->>U: Beeps & Lamp
+    U->>T: Enter Answer
+    alt Correct
+        T->>U: ✅ Feedback
+        T->>T: Wait 1.5s (Continuous)
+        T->>T: Trigger New Challenge
+    else Wrong
+        T->>U: ❌ Feedback
+    end
+```
 
 ---
 
 ## 👨‍💻 Author
 
 **9M2PJU** — Amateur Radio Operator  
-[GitHub](https://github.com/9M2PJU)
+[HamRadio.my](https://hamradio.my) | [GitHub](https://github.com/9M2PJU)
 
 ---
 
 ## 📄 License
 
-This project is open source and available under the [MIT License](LICENSE).
+MIT License. See [LICENSE](LICENSE) for details.
