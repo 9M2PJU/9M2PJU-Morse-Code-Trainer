@@ -70,6 +70,32 @@ html {
     font-size: 16px;
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+}
+
+/* For Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) var(--bg-primary);
 }
 
 body {
@@ -79,6 +105,7 @@ body {
     line-height: 1.6;
     min-height: 100vh;
     overflow-x: hidden;
+    position: relative;
 }
 
 /* Screen reader only */
@@ -144,7 +171,7 @@ body {
     z-index: 1;
     max-width: 860px;
     margin: 0 auto;
-    padding: var(--space-lg) var(--space-md);
+    padding: var(--space-md) var(--space-md);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -155,9 +182,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-lg);
+    gap: var(--space-md);
     flex-wrap: wrap;
-    margin-bottom: var(--space-lg);
+    margin-bottom: var(--space-md);
 }
 
 .header__brand {
@@ -284,7 +311,7 @@ body {
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     padding: 4px;
-    margin-bottom: var(--space-lg);
+    margin-bottom: var(--space-md);
 }
 
 .tab {
@@ -343,7 +370,7 @@ body {
 }
 
 .panel__header {
-    margin-bottom: var(--space-lg);
+    margin-bottom: var(--space-md);
 }
 
 .panel__title {
@@ -515,8 +542,8 @@ body {
 }
 
 .morse-output, .text-output {
-    min-height: 100px;
-    padding: var(--space-lg);
+    min-height: 80px;
+    padding: var(--space-md);
     background: var(--bg-input);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
