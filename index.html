@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morse Code Trainer — Encode, Decode & Practice</title>
+    <meta name="description" content="A free, interactive Morse Code trainer, encoder, and decoder. Practice listening, tap out code, and convert text to and from Morse code instantly.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>">
+</head>
+<body>
+    <div class="app">
+        <!-- Animated background -->
+        <div class="bg-grid"></div>
+        <div class="bg-glow bg-glow--1"></div>
+        <div class="bg-glow bg-glow--2"></div>
+
+        <!-- Header -->
+        <header class="header">
+            <div class="header__brand">
+                <div class="header__logo">
+                    <span class="header__dot"></span>
+                    <span class="header__dash"></span>
+                    <span class="header__dot"></span>
+                </div>
+                <div>
+                    <h1 class="header__title">Morse Code</h1>
+                    <p class="header__subtitle">Trainer · Encoder · Decoder</p>
+                </div>
+            </div>
+            <div class="header__controls">
+                <label class="speed-control" for="wpm-slider">
+                    <span class="speed-control__label">Speed</span>
+                    <input type="range" id="wpm-slider" class="speed-control__slider" min="5" max="40" value="15">
+                    <span class="speed-control__value" id="wpm-value">15 WPM</span>
+                </label>
+                <label class="freq-control" for="freq-slider">
+                    <span class="freq-control__label">Tone</span>
+                    <input type="range" id="freq-slider" class="freq-control__slider" min="400" max="900" value="650" step="10">
+                    <span class="freq-control__value" id="freq-value">650 Hz</span>
+                </label>
+            </div>
+        </header>
+
+        <!-- Tab Navigation -->
+        <nav class="tabs" role="tablist">
+            <button class="tab tab--active" role="tab" aria-selected="true" data-tab="encoder" id="tab-encoder">
+                <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h10M4 17h13"/></svg>
+                <span>Encoder</span>
+            </button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="decoder" id="tab-decoder">
+                <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
+                <span>Decoder</span>
+            </button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="trainer" id="tab-trainer">
+                <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+                <span>Trainer</span>
+            </button>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="content">
+
+            <!-- === ENCODER PANEL === -->
+            <section class="panel panel--active" id="panel-encoder" role="tabpanel" aria-labelledby="tab-encoder">
+                <div class="panel__header">
+                    <h2 class="panel__title">Text → Morse Code</h2>
+                    <p class="panel__desc">Type or paste text to convert it to Morse code, then play it back as audio.</p>
+                </div>
+                <div class="encoder">
+                    <div class="encoder__input-group">
+                        <label for="encoder-input" class="sr-only">Text input</label>
+                        <textarea id="encoder-input" class="textarea" placeholder="Type your message here..." rows="4" spellcheck="false"></textarea>
+                        <div class="encoder__actions">
+                            <button class="btn btn--primary" id="encoder-play" title="Play Morse audio">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5,3 19,12 5,21"/></svg>
+                                <span>Play</span>
+                            </button>
+                            <button class="btn btn--ghost" id="encoder-stop" title="Stop playback" disabled>
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                                <span>Stop</span>
+                            </button>
+                            <button class="btn btn--ghost" id="encoder-copy" title="Copy Morse code">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                <span>Copy</span>
+                            </button>
+                            <button class="btn btn--ghost" id="encoder-clear" title="Clear all">✕ Clear</button>
+                        </div>
+                    </div>
+                    <div class="encoder__output-group">
+                        <label class="field-label">Morse Code Output</label>
+                        <div class="morse-output" id="encoder-output" aria-live="polite">
+                            <span class="morse-output__placeholder">Morse code will appear here…</span>
+                        </div>
+                    </div>
+                    <!-- Visual signal -->
+                    <div class="signal-lamp" id="encoder-lamp"></div>
+                </div>
+            </section>
+
+            <!-- === DECODER PANEL === -->
+            <section class="panel" id="panel-decoder" role="tabpanel" aria-labelledby="tab-decoder">
+                <div class="panel__header">
+                    <h2 class="panel__title">Morse Code → Text</h2>
+                    <p class="panel__desc">Enter Morse code using dots (.) and dashes (-), separated by spaces. Use &nbsp;<code>/</code>&nbsp; or &nbsp;<code>|</code>&nbsp; for word breaks.</p>
+                </div>
+                <div class="decoder">
+                    <div class="decoder__input-group">
+                        <label for="decoder-input" class="sr-only">Morse code input</label>
+                        <textarea id="decoder-input" class="textarea textarea--mono" placeholder=".- / -... / -.-." rows="4" spellcheck="false"></textarea>
+                        <div class="decoder__actions">
+                            <button class="btn btn--primary" id="decoder-play" title="Play decoded audio">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5,3 19,12 5,21"/></svg>
+                                <span>Play</span>
+                            </button>
+                            <button class="btn btn--ghost" id="decoder-stop" title="Stop playback" disabled>
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                                <span>Stop</span>
+                            </button>
+                            <button class="btn btn--ghost" id="decoder-copy" title="Copy decoded text">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                <span>Copy</span>
+                            </button>
+                            <button class="btn btn--ghost" id="decoder-clear" title="Clear all">✕ Clear</button>
+                        </div>
+                    </div>
+                    <div class="decoder__output-group">
+                        <label class="field-label">Decoded Text</label>
+                        <div class="text-output" id="decoder-output" aria-live="polite">
+                            <span class="text-output__placeholder">Decoded text will appear here…</span>
+                        </div>
+                    </div>
+                    <div class="signal-lamp" id="decoder-lamp"></div>
+                </div>
+            </section>
+
+            <!-- === TRAINER PANEL === -->
+            <section class="panel" id="panel-trainer" role="tabpanel" aria-labelledby="tab-trainer">
+                <div class="panel__header">
+                    <h2 class="panel__title">Practice Mode</h2>
+                    <p class="panel__desc">Listen to Morse code and type what you hear. Train your ear to recognize characters at increasing speeds.</p>
+                </div>
+                <div class="trainer">
+                    <!-- Difficulty selector -->
+                    <div class="trainer__difficulty">
+                        <span class="field-label">Difficulty</span>
+                        <div class="btn-group" id="difficulty-group">
+                            <button class="btn btn--sm btn--toggle btn--toggle--active" data-difficulty="letters">Letters</button>
+                            <button class="btn btn--sm btn--toggle" data-difficulty="numbers">Numbers</button>
+                            <button class="btn btn--sm btn--toggle" data-difficulty="mixed">Mixed</button>
+                            <button class="btn btn--sm btn--toggle" data-difficulty="words">Words</button>
+                            <button class="btn btn--sm btn--toggle" data-difficulty="callsigns">Callsigns</button>
+                        </div>
+                    </div>
+
+                    <!-- Challenge area -->
+                    <div class="trainer__challenge">
+                        <div class="challenge-card" id="challenge-card">
+                            <div class="challenge-card__morse" id="challenge-morse">Press "New Challenge" to start</div>
+                            <div class="challenge-card__visual" id="challenge-visual"></div>
+                        </div>
+                        <div class="signal-lamp signal-lamp--lg" id="trainer-lamp"></div>
+                    </div>
+
+                    <!-- Answer input -->
+                    <div class="trainer__answer">
+                        <label for="trainer-input" class="sr-only">Your answer</label>
+                        <input type="text" id="trainer-input" class="input input--lg" placeholder="Type your answer…" autocomplete="off" spellcheck="false">
+                        <div class="trainer__answer-actions">
+                            <button class="btn btn--primary" id="trainer-new">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                New Challenge
+                            </button>
+                            <button class="btn btn--accent" id="trainer-check" disabled>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>
+                                Check
+                            </button>
+                            <button class="btn btn--ghost" id="trainer-replay">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5,3 19,12 5,21"/></svg>
+                                Replay
+                            </button>
+                            <button class="btn btn--ghost" id="trainer-reveal">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                Reveal
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Score -->
+                    <div class="trainer__score">
+                        <div class="score-card">
+                            <span class="score-card__label">Correct</span>
+                            <span class="score-card__value score-card__value--correct" id="score-correct">0</span>
+                        </div>
+                        <div class="score-card">
+                            <span class="score-card__label">Wrong</span>
+                            <span class="score-card__value score-card__value--wrong" id="score-wrong">0</span>
+                        </div>
+                        <div class="score-card">
+                            <span class="score-card__label">Streak</span>
+                            <span class="score-card__value score-card__value--streak" id="score-streak">0</span>
+                        </div>
+                        <div class="score-card">
+                            <span class="score-card__label">Accuracy</span>
+                            <span class="score-card__value" id="score-accuracy">—</span>
+                        </div>
+                    </div>
+
+                    <!-- Feedback -->
+                    <div class="trainer__feedback" id="trainer-feedback"></div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Reference Chart -->
+        <section class="reference">
+            <details class="reference__details">
+                <summary class="reference__toggle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    Morse Code Reference Chart
+                </summary>
+                <div class="reference__chart" id="reference-chart">
+                    <!-- Populated by JS -->
+                </div>
+            </details>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Built by <a href="https://github.com/9M2PJU" target="_blank" rel="noopener">9M2PJU</a> · <a href="https://github.com/9M2PJU/9M2PJU-Morse-Code-Trainer" target="_blank" rel="noopener">GitHub</a></p>
+        </footer>
+    </div>
+
+    <script src="morse.js"></script>
+</body>
+</html>
