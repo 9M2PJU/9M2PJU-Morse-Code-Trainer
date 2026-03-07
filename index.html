@@ -245,6 +245,16 @@
                         <input type="range" id="freq-slider-trainer" class="audio-control__slider" min="400" max="900" value="600" step="10">
                         <span class="audio-control__value" id="freq-value-trainer">600 Hz</span>
                     </label>
+                    <label class="audio-control" for="koch-level-slider" title="The Koch Method introduces characters one by one.">
+                        <span class="audio-control__label">Koch Level</span>
+                        <input type="range" id="koch-level-slider" class="audio-control__slider" min="1" max="40" value="1">
+                        <span class="audio-control__value" id="koch-level-value">1</span>
+                    </label>
+                    <label class="audio-control" for="farnsworth-slider" title="Farnsworth increases spacing between characters while keeping them fast.">
+                        <span class="audio-control__label">Farnsworth</span>
+                        <input type="range" id="farnsworth-slider" class="audio-control__slider" min="5" max="60" value="20">
+                        <span class="audio-control__value" id="farnsworth-value">20</span>
+                    </label>
                 </div>
                 <div class="trainer">
                     <!-- Difficulty selector -->
@@ -468,26 +478,9 @@
                 </div>
                 
                 <div class="settings">
+                    <!-- Settings content (Audio effects moved to top header or individual tabs) -->
                     <div class="settings__section">
-                        <h3 class="settings__title">🎓 Training Method</h3>
-                        <div class="settings__grid">
-                            <div class="settings__control">
-                                <div class="settings__label-group">
-                                    <label class="field-label" for="koch-level-slider">Koch Level (1–40)</label>
-                                    <span class="audio-control__value" id="koch-level-value">1</span>
-                                </div>
-                                <input type="range" id="koch-level-slider" class="audio-control__slider" min="1" max="40" value="1">
-                                <p class="settings__help">The Koch Method introduces characters one by one. Master two characters at full speed before adding the next.</p>
-                            </div>
-                            <div class="settings__control">
-                                <div class="settings__label-group">
-                                    <label class="field-label" for="farnsworth-slider">Farnsworth Speed (WPM)</label>
-                                    <span class="audio-control__value" id="farnsworth-value">20</span>
-                                </div>
-                                <input type="range" id="farnsworth-slider" class="audio-control__slider" min="5" max="60" value="20">
-                                <p class="settings__help">Keeps characters at a high speed but increases spacing between them. Master instant recognition!</p>
-                            </div>
-                        </div>
+                        <p class="settings__help">Training intensity, Koch level, and Farnsworth timing can now be found directly in the <b>Trainer</b> tab.</p>
                     </div>
 
                     </div>
