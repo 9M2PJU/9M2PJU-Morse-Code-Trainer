@@ -1149,6 +1149,49 @@ body {
 }
 
 /* ---------- Reference Chart ---------- */
+.reference {
+    margin: var(--space-xl) auto;
+    max-width: 900px;
+    padding: 0 var(--space-md);
+}
+
+.reference__toggle {
+    cursor: pointer;
+    padding: var(--space-md) var(--space-lg);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    list-style: none;
+    transition: background var(--transition);
+}
+
+.reference__toggle:hover {
+    background: var(--bg-card-hover);
+}
+
+.reference__toggle::-webkit-details-marker {
+    display: none;
+}
+
+.reference__title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+details[open] > .reference__toggle {
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-bottom: none;
+}
+
+details[open] > .reference__content,
+.reference details[open] > .reference__content {
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
 .reference__content {
     background: var(--bg-secondary);
     border-radius: var(--radius-lg);
@@ -1415,7 +1458,7 @@ body {
     position: relative;
 }
 
-.signal-lamp--active {
+.signal-lamp--on {
     background: #fff;
     box-shadow: 0 0 40px #fff, 0 0 80px rgba(255,255,255,0.4);
 }

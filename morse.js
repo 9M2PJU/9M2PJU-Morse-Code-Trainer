@@ -107,7 +107,7 @@
         getSettings(lampElement) {
             let panelId = '';
             if (lampElement) {
-                const panel = lampElement.closest('.panel');
+                const panel = lampElement.closest('.panel') || lampElement.closest('section');
                 if (panel) panelId = panel.id;
             } else {
                 const activePanel = document.querySelector('.panel--active');
@@ -126,6 +126,9 @@
             } else if (panelId === 'panel-audio-decoder') {
                 wpmSlider = document.getElementById('wpm-slider-trainer'); // Fallback or sync
                 freqSlider = document.getElementById('freq-slider-decoder');
+            } else if (panelId === 'panel-visual-encode' || panelId === 'panel-visual-decode') {
+                wpmSlider = document.getElementById('wpm-slider-v-encode');
+                freqSlider = null; // Visual mode — no audio freq needed
             } else {
                 // Default to encoder
                 wpmSlider = document.getElementById('wpm-slider-encoder') || document.getElementById('wpm-slider-trainer');
@@ -336,7 +339,7 @@
             this.lampTimers.forEach(id => clearTimeout(id));
             this.lampTimers = [];
             if (this.lampElement) {
-                this.lampElement.classList.remove('signal-lamp--active');
+                this.lampElement.classList.remove('signal-lamp--on');
             }
         }
     }
@@ -1561,7 +1564,7 @@
 
     function startNewVisualChallenge() {
         audio.stop();
-        const words = ['SOS', 'HELLO', ' Morse', 'SIGNAL', 'CQ', 'TEST', 'NAVY', '9M2PJU'];
+        const words = ['SOS', 'HELLO', 'MORSE', 'SIGNAL', 'CQ', 'TEST', 'NAVY', '9M2PJU'];
         visualChallenge = words[Math.floor(Math.random() * words.length)];
         visualChallengeMorse = textToMorse(visualChallenge);
         

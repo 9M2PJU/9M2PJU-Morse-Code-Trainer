@@ -63,10 +63,7 @@
                 <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                 <span>Visual Decode</span>
             </button>
-            <button class="tab" role="tab" aria-selected="false" data-tab="reference" id="tab-reference">
-                <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                <span>Reference</span>
-            </button>
+
         </nav>
 
         <!-- Main Content Area -->
@@ -547,19 +544,22 @@
                 </div>
             </section>
 
-            <!-- === REFERENCE PANEL === -->
-            <section class="panel" id="panel-reference" role="tabpanel" aria-labelledby="tab-reference">
-                <div class="panel__header">
-                    <h2 class="panel__header-title">📜 Morse Code Reference Chart</h2>
-                    <p class="panel__header-desc">A quick lookup for common Morse code symbols and prosigns.</p>
-                </div>
+
+        </main>
+
+        <!-- Morse Code Reference Chart (always visible at bottom) -->
+        <section class="reference">
+            <details>
+                <summary class="reference__toggle">
+                    <h3 class="reference__title">📜 Morse Code Reference Chart</h3>
+                </summary>
                 <div class="reference__content">
                     <div class="reference__chart" id="reference-chart">
                         <!-- Populated by JS -->
                     </div>
                 </div>
-            </section>
-        </main>
+            </details>
+        </section>
 
 
         <!-- Footer -->
