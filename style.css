@@ -1149,46 +1149,18 @@ body {
 }
 
 /* ---------- Reference Chart ---------- */
-.reference {
-    margin-top: var(--space-xl);
-}
-
-.reference__details {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
+.reference__content {
+    background: var(--bg-secondary);
     border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
     overflow: hidden;
-}
-
-.reference__toggle {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-md) var(--space-lg);
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-    cursor: pointer;
-    list-style: none;
-    transition: color var(--transition);
-}
-
-.reference__toggle::-webkit-details-marker { display: none; }
-
-.reference__toggle:hover {
-    color: var(--text-primary);
-}
-
-.reference__toggle svg {
-    flex-shrink: 0;
 }
 
 .reference__chart {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 2px;
-    padding: var(--space-sm);
-    background: var(--bg-secondary);
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 4px;
+    padding: var(--space-md);
 }
 
 .ref-item {
