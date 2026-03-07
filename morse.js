@@ -880,6 +880,166 @@
         if (text) navigator.clipboard.writeText(text).then(() => showToast('Decoded text copied!'));
     });
 
+    // ─── CONTEST TRAINER ───────────────────────────
+    const contestTypeGroup = document.getElementById('contest-type-group');
+    const contestMorse = document.getElementById('contest-morse');
+    const contestVisual = document.getElementById('contest-visual');
+    const contestCallsignInput = document.getElementById('contest-callsign');
+    const contestRstInput = document.getElementById('contest-rst');
+    const contestExchangeInput = document.getElementById('contest-exchange');
+    const contestNewBtn = document.getElementById('contest-new');
+    const contestLogBtn = document.getElementById('contest-log');
+    const contestReplayBtn = document.getElementById('contest-replay');
+    const contestRevealBtn = document.getElementById('contest-reveal');
+    const contestLamp = document.getElementById('contest-lamp');
+    const contestFeedback = document.getElementById('contest-feedback');
+    const contestQSOsValue = document.getElementById('contest-qsos');
+    const contestBustedValue = document.getElementById('contest-busted');
+    const contestStreakValue = document.getElementById('contest-streak');
+    const contestAccuracyValue = document.getElementById('contest-accuracy');
+    const contestLogBody = document.getElementById('contest-log-body');
+
+    let currentContestQSO = { callsign: '', rst: '', exchange: '', morse: '' };
+    let contestType = 'general';
+    let contestStats = { qsos: 0, busted: 0, streak: 0 };
+    let qsoHistory = [];
+
+    const US_STATES = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'];
+    const FIELD_DAY_CLASSES = ['1A', '2A', '3A', '4A', '5A', '1B', '2B', '1C', '1D', '1E', '1F'];
+    const SOTA_REFS = ['SP/BA-001', 'G/LD-001', 'W6/SC-001', 'VK2/HU-001', 'JA/SO-001'];
+
+    function generateContestQSO() {
+        // Generate a random callsign
+        const prefix = CALLSIGN_PREFIXES[Math.floor(Math.random() * CALLSIGN_PREFIXES.length)];
+        const num = Math.floor(Math.random() * 10);
+        const suffLen = Math.floor(Math.random() * 3) + 1;
+        let suffix = '';
+        for (let i = 0; i < suffLen; i++) suffix += CALLSIGN_SUFFIXES[Math.floor(Math.random() * CALLSIGN_SUFFIXES.length)];
+        const callsign = prefix + (/\d/.test(prefix) ? '' : num) + suffix;
+
+        let rst = (Math.random() > 0.8) ? '5nn' : '599';
+        if (Math.random() > 0.95) rst = (Math.floor(Math.random() * 3) + 3) + '99';
+
+        let exchange = '';
+        switch (contestType) {
+            case 'dx':
+                exchange = (Math.floor(Math.random() * 40) + 1).toString().padStart(2, '0'); // Zone
+                break;
+            case 'fieldday':
+                exchange = FIELD_DAY_CLASSES[Math.floor(Math.random() * FIELD_DAY_CLASSES.length)] + ' ' + US_STATES[Math.floor(Math.random() * US_STATES.length)];
+                break;
+            case 'sota':
+                exchange = SOTA_REFS[Math.floor(Math.random() * SOTA_REFS.length)];
+                break;
+            default: // general
+                exchange = (Math.floor(Math.random() * 999) + 1).toString().padStart(3, '0');
+        }
+
+        const morse = `${callsign} ${rst} ${exchange}`;
+        return { callsign, rst: rst.replace(/n/g, '9'), exchange, morse: textToMorse(morse) };
+    }
+
+    function startNewQSO() {
+        audio.stop();
+        currentContestQSO = generateContestQSO();
+        
+        contestMorse.innerHTML = formatMorseHTML(currentContestQSO.morse);
+        contestVisual.innerHTML = createVisualMorse(currentContestQSO.morse);
+        
+        contestCallsignInput.value = '';
+        contestRstInput.value = '';
+        contestExchangeInput.value = '';
+        contestLogBtn.disabled = false;
+        contestFeedback.textContent = '';
+        contestFeedback.className = 'trainer__feedback';
+        
+        contestCallsignInput.focus();
+        audio.playMorse(currentContestQSO.morse, contestLamp);
+    }
+
+    function logQSO() {
+        if (!currentContestQSO.callsign) return;
+
+        const typedCall = contestCallsignInput.value.trim().toUpperCase();
+        const typedRst = contestRstInput.value.trim().toUpperCase().replace(/N/g, '9');
+        const typedExch = contestExchangeInput.value.trim().toUpperCase();
+
+        const correctCall = currentContestQSO.callsign.toUpperCase();
+        const correctRst = currentContestQSO.rst.toUpperCase();
+        const correctExch = currentContestQSO.exchange.toUpperCase();
+
+        const isCorrect = (typedCall === correctCall && typedRst === correctRst && typedExch === correctExch);
+
+        if (isCorrect) {
+            contestStats.qsos++;
+            contestStats.streak++;
+            contestFeedback.textContent = `✅ QSO Logged! ${correctCall} ${correctRst} ${correctExch}`;
+            contestFeedback.className = 'trainer__feedback trainer__feedback--correct';
+            addQSOToHistory(currentContestQSO, 'Correct');
+        } else {
+            contestStats.busted++;
+            contestStats.streak = 0;
+            contestFeedback.textContent = `❌ Busted! Expected: ${correctCall} ${correctRst} ${correctExch}`;
+            contestFeedback.className = 'trainer__feedback trainer__feedback--wrong';
+            addQSOToHistory(currentContestQSO, 'Busted');
+        }
+
+        updateContestStats();
+        contestLogBtn.disabled = true;
+    }
+
+    function addQSOToHistory(qso, result) {
+        qsoHistory.unshift({ ...qso, result, id: qsoHistory.length + 1 });
+        if (qsoHistory.length > 50) qsoHistory.pop();
+        renderQSOLog();
+    }
+
+    function renderQSOLog() {
+        contestLogBody.innerHTML = qsoHistory.map(h => `
+            <tr>
+                <td>${h.id}</td>
+                <td>${h.callsign}</td>
+                <td>${h.rst}</td>
+                <td>${h.exchange}</td>
+                <td class="${h.result === 'Correct' ? 'result--correct' : 'result--wrong'}">${h.result}</td>
+            </tr>
+        `).join('');
+    }
+
+    function updateContestStats() {
+        contestQSOsValue.textContent = contestStats.qsos;
+        contestBustedValue.textContent = contestStats.busted;
+        contestStreakValue.textContent = contestStats.streak;
+        const total = contestStats.qsos + contestStats.busted;
+        contestAccuracyValue.textContent = total > 0 ? `${Math.round((contestStats.qsos / total) * 100)}%` : '—';
+    }
+
+    contestTypeGroup.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-contest]');
+        if (!btn) return;
+        contestTypeGroup.querySelectorAll('.btn--toggle').forEach(b => b.classList.remove('btn--toggle--active'));
+        btn.classList.add('btn--toggle--active');
+        contestType = btn.dataset.contest;
+    });
+
+    contestNewBtn.addEventListener('click', startNewQSO);
+    contestLogBtn.addEventListener('click', logQSO);
+    contestReplayBtn.addEventListener('click', () => {
+        if (currentContestQSO.morse) audio.playMorse(currentContestQSO.morse, contestLamp);
+    });
+    contestRevealBtn.addEventListener('click', () => {
+        if (!currentContestQSO.callsign) return;
+        contestFeedback.textContent = `👁 Exchange: ${currentContestQSO.callsign} ${currentContestQSO.rst} ${currentContestQSO.exchange}`;
+        contestFeedback.className = 'trainer__feedback trainer__feedback--reveal';
+    });
+
+    // Enter key to log
+    [contestCallsignInput, contestRstInput, contestExchangeInput].forEach(input => {
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !contestLogBtn.disabled) logQSO();
+        });
+    });
+
     // ─── Keyboard Shortcut Hints ───────────────────
     document.addEventListener('keydown', (e) => {
         // Ctrl+1/2/3/4 to switch tabs

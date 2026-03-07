@@ -63,6 +63,10 @@
                 <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/></svg>
                 <span>Trainer</span>
             </button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="contest" id="tab-contest">
+                <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 7 7 7 7"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 17 7 17 7"/><path d="M4 22h16"/><path d="M10 22V2h4v20"/><path d="M8 9h8l-1 13H9L8 9z"/></svg>
+                <span>Contest</span>
+            </button>
         </nav>
 
         <!-- Main Content Area -->
@@ -289,6 +293,115 @@
 
                     <!-- Feedback -->
                     <div class="trainer__feedback" id="trainer-feedback"></div>
+                </div>
+            </section>
+
+            <!-- === CONTEST TRAINER PANEL === -->
+            <section class="panel" id="panel-contest" role="tabpanel" aria-labelledby="tab-contest">
+                <div class="panel__header">
+                    <h2 class="panel__title">🏆 Contest Trainer</h2>
+                    <p class="panel__desc">Simulate ham radio contest QSO exchanges. Listen to the Morse code, then log the callsign, RST, and exchange info. Practice your pileup skills!</p>
+                </div>
+                <div class="contest">
+                    <!-- Contest type selector -->
+                    <div class="contest__type">
+                        <span class="field-label">Contest Type</span>
+                        <div class="btn-group" id="contest-type-group">
+                            <button class="btn btn--sm btn--toggle btn--toggle--active" data-contest="general">General</button>
+                            <button class="btn btn--sm btn--toggle" data-contest="dx">DX Contest</button>
+                            <button class="btn btn--sm btn--toggle" data-contest="fieldday">Field Day</button>
+                            <button class="btn btn--sm btn--toggle" data-contest="sota">SOTA</button>
+                        </div>
+                    </div>
+
+                    <!-- QSO Exchange display -->
+                    <div class="contest__exchange">
+                        <div class="challenge-card" id="contest-card">
+                            <div class="contest__qso-label">Incoming QSO Exchange</div>
+                            <div class="challenge-card__morse" id="contest-morse">Press "New QSO" to start</div>
+                            <div class="challenge-card__visual" id="contest-visual"></div>
+                        </div>
+                        <div class="signal-lamp signal-lamp--lg" id="contest-lamp"></div>
+                    </div>
+
+                    <!-- Log entry form -->
+                    <div class="contest__log-entry">
+                        <div class="contest__fields">
+                            <div class="contest__field">
+                                <label for="contest-callsign" class="field-label">Callsign</label>
+                                <input type="text" id="contest-callsign" class="input" placeholder="e.g. W1AW" autocomplete="off" spellcheck="false">
+                            </div>
+                            <div class="contest__field">
+                                <label for="contest-rst" class="field-label">RST</label>
+                                <input type="text" id="contest-rst" class="input" placeholder="599" autocomplete="off" spellcheck="false">
+                            </div>
+                            <div class="contest__field">
+                                <label for="contest-exchange" class="field-label">Exchange</label>
+                                <input type="text" id="contest-exchange" class="input" placeholder="e.g. 001 or zone" autocomplete="off" spellcheck="false">
+                            </div>
+                        </div>
+                        <div class="contest__actions">
+                            <button class="btn btn--primary" id="contest-new">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                New QSO
+                            </button>
+                            <button class="btn btn--accent" id="contest-log" disabled>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>
+                                Log QSO
+                            </button>
+                            <button class="btn btn--ghost" id="contest-replay">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5,3 19,12 5,21"/></svg>
+                                Replay
+                            </button>
+                            <button class="btn btn--ghost" id="contest-reveal">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                Reveal
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Contest Score -->
+                    <div class="trainer__score">
+                        <div class="score-card">
+                            <span class="score-card__label">QSOs</span>
+                            <span class="score-card__value score-card__value--correct" id="contest-qsos">0</span>
+                        </div>
+                        <div class="score-card">
+                            <span class="score-card__label">Busted</span>
+                            <span class="score-card__value score-card__value--wrong" id="contest-busted">0</span>
+                        </div>
+                        <div class="score-card">
+                            <span class="score-card__label">Streak</span>
+                            <span class="score-card__value score-card__value--streak" id="contest-streak">0</span>
+                        </div>
+                        <div class="score-card">
+                            <span class="score-card__label">Accuracy</span>
+                            <span class="score-card__value" id="contest-accuracy">—</span>
+                        </div>
+                    </div>
+
+                    <!-- Feedback -->
+                    <div class="trainer__feedback" id="contest-feedback"></div>
+
+                    <!-- QSO Log Table -->
+                    <div class="contest__log-table-wrapper">
+                        <label class="field-label">QSO Log</label>
+                        <div class="contest__log-table-scroll">
+                            <table class="contest__log-table" id="contest-log-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Callsign</th>
+                                        <th>RST</th>
+                                        <th>Exchange</th>
+                                        <th>Result</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="contest-log-body">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </section>
         </main>
