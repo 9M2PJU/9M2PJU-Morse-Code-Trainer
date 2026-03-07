@@ -532,10 +532,358 @@
 
     buildReferenceChart();
 
+    // ─── AUDIO MORSE DECODER ────────────────────────
+    const audioStartBtn = document.getElementById('audio-start');
+    const audioStopBtn = document.getElementById('audio-stop');
+    const audioClearBtn = document.getElementById('audio-clear');
+    const audioLamp = document.getElementById('audio-lamp');
+    const audioStatus = document.getElementById('audio-status');
+    const audioMagnitude = document.getElementById('audio-magnitude');
+    const audioMorseOutput = document.getElementById('audio-morse-output');
+    const audioTextOutput = document.getElementById('audio-text-output');
+    const audioCopyMorse = document.getElementById('audio-copy-morse');
+    const audioCopyText = document.getElementById('audio-copy-text');
+    const detectFreqSlider = document.getElementById('detect-freq-slider');
+    const detectFreqValue = document.getElementById('detect-freq-value');
+    const thresholdSlider = document.getElementById('threshold-slider');
+    const thresholdValue = document.getElementById('threshold-value');
+    const waveformCanvas = document.getElementById('audio-waveform');
+    const waveformCtx = waveformCanvas.getContext('2d');
+
+    let audioDecoderCtx = null;
+    let micStream = null;
+    let analyserNode = null;
+    let audioProcessorInterval = null;
+    let waveformAnimFrame = null;
+    let isListening = false;
+
+    // Decoder state machine
+    let decoderState = {
+        morseBuffer: '',     // current character being built (dots/dashes)
+        fullMorse: '',       // complete morse string
+        decodedText: '',     // decoded text
+        toneOn: false,
+        toneStartTime: 0,
+        silenceStartTime: 0,
+        lastProcessTime: 0,
+        dotDuration: 80,     // will be auto-calibrated
+        samples: []          // recent tone durations for calibration
+    };
+
+    // Slider events
+    detectFreqSlider.addEventListener('input', () => {
+        detectFreqValue.textContent = `${detectFreqSlider.value} Hz`;
+    });
+
+    thresholdSlider.addEventListener('input', () => {
+        thresholdValue.textContent = thresholdSlider.value;
+    });
+
+    // Goertzel algorithm — detect energy at a specific frequency
+    function goertzelMagnitude(samples, targetFreq, sampleRate) {
+        const N = samples.length;
+        const k = Math.round(N * targetFreq / sampleRate);
+        const w = (2 * Math.PI * k) / N;
+        const cosW = Math.cos(w);
+        const coeff = 2 * cosW;
+
+        let s0 = 0, s1 = 0, s2 = 0;
+        for (let i = 0; i < N; i++) {
+            s0 = samples[i] + coeff * s1 - s2;
+            s2 = s1;
+            s1 = s0;
+        }
+
+        const power = s1 * s1 + s2 * s2 - coeff * s1 * s2;
+        return Math.sqrt(Math.abs(power)) / N;
+    }
+
+    function resetDecoderState() {
+        decoderState = {
+            morseBuffer: '',
+            fullMorse: '',
+            decodedText: '',
+            toneOn: false,
+            toneStartTime: 0,
+            silenceStartTime: 0,
+            lastProcessTime: 0,
+            dotDuration: 80,
+            samples: []
+        };
+    }
+
+    function updateAudioOutputs() {
+        const morseDisplay = decoderState.fullMorse + (decoderState.morseBuffer ? ' ' + decoderState.morseBuffer : '');
+        if (morseDisplay.trim()) {
+            audioMorseOutput.innerHTML = formatMorseHTML(morseDisplay.trim());
+        } else {
+            audioMorseOutput.innerHTML = '<span class="morse-output__placeholder">Start listening to detect Morse code…</span>';
+        }
+
+        if (decoderState.decodedText.trim()) {
+            // Also try to decode the current buffer
+            let liveText = decoderState.decodedText;
+            if (decoderState.morseBuffer) {
+                const partial = REVERSE_MAP[decoderState.morseBuffer];
+                if (partial) liveText += partial;
+            }
+            audioTextOutput.textContent = liveText;
+        } else {
+            audioTextOutput.innerHTML = '<span class="text-output__placeholder">Decoded text will appear here…</span>';
+        }
+    }
+
+    function flushCurrentChar() {
+        if (decoderState.morseBuffer) {
+            const char = REVERSE_MAP[decoderState.morseBuffer] || '?';
+            decoderState.decodedText += char;
+            decoderState.fullMorse += (decoderState.fullMorse ? ' ' : '') + decoderState.morseBuffer;
+            decoderState.morseBuffer = '';
+        }
+    }
+
+    function processAudioFrame() {
+        if (!isListening || !analyserNode) return;
+
+        const bufferLength = analyserNode.fftSize;
+        const dataArray = new Float32Array(bufferLength);
+        analyserNode.getFloatTimeDomainData(dataArray);
+
+        const targetFreq = parseInt(detectFreqSlider.value, 10);
+        const threshold = parseInt(thresholdSlider.value, 10);
+        const sampleRate = audioDecoderCtx.sampleRate;
+
+        const magnitude = goertzelMagnitude(dataArray, targetFreq, sampleRate) * 1000;
+        const isTonePresent = magnitude > threshold;
+        const now = performance.now();
+
+        audioMagnitude.textContent = `Level: ${magnitude.toFixed(1)}`;
+
+        // Update lamp
+        if (isTonePresent) {
+            audioLamp.classList.add('signal-lamp--on');
+        } else {
+            audioLamp.classList.remove('signal-lamp--on');
+        }
+
+        // State machine
+        if (isTonePresent && !decoderState.toneOn) {
+            // Tone just started
+            decoderState.toneOn = true;
+            decoderState.toneStartTime = now;
+
+            // Check silence duration (gap analysis)
+            if (decoderState.silenceStartTime > 0) {
+                const silenceDur = now - decoderState.silenceStartTime;
+                const dotRef = decoderState.dotDuration;
+
+                if (silenceDur > dotRef * 5) {
+                    // Word gap
+                    flushCurrentChar();
+                    decoderState.fullMorse += ' /';
+                    decoderState.decodedText += ' ';
+                    updateAudioOutputs();
+                } else if (silenceDur > dotRef * 2) {
+                    // Letter gap
+                    flushCurrentChar();
+                    updateAudioOutputs();
+                }
+                // else: symbol gap (within same character), do nothing
+            }
+        } else if (!isTonePresent && decoderState.toneOn) {
+            // Tone just ended
+            decoderState.toneOn = false;
+            decoderState.silenceStartTime = now;
+
+            const toneDur = now - decoderState.toneStartTime;
+            const dotRef = decoderState.dotDuration;
+
+            // Classify as dot or dash
+            if (toneDur < dotRef * 2) {
+                decoderState.morseBuffer += '.';
+                // Calibrate dot duration
+                decoderState.samples.push(toneDur);
+                if (decoderState.samples.length > 10) decoderState.samples.shift();
+            } else {
+                decoderState.morseBuffer += '-';
+                // Calibrate: dash ≈ 3× dot
+                decoderState.samples.push(toneDur / 3);
+                if (decoderState.samples.length > 10) decoderState.samples.shift();
+            }
+
+            // Recalibrate dot duration from samples
+            if (decoderState.samples.length >= 3) {
+                const avg = decoderState.samples.reduce((a, b) => a + b, 0) / decoderState.samples.length;
+                decoderState.dotDuration = Math.max(30, Math.min(300, avg));
+            }
+
+            updateAudioOutputs();
+        } else if (!isTonePresent && !decoderState.toneOn && decoderState.silenceStartTime > 0) {
+            // Extended silence — auto-flush character
+            const silenceDur = now - decoderState.silenceStartTime;
+            const dotRef = decoderState.dotDuration;
+
+            if (decoderState.morseBuffer && silenceDur > dotRef * 3) {
+                flushCurrentChar();
+                updateAudioOutputs();
+            }
+        }
+
+        decoderState.lastProcessTime = now;
+    }
+
+    // Waveform visualization
+    function drawWaveform() {
+        if (!isListening || !analyserNode) return;
+
+        const canvas = waveformCanvas;
+        const ctx = waveformCtx;
+        const width = canvas.clientWidth;
+        const height = canvas.clientHeight;
+        canvas.width = width * (window.devicePixelRatio || 1);
+        canvas.height = height * (window.devicePixelRatio || 1);
+        ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+
+        const bufferLength = analyserNode.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        analyserNode.getByteTimeDomainData(dataArray);
+
+        ctx.clearRect(0, 0, width, height);
+
+        // Background gradient
+        const gradient = ctx.createLinearGradient(0, 0, 0, height);
+        gradient.addColorStop(0, 'rgba(15, 22, 41, 0.9)');
+        gradient.addColorStop(1, 'rgba(10, 14, 23, 0.9)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, width, height);
+
+        // Center line
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.1)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, height / 2);
+        ctx.lineTo(width, height / 2);
+        ctx.stroke();
+
+        // Waveform
+        const isToneOn = audioLamp.classList.contains('signal-lamp--on');
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = isToneOn ? '#38bdf8' : '#64748b';
+        ctx.beginPath();
+
+        const sliceWidth = width / bufferLength;
+        let x = 0;
+
+        for (let i = 0; i < bufferLength; i++) {
+            const v = dataArray[i] / 128.0;
+            const y = v * height / 2;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+            x += sliceWidth;
+        }
+
+        ctx.lineTo(width, height / 2);
+        ctx.stroke();
+
+        // Glow effect when tone detected
+        if (isToneOn) {
+            ctx.shadowColor = '#38bdf8';
+            ctx.shadowBlur = 10;
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+
+        waveformAnimFrame = requestAnimationFrame(drawWaveform);
+    }
+
+    async function startListening() {
+        try {
+            audioDecoderCtx = new (window.AudioContext || window.webkitAudioContext)();
+            micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+            const source = audioDecoderCtx.createMediaStreamSource(micStream);
+            analyserNode = audioDecoderCtx.createAnalyser();
+            analyserNode.fftSize = 2048;
+            analyserNode.smoothingTimeConstant = 0.3;
+            source.connect(analyserNode);
+
+            isListening = true;
+            resetDecoderState();
+            updateAudioOutputs();
+
+            audioStartBtn.disabled = true;
+            audioStopBtn.disabled = false;
+            audioStatus.textContent = '🎧 Listening…';
+            audioStatus.classList.add('audio-decoder__status--listening');
+
+            // Process audio at ~60fps
+            audioProcessorInterval = setInterval(processAudioFrame, 16);
+            drawWaveform();
+
+        } catch (err) {
+            showToast('Microphone access denied or unavailable');
+            console.error('Mic error:', err);
+        }
+    }
+
+    function stopListening() {
+        isListening = false;
+
+        if (audioProcessorInterval) {
+            clearInterval(audioProcessorInterval);
+            audioProcessorInterval = null;
+        }
+        if (waveformAnimFrame) {
+            cancelAnimationFrame(waveformAnimFrame);
+            waveformAnimFrame = null;
+        }
+        if (micStream) {
+            micStream.getTracks().forEach(t => t.stop());
+            micStream = null;
+        }
+        if (audioDecoderCtx) {
+            audioDecoderCtx.close().catch(() => {});
+            audioDecoderCtx = null;
+        }
+        analyserNode = null;
+
+        // Flush any remaining buffer
+        flushCurrentChar();
+        updateAudioOutputs();
+
+        audioLamp.classList.remove('signal-lamp--on');
+        audioStartBtn.disabled = false;
+        audioStopBtn.disabled = true;
+        audioStatus.textContent = 'Stopped';
+        audioStatus.classList.remove('audio-decoder__status--listening');
+        audioMagnitude.textContent = 'Level: —';
+    }
+
+    audioStartBtn.addEventListener('click', startListening);
+    audioStopBtn.addEventListener('click', stopListening);
+
+    audioClearBtn.addEventListener('click', () => {
+        resetDecoderState();
+        audioMorseOutput.innerHTML = '<span class="morse-output__placeholder">Start listening to detect Morse code…</span>';
+        audioTextOutput.innerHTML = '<span class="text-output__placeholder">Decoded text will appear here…</span>';
+    });
+
+    audioCopyMorse.addEventListener('click', () => {
+        const morse = decoderState.fullMorse.trim();
+        if (morse) navigator.clipboard.writeText(morse).then(() => showToast('Morse code copied!'));
+    });
+
+    audioCopyText.addEventListener('click', () => {
+        const text = decoderState.decodedText.trim();
+        if (text) navigator.clipboard.writeText(text).then(() => showToast('Decoded text copied!'));
+    });
+
     // ─── Keyboard Shortcut Hints ───────────────────
     document.addEventListener('keydown', (e) => {
-        // Ctrl+1/2/3 to switch tabs
-        if (e.ctrlKey && ['1', '2', '3'].includes(e.key)) {
+        // Ctrl+1/2/3/4 to switch tabs
+        if (e.ctrlKey && ['1', '2', '3', '4'].includes(e.key)) {
             e.preventDefault();
             const idx = parseInt(e.key) - 1;
             tabs[idx]?.click();
