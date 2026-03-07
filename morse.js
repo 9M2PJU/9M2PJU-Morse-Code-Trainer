@@ -31,6 +31,48 @@
         if (char !== ' ') REVERSE_MAP[code] = char;
     }
 
+    // ─── Persistence ───────────────────────────────
+    class AppPersistence {
+        constructor() {
+            this.STORAGE_KEY = 'morse_trainer_data';
+            this.defaults = {
+                wpm: 20,
+                freq: 600,
+                farnsworth: 20,
+                kochLevel: 1,
+                noiseEnabled: false,
+                noiseVol: 5,
+                qsbEnabled: false,
+                qsbLevel: 5,
+                contestWpm: 25,
+                contestFreq: 600,
+                stats: { correct: 0, wrong: 0, streak: 0 },
+                contestStats: { qsos: 0, busted: 0, streak: 0 }
+            };
+        }
+
+        save(data) {
+            try {
+                const current = this.load();
+                const updated = { ...current, ...data };
+                localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updated));
+            } catch (e) {
+                console.error('Failed to save settings:', e);
+            }
+        }
+
+        load() {
+            try {
+                const data = localStorage.getItem(this.STORAGE_KEY);
+                return data ? JSON.parse(data) : this.defaults;
+            } catch (e) {
+                return this.defaults;
+            }
+        }
+    }
+
+    const persistence = new AppPersistence();
+
     // ─── Audio Engine ──────────────────────────────
     class MorseAudio {
         constructor() {
@@ -60,22 +102,41 @@
             }
         }
 
-        // Get effective settings (check if local overrides exist for given lamp element)
+        // Get effective settings based on active panel
         getSettings(lampElement) {
-            let wpmSlider = document.getElementById('wpm-slider');
-            let freqSlider = document.getElementById('freq-slider');
-
-            // If lamp belongs to Contest Trainer, use contest-specific sliders
-            if (lampElement && lampElement.id === 'contest-lamp') {
-                const localWpm = document.getElementById('contest-wpm-slider');
-                const localFreq = document.getElementById('contest-freq-slider');
-                if (localWpm) wpmSlider = localWpm;
-                if (localFreq) freqSlider = localFreq;
+            let panelId = '';
+            if (lampElement) {
+                const panel = lampElement.closest('.panel');
+                if (panel) panelId = panel.id;
+            } else {
+                const activePanel = document.querySelector('.panel--active');
+                if (activePanel) panelId = activePanel.id;
             }
 
-            const wpm = parseInt(wpmSlider.value, 10);
-            const freq = parseInt(freqSlider.value, 10);
+            let wpmSlider, freqSlider;
+            const farnsworthSlider = document.getElementById('farnsworth-slider');
+
+            if (panelId === 'panel-contest') {
+                wpmSlider = document.getElementById('contest-wpm-slider');
+                freqSlider = document.getElementById('contest-freq-slider');
+            } else if (panelId === 'panel-trainer') {
+                wpmSlider = document.getElementById('wpm-slider-trainer');
+                freqSlider = document.getElementById('freq-slider-trainer');
+            } else if (panelId === 'panel-audio-decoder') {
+                wpmSlider = document.getElementById('wpm-slider-trainer'); // Fallback or sync
+                freqSlider = document.getElementById('freq-slider-decoder');
+            } else {
+                // Default to encoder
+                wpmSlider = document.getElementById('wpm-slider-encoder') || document.getElementById('wpm-slider-trainer');
+                freqSlider = document.getElementById('freq-slider-encoder') || document.getElementById('freq-slider-trainer');
+            }
+
+            const wpm = wpmSlider ? parseInt(wpmSlider.value, 10) : 20;
+            const freq = freqSlider ? parseInt(freqSlider.value, 10) : 600;
+            const fwpm = farnsworthSlider ? parseInt(farnsworthSlider.value, 10) : wpm;
+            
             const dotDuration = 1.2 / wpm;
+            const fDotDuration = 1.2 / Math.min(wpm, fwpm);
 
             return {
                 wpm,
@@ -83,8 +144,8 @@
                 dot: dotDuration,
                 dash: dotDuration * 3,
                 symbolGap: dotDuration,
-                letterGap: dotDuration * 3,
-                wordGap: dotDuration * 7
+                letterGap: fDotDuration * 3,
+                wordGap: fDotDuration * 7
             };
         }
 
@@ -360,18 +421,59 @@
     });
 
     // ─── Speed & Frequency Controls ────────────────
-    const wpmSlider = document.getElementById('wpm-slider');
-    const wpmValue = document.getElementById('wpm-value');
-    const freqSlider = document.getElementById('freq-slider');
-    const freqValue = document.getElementById('freq-value');
+    // ─── Global Sync Logic ────────────────────────
+    function syncGlobalSettings(type, value) {
+        if (type === 'wpm') {
+            const sliders = ['wpm-slider-encoder', 'wpm-slider-trainer'];
+            sliders.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.value = value;
+                    const valEl = document.getElementById(id.replace('slider', 'value'));
+                    if (valEl) valEl.textContent = `${value} WPM`;
+                }
+            });
+        } else if (type === 'freq') {
+            const sliders = ['freq-slider-encoder', 'freq-slider-decoder', 'freq-slider-trainer'];
+            sliders.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.value = value;
+                    const valEl = document.getElementById(id.replace('slider', 'value'));
+                    if (valEl) valEl.textContent = `${value} Hz`;
+                }
+            });
+        }
+        saveAllSettings();
+    }
 
-    wpmSlider.addEventListener('input', () => {
-        wpmValue.textContent = `${wpmSlider.value} WPM`;
-    });
+    const encoderWpm = document.getElementById('wpm-slider-encoder');
+    const encoderFreq = document.getElementById('freq-slider-encoder');
+    const decoderFreq = document.getElementById('freq-slider-decoder');
+    const trainerWpm = document.getElementById('wpm-slider-trainer');
+    const trainerFreq = document.getElementById('freq-slider-trainer');
 
-    freqSlider.addEventListener('input', () => {
-        freqValue.textContent = `${freqSlider.value} Hz`;
-    });
+    if (encoderWpm) encoderWpm.addEventListener('input', (e) => syncGlobalSettings('wpm', e.target.value));
+    if (encoderFreq) encoderFreq.addEventListener('input', (e) => syncGlobalSettings('freq', e.target.value));
+    if (decoderFreq) decoderFreq.addEventListener('input', (e) => syncGlobalSettings('freq', e.target.value));
+    if (trainerWpm) trainerWpm.addEventListener('input', (e) => syncGlobalSettings('wpm', e.target.value));
+    if (trainerFreq) trainerFreq.addEventListener('input', (e) => syncGlobalSettings('freq', e.target.value));
+
+    if (farnsworthSlider) {
+        farnsworthSlider.addEventListener('input', () => {
+            const fv = document.getElementById('farnsworth-value');
+            if (fv) fv.textContent = farnsworthSlider.value;
+            saveAllSettings();
+        });
+    }
+
+    if (kochLevelSlider) {
+        kochLevelSlider.addEventListener('input', () => {
+            const kv = document.getElementById('koch-level-value');
+            if (kv) kv.textContent = kochLevelSlider.value;
+            saveAllSettings();
+        });
+    }
 
     // ─── ENCODER ───────────────────────────────────
     const encoderInput = document.getElementById('encoder-input');
@@ -494,12 +596,72 @@
     const scoreAccuracy = document.getElementById('score-accuracy');
     const trainerStop = document.getElementById('trainer-stop');
 
+    function saveAllSettings() {
+        persistence.save({
+            wpm: parseInt(encoderWpm.value, 10),
+            freq: parseInt(encoderFreq.value, 10),
+            farnsworth: parseInt(farnsworthSlider.value, 10),
+            kochLevel: parseInt(kochLevelSlider.value, 10),
+            noiseEnabled: noiseToggle.checked,
+            noiseVol: parseInt(noiseVolume.value, 10),
+            qsbEnabled: qsbToggle.checked,
+            qsbLevel: parseInt(qsbLevel.value, 10),
+            contestWpm: parseInt(contestWpmSlider.value, 10),
+            contestFreq: parseInt(contestFreqSlider.value, 10),
+            stats: stats,
+            contestStats: contestStats
+        });
+    }
+
+    function loadAllSettings() {
+        const data = persistence.load();
+        
+        const wpm = data.wpm || 20;
+        const freq = data.freq || 600;
+
+        syncGlobalSettings('wpm', wpm);
+        syncGlobalSettings('freq', freq);
+
+        if (farnsworthSlider) farnsworthSlider.value = data.farnsworth || 20;
+        if (kochLevelSlider) kochLevelSlider.value = data.kochLevel || 1;
+        
+        const fv = document.getElementById('farnsworth-value');
+        if (fv) fv.textContent = farnsworthSlider.value;
+        const kv = document.getElementById('koch-level-value');
+        if (kv) kv.textContent = kochLevelSlider.value;
+
+        // Audio effects
+        noiseToggle.checked = !!data.noiseEnabled;
+        noiseVolume.value = data.noiseVol || 5;
+        qsbToggle.checked = !!data.qsbEnabled;
+        qsbLevel.value = data.qsbLevel || 5;
+
+        // Contest settings
+        if (contestWpmSlider) contestWpmSlider.value = data.contestWpm || 25;
+        if (contestFreqSlider) contestFreqSlider.value = data.contestFreq || 600;
+        if (contestWpmValue) contestWpmValue.textContent = `${contestWpmSlider.value} WPM`;
+        if (contestFreqValue) contestFreqValue.textContent = `${contestFreqSlider.value} Hz`;
+
+        // Load stats
+        if (data.stats) Object.assign(stats, data.stats);
+        if (data.contestStats) Object.assign(contestStats, data.contestStats);
+        
+        updateStatsView();
+        updateContestStats();
+        updateHFNoise();
+        updateQSB();
+    }
+
     let currentChallenge = '';
     let currentChallengeMorse = '';
     let difficulty = 'letters';
     let isContinuous = false;
     let autoNextTimeout = null;
     let stats = { correct: 0, wrong: 0, streak: 0, maxStreak: 0 };
+
+    const KOCH_SEQUENCE = "KMRSUAPTLOWI.NJEF0Y,VG5/Q9ZH38B?427C1D6X@";
+    const kochLevelSlider = document.getElementById('koch-level-slider');
+    const farnsworthSlider = document.getElementById('farnsworth-slider');
 
     const COMMON_WORDS = [
         'CQ', 'DE', 'THE', 'AND', 'FOR', 'ARE', 'BUT', 'NOT', 'YOU',
@@ -553,6 +715,16 @@
                 let result = '';
                 for (let i = 0; i < count; i++) {
                     result += chars[Math.floor(Math.random() * chars.length)];
+                }
+                return result;
+            }
+            case 'koch': {
+                const level = parseInt(kochLevelSlider.value, 10);
+                const availableChars = KOCH_SEQUENCE.substring(0, Math.min(level, KOCH_SEQUENCE.length));
+                const count = Math.floor(Math.random() * 3) + 2;
+                let result = '';
+                for (let i = 0; i < count; i++) {
+                    result += availableChars[Math.floor(Math.random() * availableChars.length)];
                 }
                 return result;
             }
@@ -729,8 +901,8 @@
     const audioTextOutput = document.getElementById('audio-text-output');
     const audioCopyMorse = document.getElementById('audio-copy-morse');
     const audioCopyText = document.getElementById('audio-copy-text');
-    const detectFreqSlider = document.getElementById('detect-freq-slider');
-    const detectFreqValue = document.getElementById('detect-freq-value');
+    const detectFreqSlider = document.getElementById('freq-slider-decoder');
+    const detectFreqValue = document.getElementById('freq-value-decoder');
     const thresholdSlider = document.getElementById('threshold-slider');
     const thresholdValue = document.getElementById('threshold-value');
     const waveformCanvas = document.getElementById('audio-waveform');
@@ -1106,15 +1278,16 @@
         audio.updateNoise(noiseToggle.checked, parseInt(noiseVolume.value, 10));
     };
 
-    noiseToggle.addEventListener('change', updateHFNoise);
-    noiseVolume.addEventListener('input', updateHFNoise);
+    noiseToggle.addEventListener('change', () => { updateHFNoise(); saveAllSettings(); });
+    noiseVolume.addEventListener('input', () => { updateHFNoise(); saveAllSettings(); });
 
     const updateQSB = () => {
         audio.updateQSB(qsbToggle.checked, parseInt(qsbLevel.value, 10));
+        saveAllSettings();
     };
 
-    qsbToggle.addEventListener('change', updateQSB);
-    qsbLevel.addEventListener('input', updateQSB);
+    qsbToggle.addEventListener('change', () => { updateQSB(); saveAllSettings(); });
+    qsbLevel.addEventListener('input', () => { updateQSB(); saveAllSettings(); });
 
     let currentContestQSO = { callsign: '', rst: '', exchange: '', morse: '' };
     let contestType = 'general';
@@ -1230,6 +1403,7 @@
 
         updateContestStats();
         contestLogBtn.disabled = true;
+        saveAllSettings();
     }
 
     function addQSOToHistory(qso, result) {
@@ -1303,5 +1477,8 @@
     // ─── Initialize Audio Context on First Interaction ──
     document.addEventListener('click', () => audio.init(), { once: true });
     document.addEventListener('keydown', () => audio.init(), { once: true });
+
+    // ─── Load Persistence ──
+    loadAllSettings();
 
 })();

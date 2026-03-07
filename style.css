@@ -235,10 +235,20 @@ body {
 }
 
 .header__subtitle {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
-    font-weight: 400;
+    font-weight: 500;
     letter-spacing: 0.5px;
+}
+
+/* Panel Localized Controls */
+.panel__controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--border);
 }
 
 .header__controls {
@@ -998,11 +1008,80 @@ body {
     background: var(--bg-card);
     color: var(--text-muted);
     font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    padding: 10px 12px;
+    padding: var(--space-xs) var(--space-sm);
     text-align: left;
+    text-transform: uppercase;
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+}
+
+.contest__log-table td {
+    padding: var(--space-xs) var(--space-sm);
     border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+}
+
+/* ---------- Settings Panel ---------- */
+.settings {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.settings__section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+}
+
+.settings__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.settings__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-md);
+}
+
+.settings__control {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.settings__label-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.settings__help {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+/* --- Results/Correct/Wrong colors --- */
+.result--correct { color: var(--green); font-weight: 600; }
+.result--wrong { color: var(--red); font-weight: 600; }
+
+.contest__log-table th {
+    background: var(--bg-card);
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    padding: var(--space-xs) var(--space-sm);
+    text-align: left;
+    text-transform: uppercase;
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
 }
 
 .contest__log-table td {

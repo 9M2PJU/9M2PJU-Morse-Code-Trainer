@@ -31,18 +31,6 @@
                     <p class="header__subtitle">Trainer · Encoder · Decoder</p>
                 </div>
             </div>
-            <div class="header__controls">
-                <label class="speed-control" for="wpm-slider">
-                    <span class="speed-control__label">Speed</span>
-                    <input type="range" id="wpm-slider" class="speed-control__slider" min="5" max="40" value="15">
-                    <span class="speed-control__value" id="wpm-value">15 WPM</span>
-                </label>
-                <label class="freq-control" for="freq-slider">
-                    <span class="freq-control__label">Tone</span>
-                    <input type="range" id="freq-slider" class="freq-control__slider" min="400" max="900" value="650" step="10">
-                    <span class="freq-control__value" id="freq-value">650 Hz</span>
-                </label>
-            </div>
         </header>
 
         <!-- Tab Navigation -->
@@ -67,6 +55,10 @@
                 <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 7 7 7 7"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 17 7 17 7"/><path d="M4 22h16"/><path d="M10 22V2h4v20"/><path d="M8 9h8l-1 13H9L8 9z"/></svg>
                 <span>Contest</span>
             </button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="settings" id="tab-settings">
+                <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <span>Settings</span>
+            </button>
         </nav>
 
         <!-- Main Content Area -->
@@ -77,6 +69,20 @@
                 <div class="panel__header">
                     <h2 class="panel__title">Text → Morse Code</h2>
                     <p class="panel__desc">Type or paste text to convert it to Morse code, then play it back as audio.</p>
+                </div>
+
+                <!-- Localized Controls -->
+                <div class="panel__controls">
+                    <label class="audio-control" for="wpm-slider-encoder">
+                        <span class="audio-control__label">Speed</span>
+                        <input type="range" id="wpm-slider-encoder" class="audio-control__slider" min="5" max="40" value="20">
+                        <span class="audio-control__value" id="wpm-value-encoder">20 WPM</span>
+                    </label>
+                    <label class="audio-control" for="freq-slider-encoder">
+                        <span class="audio-control__label">Tone</span>
+                        <input type="range" id="freq-slider-encoder" class="audio-control__slider" min="400" max="900" value="600" step="10">
+                        <span class="audio-control__value" id="freq-value-encoder">600 Hz</span>
+                    </label>
                 </div>
                 <div class="encoder">
                     <div class="encoder__input-group">
@@ -151,20 +157,21 @@
                     <h2 class="panel__title">🎤 Audio Morse Decoder</h2>
                     <p class="panel__desc">Use your microphone to listen to Morse code tones and decode them in real-time. Set the target frequency to match the tone you're receiving.</p>
                 </div>
+
+                <!-- Localized Controls (Tone selection is critical here) -->
+                <div class="panel__controls">
+                    <label class="audio-control" for="freq-slider-decoder">
+                        <span class="audio-control__label">Listen Tone</span>
+                        <input type="range" id="freq-slider-decoder" class="audio-control__slider" min="300" max="1200" value="600" step="10">
+                        <span class="audio-control__value" id="freq-value-decoder">600 Hz</span>
+                    </label>
+                    <label class="audio-control" for="threshold-slider">
+                        <span class="audio-control__label">Sensitivity</span>
+                        <input type="range" id="threshold-slider" class="audio-control__slider" min="1" max="50" value="10">
+                        <span class="audio-control__value" id="threshold-value">10</span>
+                    </label>
+                </div>
                 <div class="audio-decoder">
-                    <!-- Frequency & Threshold controls -->
-                    <div class="audio-decoder__controls">
-                        <label class="audio-control" for="detect-freq-slider">
-                            <span class="audio-control__label">Target Freq</span>
-                            <input type="range" id="detect-freq-slider" class="audio-control__slider" min="300" max="1200" value="650" step="10">
-                            <span class="audio-control__value" id="detect-freq-value">650 Hz</span>
-                        </label>
-                        <label class="audio-control" for="threshold-slider">
-                            <span class="audio-control__label">Sensitivity</span>
-                            <input type="range" id="threshold-slider" class="audio-control__slider" min="1" max="50" value="10">
-                            <span class="audio-control__value" id="threshold-value">10</span>
-                        </label>
-                    </div>
 
                     <!-- Start/Stop -->
                     <div class="audio-decoder__actions">
@@ -224,6 +231,20 @@
                 <div class="panel__header">
                     <h2 class="panel__title">Practice Mode</h2>
                     <p class="panel__desc">Listen to Morse code and type what you hear. Train your ear to recognize characters at increasing speeds.</p>
+                </div>
+
+                <!-- Localized Controls -->
+                <div class="panel__controls">
+                    <label class="audio-control" for="wpm-slider-trainer">
+                        <span class="audio-control__label">Speed</span>
+                        <input type="range" id="wpm-slider-trainer" class="audio-control__slider" min="5" max="50" value="20">
+                        <span class="audio-control__value" id="wpm-value-trainer">20 WPM</span>
+                    </label>
+                    <label class="audio-control" for="freq-slider-trainer">
+                        <span class="audio-control__label">Tone</span>
+                        <input type="range" id="freq-slider-trainer" class="audio-control__slider" min="400" max="900" value="600" step="10">
+                        <span class="audio-control__value" id="freq-value-trainer">600 Hz</span>
+                    </label>
                 </div>
                 <div class="trainer">
                     <!-- Difficulty selector -->
@@ -312,12 +333,12 @@
                     <!-- Contest Local Audio Settings -->
                     <div class="contest__settings">
                         <div class="audio-control">
-                            <span class="audio-control__label">WPM</span>
+                            <span class="audio-control__label">Speed</span>
                             <input type="range" id="contest-wpm-slider" class="audio-control__slider" min="5" max="60" value="25">
                             <span class="audio-control__value" id="contest-wpm-value">25 WPM</span>
                         </div>
                         <div class="audio-control">
-                            <span class="audio-control__label">Freq</span>
+                            <span class="audio-control__label">Tone</span>
                             <input type="range" id="contest-freq-slider" class="audio-control__slider" min="300" max="1000" value="600">
                             <span class="audio-control__value" id="contest-freq-value">600 Hz</span>
                         </div>
@@ -378,15 +399,12 @@
                             <button class="btn btn--accent" id="contest-log" disabled>
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>
                                 Log QSO
+                            </button>
                             <button class="btn btn--ghost" id="contest-replay">
                                 <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5,3 19,12 5,21"/></svg>
                                 Replay
                             </button>
-                            <button class="btn btn--accent btn--lg" id="contest-log" disabled>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                                Log QSO
-                            </button>
-                            <button class="btn btn--ghost btn--lg" id="contest-stop" style="display: none;">
+                            <button class="btn btn--ghost" id="contest-stop" style="display: none;">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
                                 Stop
                             </button>
@@ -438,6 +456,40 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- === SETTINGS PANEL === -->
+            <section class="panel" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings">
+                <div class="panel__header">
+                    <h2 class="panel__title">⚙️ App Settings</h2>
+                    <p class="panel__desc">Configure your training experience. All settings are saved automatically.</p>
+                </div>
+                
+                <div class="settings">
+                    <div class="settings__section">
+                        <h3 class="settings__title">🎓 Training Method</h3>
+                        <div class="settings__grid">
+                            <div class="settings__control">
+                                <div class="settings__label-group">
+                                    <label class="field-label" for="koch-level-slider">Koch Level (1–40)</label>
+                                    <span class="audio-control__value" id="koch-level-value">1</span>
+                                </div>
+                                <input type="range" id="koch-level-slider" class="audio-control__slider" min="1" max="40" value="1">
+                                <p class="settings__help">The Koch Method introduces characters one by one. Master two characters at full speed before adding the next.</p>
+                            </div>
+                            <div class="settings__control">
+                                <div class="settings__label-group">
+                                    <label class="field-label" for="farnsworth-slider">Farnsworth Speed (WPM)</label>
+                                    <span class="audio-control__value" id="farnsworth-value">20</span>
+                                </div>
+                                <input type="range" id="farnsworth-slider" class="audio-control__slider" min="5" max="60" value="20">
+                                <p class="settings__help">Keeps characters at a high speed but increases spacing between them. Master instant recognition!</p>
+                            </div>
+                        </div>
+                    </div>
+
                     </div>
                 </div>
             </section>
