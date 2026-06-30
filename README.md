@@ -1,10 +1,10 @@
-# 📡 Morse Code Trainer
+# 9M2PJU Morse Code Lab
 
-A professional-grade, interactive **Morse Code Trainer, Encoder, and Decoder** — built as a high-performance static web app. Designed for amateur radio operators and CW enthusiasts.
+**9M2PJU Morse Code Lab** is a professional Morse and CW practice console with encoding, decoding, Koch learning, contest copy, audio decode, and offline install support. It is built as a high-performance static web app for amateur radio operators and CW enthusiasts.
 
 🔗 **Live Demo:** [https://morse.hamradio.my](https://morse.hamradio.my)
 
-![Morse Code Trainer](https://img.shields.io/badge/Morse-Code%20Trainer-blue?style=for-the-badge)
+![9M2PJU Morse Code Lab](https://img.shields.io/badge/9M2PJU-Morse%20Code%20Lab-27c5b3?style=for-the-badge)
 ![Built By](https://img.shields.io/badge/Built%20By-9M2PJU-orange?style=for-the-badge)
 ![Version](https://img.shields.io/badge/Version-2.6.0-green?style=for-the-badge)
 
@@ -65,14 +65,20 @@ graph TD
 
 ### 🎓 Advanced Trainer (Practice Mode)
 - **Continuous Mode**: Auto-advance to the next challenge after a correct answer (1.5s delay).
-- **7 Difficulty Levels**:
+- **8 Difficulty Levels**:
+  - **Koch Method** (progressive five-character copy groups)
   - **Letters, Numbers, Mixed**
   - **Common Words** (CW shorthand)
   - **Callsigns** (Realistic prefixes/suffixes)
   - **Prosigns** (BT, AR, SK, etc.)
   - **Abbreviations** (RST, QTH, 73, etc.)
-- **Koch Method**: Progressive character learning (Levels 1–40).
+- **Koch Method**: Progressive character learning (Levels 1–40), highlighted new characters, saved session accuracy, and one-click lesson promotion.
 - **Farnsworth Timing**: Decouple character speed from overall WPM to master instant recognition.
+
+### 📱 Installable PWA
+- **Offline Practice**: Core files are cached by a service worker after first load.
+- **Install Button**: Supported browsers show an install action in the header.
+- **App Manifest**: Standalone display, theme colors, shortcuts, and app icons for desktop/mobile install surfaces.
 
 ### 🏆 Contest Trainer
 - **QSO Simulation**: Practice logging Callsigns, RST, and Exchange data.
@@ -91,7 +97,8 @@ graph TD
 - **Localized Settings**: No more tab-switching! Every panel has its own speed and frequency controls.
 - **Persistence**: All settings and scores are saved automatically via `localStorage`.
 - **Reference Chart**: Collapsible Morse Code Reference Chart always accessible at the bottom of the page.
-- **Keyboard Shortcuts**: Ctrl+1/2/3/4 for quick tab switching.
+- **Keyboard Shortcuts**: Ctrl+1 through Ctrl+7 for quick tab switching.
+- **Professional Brand System**: Graphite workbench surfaces, teal signal accents, amber lesson highlights, and a custom 9M2PJU Morse Code Lab logo.
 
 ---
 
@@ -99,7 +106,7 @@ graph TD
 
 - **Core**: Vanilla HTML5/CSS3/JS (Zero dependencies, incredibly fast).
 - **Audio**: Web Audio API for custom synthesis and real-time gain modulation.
-- **Design**: Modern dark-mode aesthetic with custom premium scrollbars and responsive glassmorphism elements.
+- **Design**: Professional graphite console theme with custom PWA branding assets.
 
 ---
 

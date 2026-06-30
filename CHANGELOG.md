@@ -1,6 +1,20 @@
 # 📜 Changelog
 
-All notable changes to the **Morse Code Trainer** project will be documented in this file.
+All notable changes to **9M2PJU Morse Code Lab** will be documented in this file.
+
+## [Unreleased]
+### Added
+- Installable PWA support with a web manifest, service worker, app icons, offline shell caching, and browser install prompt handling.
+- Trainer shortcut URLs such as `?tab=trainer` for installed app shortcuts.
+- New 9M2PJU Morse Code Lab brand identity with custom SVG logo and refreshed app icons.
+
+### Improved
+- Reworked the UI theme into a professional graphite console palette with teal signal accents, amber learning highlights, and coral error states.
+- Exposed the previously hidden Koch trainer as a first-class Practice Mode difficulty.
+- Added a Koch lesson panel showing active characters, the newest character, session accuracy, and a next-lesson control.
+- Reworked Koch challenges into five-character copy groups with extra weight on the newest lesson character.
+- Made Koch answer checking tolerant of spaces, so learners can type grouped or continuous copy.
+- Extended keyboard tab shortcuts through all seven app tabs.
 
 ## [v2.6.0] - 2026-03-07
 ### ✨ Added

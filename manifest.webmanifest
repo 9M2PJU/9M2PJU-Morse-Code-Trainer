@@ -1,0 +1,46 @@
+{
+    "name": "9M2PJU Morse Code Lab",
+    "short_name": "9M2PJU Morse",
+    "description": "A professional offline Morse and CW practice lab.",
+    "start_url": ".",
+    "scope": ".",
+    "display": "standalone",
+    "background_color": "#101211",
+    "theme_color": "#101211",
+    "orientation": "portrait-primary",
+    "categories": ["education", "utilities", "productivity"],
+    "icons": [
+        {
+            "src": "app-icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "app-icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "app-icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Koch Practice",
+            "short_name": "Koch",
+            "url": "./?tab=trainer",
+            "description": "Start Morse code listening practice"
+        },
+        {
+            "name": "Encoder",
+            "short_name": "Encode",
+            "url": "./?tab=encoder",
+            "description": "Convert text to Morse code"
+        }
+    ]
+}

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="9M2PJU Morse Code Lab icon">
+  <rect width="512" height="512" rx="96" fill="#101211"/>
+  <rect x="70" y="86" width="372" height="340" rx="52" fill="#1d211f" stroke="#46524d" stroke-width="18"/>
+  <path d="M132 178h62" stroke="#27c5b3" stroke-width="30" stroke-linecap="round"/>
+  <circle cx="250" cy="178" r="16" fill="#d4a84f"/>
+  <path d="M302 178h78" stroke="#27c5b3" stroke-width="30" stroke-linecap="round"/>
+  <path d="M134 258h244" stroke="#46524d" stroke-width="18" stroke-linecap="round"/>
+  <path d="M154 334c42 30 76 45 102 45s60-15 102-45" fill="none" stroke="#d4a84f" stroke-width="22" stroke-linecap="round"/>
+  <path d="M166 260l54-56 60 112 66-98" fill="none" stroke="#27c5b3" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

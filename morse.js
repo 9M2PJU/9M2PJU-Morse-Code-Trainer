@@ -1,6 +1,6 @@
 /* ===================================================
-   MORSE CODE TRAINER — Core Logic & UI
-   9M2PJU Morse Code Trainer
+   9M2PJU Morse Code Lab — Core Logic & UI
+   Morse and CW practice console by 9M2PJU
    =================================================== */
 
 (() => {
@@ -40,6 +40,7 @@
                 freq: 600,
                 farnsworth: 20,
                 kochLevel: 1,
+                kochSession: { correct: 0, wrong: 0 },
                 noiseEnabled: false,
                 noiseVol: 5,
                 qsbEnabled: false,
@@ -352,9 +353,10 @@
     let contestStats = { qsos: 0, busted: 0, streak: 0 };
     let currentChallenge = '';
     let currentChallengeMorse = '';
-    let difficulty = 'letters';
+    let difficulty = 'koch';
     let isContinuous = false;
     let autoNextTimeout = null;
+    let deferredInstallPrompt = null;
 
     let currentContestQSO = { callsign: '', rst: '', exchange: '', morse: '' };
     let visualChallenge = '';
@@ -411,6 +413,7 @@
     const vDecodeWpmValue = document.getElementById('wpm-value-v-decode');
     const vEncodeSoundToggle = document.getElementById('v-encode-sound');
     const vDecodeSoundToggle = document.getElementById('v-decode-sound');
+    const installAppBtn = document.getElementById('install-app');
 
     // ─── Utility Functions ─────────────────────────
     function textToMorse(text) {
@@ -469,28 +472,60 @@
         setTimeout(() => toast.classList.remove('toast--visible'), 2000);
     }
 
-    // ─── Tab Navigation ────────────────────────────
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            audio.stop();
-            // Stop noise if switching away from contest
-            if (tab.dataset.tab !== 'contest') {
-                audio.updateNoise(false, 0);
-                if (noiseToggle) noiseToggle.checked = false;
-            }
-            tabs.forEach(t => { t.classList.remove('tab--active'); t.setAttribute('aria-selected', 'false'); });
-            panels.forEach(p => p.classList.remove('panel--active'));
-            tab.classList.add('tab--active');
-            tab.setAttribute('aria-selected', 'true');
-            const panel = document.getElementById(`panel-${tab.dataset.tab}`);
-            if (panel) panel.classList.add('panel--active');
-
-            // Special handling for new tabs
-            if (tab.dataset.tab === 'visual-decode') {
-                vDecodeInput.value = '';
-                vDecodeFeedback.textContent = '';
-            }
+    // ─── PWA Install ──────────────────────────────
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').catch(err => {
+                console.warn('Service worker registration failed:', err);
+            });
         });
+    }
+
+    window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        deferredInstallPrompt = event;
+        if (installAppBtn) installAppBtn.hidden = false;
+    });
+
+    window.addEventListener('appinstalled', () => {
+        deferredInstallPrompt = null;
+        if (installAppBtn) installAppBtn.hidden = true;
+        showToast('App installed for offline practice!');
+    });
+
+    if (installAppBtn) {
+        installAppBtn.addEventListener('click', async () => {
+            if (!deferredInstallPrompt) return;
+            deferredInstallPrompt.prompt();
+            await deferredInstallPrompt.userChoice;
+            deferredInstallPrompt = null;
+            installAppBtn.hidden = true;
+        });
+    }
+
+    // ─── Tab Navigation ────────────────────────────
+    function activateTab(tab) {
+        if (!tab) return;
+        audio.stop();
+        if (tab.dataset.tab !== 'contest') {
+            audio.updateNoise(false, 0);
+            if (noiseToggle) noiseToggle.checked = false;
+        }
+        tabs.forEach(t => { t.classList.remove('tab--active'); t.setAttribute('aria-selected', 'false'); });
+        panels.forEach(p => p.classList.remove('panel--active'));
+        tab.classList.add('tab--active');
+        tab.setAttribute('aria-selected', 'true');
+        const panel = document.getElementById(`panel-${tab.dataset.tab}`);
+        if (panel) panel.classList.add('panel--active');
+
+        if (tab.dataset.tab === 'visual-decode') {
+            vDecodeInput.value = '';
+            vDecodeFeedback.textContent = '';
+        }
+    }
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => activateTab(tab));
     });
 
     // ─── Speed & Frequency Controls ────────────────
@@ -540,6 +575,8 @@
         kochLevelSlider.addEventListener('input', () => {
             const kv = document.getElementById('koch-level-value');
             if (kv) kv.textContent = kochLevelSlider.value;
+            kochSession = { correct: 0, wrong: 0 };
+            updateKochPanel();
             saveAllSettings();
         });
     }
@@ -665,6 +702,14 @@
     const scoreAccuracy = document.getElementById('score-accuracy');
     const scoreStreak = document.getElementById('score-streak');
     const trainerStop = document.getElementById('trainer-stop');
+    const kochPanel = document.getElementById('koch-panel');
+    const kochLessonTitle = document.getElementById('koch-lesson-title');
+    const kochLessonHelp = document.getElementById('koch-lesson-help');
+    const kochCharacters = document.getElementById('koch-characters');
+    const kochSessionCorrect = document.getElementById('koch-session-correct');
+    const kochSessionAccuracy = document.getElementById('koch-session-accuracy');
+    const kochPromote = document.getElementById('koch-promote');
+    let kochSession = { correct: 0, wrong: 0 };
 
     function saveAllSettings() {
         persistence.save({
@@ -672,6 +717,7 @@
             freq: parseInt(encoderFreq.value, 10),
             farnsworth: parseInt(farnsworthSlider.value, 10),
             kochLevel: parseInt(kochLevelSlider.value, 10),
+            kochSession: kochSession,
             noiseEnabled: noiseToggle.checked,
             noiseVol: parseInt(noiseVolume.value, 10),
             qsbEnabled: qsbToggle.checked,
@@ -716,9 +762,11 @@
         // Load stats
         if (data.stats) Object.assign(stats, data.stats);
         if (data.contestStats) Object.assign(contestStats, data.contestStats);
+        if (data.kochSession) Object.assign(kochSession, data.kochSession);
         
         updateScore();
         updateContestStats();
+        updateKochPanel();
         updateHFNoise();
         updateQSB();
     }
@@ -751,6 +799,52 @@
         'SKED', 'FER', 'AGN', 'SNR', 'TU', 'UR', 'VY', 'WID', 'ES'
     ];
 
+    function getKochChars() {
+        const level = parseInt(kochLevelSlider.value, 10);
+        const charCount = Math.min(Math.max(level + 1, 2), KOCH_SEQUENCE.length);
+        return KOCH_SEQUENCE.slice(0, charCount).split('');
+    }
+
+    function updateKochPanel() {
+        if (!kochPanel) return;
+        const chars = getKochChars();
+        const newest = chars[chars.length - 1];
+        const total = kochSession.correct + kochSession.wrong;
+        const accuracy = total ? `${Math.round((kochSession.correct / total) * 100)}%` : '—';
+
+        kochPanel.hidden = difficulty !== 'koch';
+        kochLessonTitle.textContent = `Lesson ${kochLevelSlider.value} · New: ${newest}`;
+        kochLessonHelp.textContent = `Active set: ${chars.length} characters. Copy the sound first; use Replay only after one honest attempt.`;
+        kochCharacters.innerHTML = chars.map((ch, index) => {
+            const className = index === chars.length - 1 ? 'koch-char koch-char--new' : 'koch-char';
+            return `<span class="${className}" title="${textToMorse(ch)}">${ch}</span>`;
+        }).join('');
+        kochSessionCorrect.textContent = kochSession.correct;
+        kochSessionAccuracy.textContent = accuracy;
+    }
+
+    function generateKochChallenge() {
+        const chars = getKochChars();
+        const newest = chars[chars.length - 1];
+        const weightedChars = chars.concat([newest, newest, newest]);
+        const groups = [];
+
+        for (let group = 0; group < 5; group++) {
+            let segment = '';
+            for (let i = 0; i < 5; i++) {
+                segment += weightedChars[Math.floor(Math.random() * weightedChars.length)];
+            }
+            groups.push(segment);
+        }
+
+        return groups.join(' ');
+    }
+
+    function normalizeTrainerAnswer(value) {
+        const normalized = value.trim().toUpperCase();
+        return difficulty === 'koch' ? normalized.replace(/\s+/g, '') : normalized;
+    }
+
     function generateChallenge() {
         switch (difficulty) {
             case 'letters': {
@@ -779,14 +873,7 @@
                 return result;
             }
             case 'koch': {
-                const level = parseInt(kochLevelSlider.value, 10);
-                const availableChars = KOCH_SEQUENCE.substring(0, Math.min(level, KOCH_SEQUENCE.length));
-                const count = Math.floor(Math.random() * 3) + 2;
-                let result = '';
-                for (let i = 0; i < count; i++) {
-                    result += availableChars[Math.floor(Math.random() * availableChars.length)];
-                }
-                return result;
+                return generateKochChallenge();
             }
             case 'words': {
                 return COMMON_WORDS[Math.floor(Math.random() * COMMON_WORDS.length)];
@@ -856,16 +943,26 @@
 
     function checkAnswer() {
         if (!currentChallenge) return;
-        const answer = trainerInput.value.trim().toUpperCase();
-        const correct = currentChallenge.toUpperCase();
+        const answer = normalizeTrainerAnswer(trainerInput.value);
+        const correct = normalizeTrainerAnswer(currentChallenge);
 
         if (answer === correct) {
             stats.correct++;
             stats.streak++;
             if (stats.streak > stats.maxStreak) stats.maxStreak = stats.streak;
             trainerFeedback.className = 'trainer__feedback trainer__feedback--correct';
+            trainerFeedback.textContent = 'Correct.';
             trainerInput.disabled = true;
             trainerCheck.disabled = true;
+            if (difficulty === 'koch') {
+                kochSession.correct++;
+                const total = kochSession.correct + kochSession.wrong;
+                const accuracy = Math.round((kochSession.correct / total) * 100);
+                trainerFeedback.textContent = accuracy >= 90 && kochSession.correct >= 10
+                    ? 'Correct. You are ready for the next Koch lesson.'
+                    : 'Correct.';
+                updateKochPanel();
+            }
 
             if (isContinuous) {
                 autoNextTimeout = setTimeout(newChallenge, 1500);
@@ -875,9 +972,14 @@
             stats.streak = 0;
             trainerFeedback.textContent = `❌ Wrong! You typed "${answer}" — correct answer: "${correct}"`;
             trainerFeedback.className = 'trainer__feedback trainer__feedback--wrong';
+            if (difficulty === 'koch') {
+                kochSession.wrong++;
+                updateKochPanel();
+            }
         }
 
         updateScore();
+        saveAllSettings();
     }
 
     function revealAnswer() {
@@ -903,7 +1005,21 @@
         difficultyGroup.querySelectorAll('.btn--toggle').forEach(b => b.classList.remove('btn--toggle--active'));
         btn.classList.add('btn--toggle--active');
         difficulty = btn.dataset.difficulty;
+        updateKochPanel();
     });
+
+    if (kochPromote) {
+        kochPromote.addEventListener('click', () => {
+            const current = parseInt(kochLevelSlider.value, 10);
+            kochLevelSlider.value = Math.min(parseInt(kochLevelSlider.max, 10), current + 1);
+            kochSession = { correct: 0, wrong: 0 };
+            const kv = document.getElementById('koch-level-value');
+            if (kv) kv.textContent = kochLevelSlider.value;
+            updateKochPanel();
+            saveAllSettings();
+            showToast(`Koch lesson ${kochLevelSlider.value}`);
+        });
+    }
 
     trainerNew.addEventListener('click', () => {
         isContinuous = true;
@@ -1168,15 +1284,15 @@
 
         ctx.clearRect(0, 0, width, height);
 
-        // Background gradient
+        // Visualizer background
         const gradient = ctx.createLinearGradient(0, 0, 0, height);
-        gradient.addColorStop(0, 'rgba(15, 22, 41, 0.9)');
-        gradient.addColorStop(1, 'rgba(10, 14, 23, 0.9)');
+        gradient.addColorStop(0, 'rgba(29, 33, 31, 0.94)');
+        gradient.addColorStop(1, 'rgba(18, 21, 19, 0.94)');
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, width, height);
 
         // Center line
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.1)';
+        ctx.strokeStyle = 'rgba(39, 197, 179, 0.14)';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(0, height / 2);
@@ -1186,7 +1302,7 @@
         // Waveform
         const isToneOn = audioLamp.classList.contains('signal-lamp--on');
         ctx.lineWidth = 2;
-        ctx.strokeStyle = isToneOn ? '#38bdf8' : '#64748b';
+        ctx.strokeStyle = isToneOn ? '#27c5b3' : '#7f8a83';
         ctx.beginPath();
 
         const sliceWidth = width / bufferLength;
@@ -1205,9 +1321,9 @@
 
         // Glow effect when tone detected
         if (isToneOn) {
-            ctx.shadowColor = '#38bdf8';
+            ctx.shadowColor = '#27c5b3';
             ctx.shadowBlur = 10;
-            ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+            ctx.strokeStyle = 'rgba(39, 197, 179, 0.32)';
             ctx.lineWidth = 4;
             ctx.stroke();
             ctx.shadowBlur = 0;
@@ -1514,11 +1630,11 @@
 
     // ─── Keyboard Shortcut Hints ───────────────────
     document.addEventListener('keydown', (e) => {
-        // Ctrl+1/2/3/4 to switch tabs
-        if (e.ctrlKey && ['1', '2', '3', '4'].includes(e.key)) {
+        // Ctrl+1 through Ctrl+7 to switch tabs
+        if (e.ctrlKey && ['1', '2', '3', '4', '5', '6', '7'].includes(e.key)) {
             e.preventDefault();
             const idx = parseInt(e.key) - 1;
-            tabs[idx]?.click();
+            activateTab(tabs[idx]);
         }
     });
 
@@ -1528,6 +1644,10 @@
 
     // ─── Load Persistence ──
     loadAllSettings();
+    const requestedTab = new URLSearchParams(window.location.search).get('tab');
+    if (requestedTab) {
+        activateTab(document.querySelector(`.tab[data-tab="${requestedTab}"]`));
+    }
 
     // ─── Visual Morse Logic ────────────────────────
     vEncodeWpm.addEventListener('input', () => {
