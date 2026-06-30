@@ -99,6 +99,7 @@ graph TD
 - **Reference Chart**: Collapsible Morse Code Reference Chart always accessible at the bottom of the page.
 - **Keyboard Shortcuts**: Ctrl+1 through Ctrl+7 for quick tab switching.
 - **Professional Brand System**: Graphite workbench surfaces, teal signal accents, amber lesson highlights, and a custom 9M2PJU Morse Code Lab logo.
+- **Desktop & Mobile Ready**: Responsive layouts, safe-area support, accessible zoom, scrollable mobile tabs, and graceful fallbacks for clipboard and microphone APIs.
 
 ---
 

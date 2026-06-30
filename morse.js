@@ -472,10 +472,42 @@
         setTimeout(() => toast.classList.remove('toast--visible'), 2000);
     }
 
+    async function copyText(text, successMessage) {
+        if (!text) return;
+
+        if (navigator.clipboard && window.isSecureContext) {
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast(successMessage);
+                return;
+            } catch (err) {
+                console.warn('Clipboard API failed, using fallback:', err);
+            }
+        }
+
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.top = '-9999px';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+
+        try {
+            document.execCommand('copy');
+            showToast(successMessage);
+        } catch (err) {
+            showToast('Copy is not supported in this browser');
+        } finally {
+            document.body.removeChild(textarea);
+        }
+    }
+
     // ─── PWA Install ──────────────────────────────
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js').catch(err => {
+            navigator.serviceWorker.register('./sw.js').catch(err => {
                 console.warn('Service worker registration failed:', err);
             });
         });
@@ -623,7 +655,7 @@
 
     encoderCopy.addEventListener('click', () => {
         if (!lastEncoderMorse) return;
-        navigator.clipboard.writeText(lastEncoderMorse).then(() => showToast('Morse code copied!'));
+        copyText(lastEncoderMorse, 'Morse code copied!');
     });
 
     encoderClear.addEventListener('click', () => {
@@ -676,7 +708,7 @@
 
     decoderCopy.addEventListener('click', () => {
         if (!lastDecoderText) return;
-        navigator.clipboard.writeText(lastDecoderText).then(() => showToast('Decoded text copied!'));
+        copyText(lastDecoderText, 'Decoded text copied!');
     });
 
     decoderClear.addEventListener('click', () => {
@@ -1333,6 +1365,12 @@
     }
 
     async function startListening() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            showToast('Microphone input is not supported in this browser');
+            audioStatus.textContent = 'Microphone unavailable';
+            return;
+        }
+
         try {
             audioDecoderCtx = new (window.AudioContext || window.webkitAudioContext)();
             micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -1406,12 +1444,12 @@
 
     audioCopyMorse.addEventListener('click', () => {
         const morse = decoderState.fullMorse.trim();
-        if (morse) navigator.clipboard.writeText(morse).then(() => showToast('Morse code copied!'));
+        copyText(morse, 'Morse code copied!');
     });
 
     audioCopyText.addEventListener('click', () => {
         const text = decoderState.decodedText.trim();
-        if (text) navigator.clipboard.writeText(text).then(() => showToast('Decoded text copied!'));
+        copyText(text, 'Decoded text copied!');
     });
 
     // ─── CONTEST TRAINER ───────────────────────────

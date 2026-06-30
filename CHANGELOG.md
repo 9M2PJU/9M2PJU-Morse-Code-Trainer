@@ -9,6 +9,7 @@ All notable changes to **9M2PJU Morse Code Lab** will be documented in this file
 - New 9M2PJU Morse Code Lab brand identity with custom SVG logo and refreshed app icons.
 
 ### Improved
+- Improved desktop and mobile browser compatibility with accessible viewport scaling, iOS PNG touch icon support, safe-area padding, dynamic viewport sizing, WebKit CSS fallbacks, clipboard fallback copy, and microphone feature detection.
 - Reworked the UI theme into a professional graphite console palette with teal signal accents, amber learning highlights, and coral error states.
 - Exposed the previously hidden Koch trainer as a first-class Practice Mode difficulty.
 - Added a Koch lesson panel showing active characters, the newest character, session accuracy, and a next-lesson control.
