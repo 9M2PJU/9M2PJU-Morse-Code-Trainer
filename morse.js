@@ -73,6 +73,7 @@
                 kochSession: { correct: 0, wrong: 0 },
                 trainerContinuous: true,
                 contestContinuous: true,
+                visualContinuous: true,
                 noiseEnabled: false,
                 noiseVol: 25,
                 qsbEnabled: false,
@@ -117,6 +118,7 @@
             this.scheduledNodes = [];
             this.activeLamps = new Set();
             this.lampTimers = [];
+            this.pendingResolvers = [];
             this.masterVolume = 0.8;
             
             // HF Noise
@@ -131,7 +133,7 @@
             this.isQSBEnabled = false;
         }
 
-        init() {
+        async init() {
             if (!this.ctx) {
                 const AudioCtx = window.AudioContext || window.webkitAudioContext;
                 this.ctx = new AudioCtx();
@@ -140,14 +142,18 @@
                 this.masterGain.connect(this.ctx.destination);
             }
             if (this.ctx.state === 'suspended') {
-                this.ctx.resume();
+                try {
+                    await this.ctx.resume();
+                } catch (e) {
+                    console.warn('AudioContext resume failed:', e);
+                }
             }
         }
 
         setMasterVolume(percent) {
             this.masterVolume = Math.max(0, Math.min(100, percent)) / 100;
             if (this.masterGain && this.ctx) {
-                this.masterGain.gain.setTargetAtTime(this.masterVolume, this.ctx.currentTime, 0.05);
+                this.masterGain.gain.setTargetAtTime(this.masterVolume, this.ctx.currentTime, 0.04);
             }
         }
 
@@ -170,17 +176,20 @@
             } else if (panelId === 'panel-trainer') {
                 wpmSlider = document.getElementById('wpm-slider-trainer');
                 freqSlider = document.getElementById('freq-slider-trainer');
-            } else if (panelId === 'panel-visual-encode' || panelId === 'panel-visual-decode') {
+            } else if (panelId === 'panel-visual-encode') {
                 wpmSlider = document.getElementById('wpm-slider-v-encode');
+                freqSlider = null;
+            } else if (panelId === 'panel-visual-decode') {
+                wpmSlider = document.getElementById('wpm-slider-v-decode');
                 freqSlider = null;
             } else {
                 wpmSlider = document.getElementById('wpm-slider-encoder') || document.getElementById('wpm-slider-trainer');
                 freqSlider = document.getElementById('freq-slider-encoder') || document.getElementById('freq-slider-trainer');
             }
 
-            const wpm = wpmSlider ? parseInt(wpmSlider.value, 10) : 20;
+            const wpm = wpmSlider ? Math.max(4, parseInt(wpmSlider.value, 10)) : 20;
             const freq = freqSlider ? parseInt(freqSlider.value, 10) : 600;
-            const fwpm = (panelId === 'panel-trainer' && farnsworthSlider) ? parseInt(farnsworthSlider.value, 10) : wpm;
+            const fwpm = (panelId === 'panel-trainer' && farnsworthSlider) ? Math.max(4, parseInt(farnsworthSlider.value, 10)) : wpm;
             
             const dotDuration = 1.2 / wpm;
             const fDotDuration = 1.2 / Math.min(wpm, fwpm);
@@ -197,18 +206,18 @@
         }
 
         playTone(startTime, duration, freq) {
-            if (!this.ctx) this.init();
+            if (!this.ctx) return duration;
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
 
             osc.type = 'sine';
             osc.frequency.setValueAtTime(freq, startTime);
 
-            // Raised-cosine style smooth envelope (3.5ms attack/decay) to prevent clicks
-            const attackTime = 0.0035;
+            // Smooth clickless envelope (3ms ramp)
+            const attackTime = 0.003;
             gain.gain.setValueAtTime(0, startTime);
-            gain.gain.linearRampToValueAtTime(0.7, startTime + attackTime);
-            gain.gain.setValueAtTime(0.7, startTime + duration - attackTime);
+            gain.gain.linearRampToValueAtTime(0.75, startTime + attackTime);
+            gain.gain.setValueAtTime(0.75, Math.max(startTime + attackTime, startTime + duration - attackTime));
             gain.gain.linearRampToValueAtTime(0, startTime + duration);
 
             osc.connect(gain);
@@ -227,7 +236,7 @@
         }
 
         setupNoise() {
-            this.init();
+            if (!this.ctx) return;
             if (this.noiseNode) return;
 
             const bufferSize = 2 * this.ctx.sampleRate;
@@ -263,16 +272,18 @@
         updateNoise(enabled, volumePercent) {
             if (enabled) {
                 this.setupNoise();
-                this.noiseGain.gain.setTargetAtTime((volumePercent / 100) * 0.12, this.ctx.currentTime, 0.1);
-                this.isNoiseEnabled = true;
-            } else if (this.noiseGain) {
+                if (this.noiseGain && this.ctx) {
+                    this.noiseGain.gain.setTargetAtTime((volumePercent / 100) * 0.12, this.ctx.currentTime, 0.1);
+                    this.isNoiseEnabled = true;
+                }
+            } else if (this.noiseGain && this.ctx) {
                 this.noiseGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.1);
                 this.isNoiseEnabled = false;
             }
         }
 
         setupQSB() {
-            this.init();
+            if (!this.ctx) return;
             if (this.qsbGain) return;
 
             this.qsbGain = this.ctx.createGain();
@@ -294,11 +305,13 @@
             if (enabled) {
                 this.setupQSB();
                 this.isQSBEnabled = true;
-                const depth = (depthPercent / 100) * 0.75;
-                const baseline = 1.0 - (depth / 2);
-                this.qsbGain.gain.setTargetAtTime(baseline, this.ctx.currentTime, 0.2);
-                this.qsbDepthGain.gain.setTargetAtTime(depth / 2, this.ctx.currentTime, 0.2);
-            } else if (this.qsbGain) {
+                if (this.qsbGain && this.ctx) {
+                    const depth = (depthPercent / 100) * 0.75;
+                    const baseline = 1.0 - (depth / 2);
+                    this.qsbGain.gain.setTargetAtTime(baseline, this.ctx.currentTime, 0.2);
+                    this.qsbDepthGain.gain.setTargetAtTime(depth / 2, this.ctx.currentTime, 0.2);
+                }
+            } else if (this.qsbGain && this.ctx) {
                 this.isQSBEnabled = false;
                 this.qsbGain.gain.setTargetAtTime(1.0, this.ctx.currentTime, 0.2);
                 this.qsbDepthGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.2);
@@ -306,7 +319,7 @@
         }
 
         scheduleLamp(lamp, startTime, duration) {
-            if (!lamp) return;
+            if (!lamp || !this.ctx) return;
             this.activeLamps.add(lamp);
             const now = this.ctx.currentTime;
             const onDelay = Math.max(0, (startTime - now) * 1000);
@@ -319,13 +332,13 @@
         }
 
         async playMorse(morseString, lampElement, options = {}) {
-            this.init();
+            await this.init();
             this.stop();
             this.isPlaying = true;
             const muted = !!options.muted;
 
             const s = this.getSettings(lampElement);
-            let currentTime = this.ctx.currentTime + 0.04;
+            let currentTime = this.ctx.currentTime + 0.05;
             const chars = morseString.replace(/\s+/g, ' ').trim();
 
             for (let i = 0; i < chars.length; i++) {
@@ -348,8 +361,11 @@
 
             const totalDuration = (currentTime - this.ctx.currentTime) * 1000;
             return new Promise(resolve => {
+                this.pendingResolvers.push(resolve);
                 const timerId = setTimeout(() => {
                     this.isPlaying = false;
+                    const idx = this.pendingResolvers.indexOf(resolve);
+                    if (idx !== -1) this.pendingResolvers.splice(idx, 1);
                     resolve();
                 }, Math.max(0, totalDuration));
                 this.lampTimers.push(timerId);
@@ -368,6 +384,12 @@
                 if (lamp) lamp.classList.remove('signal-lamp--on');
             });
             this.activeLamps.clear();
+
+            // Resolve any hanging playMorse promises immediately
+            while (this.pendingResolvers.length > 0) {
+                const res = this.pendingResolvers.shift();
+                if (res) res();
+            }
         }
     }
 
@@ -381,11 +403,9 @@
     let currentChallenge = '';
     let currentChallengeMorse = '';
     let difficulty = 'koch';
-    let isTrainerContinuous = true;
     let autoNextTimeout = null;
 
     let currentContestQSO = { callsign: '', rst: '', exchange: '', morse: '' };
-    let isContestContinuous = true;
     let autoNextContestTimeout = null;
     let contestType = 'general';
     let qsoHistory = [];
@@ -394,6 +414,7 @@
     let visualChallenge = '';
     let visualChallengeMorse = '';
     let visualDifficulty = 'letters';
+    let autoNextVisualTimeout = null;
 
     let deferredInstallPrompt = null;
 
@@ -782,10 +803,18 @@
     function activateTab(tab) {
         if (!tab) return;
         audio.stop();
+
+        // Clear background timeouts from previous tab
+        if (autoNextTimeout) { clearTimeout(autoNextTimeout); autoNextTimeout = null; }
+        if (autoNextContestTimeout) { clearTimeout(autoNextContestTimeout); autoNextContestTimeout = null; }
+        if (autoNextVisualTimeout) { clearTimeout(autoNextVisualTimeout); autoNextVisualTimeout = null; }
+
         if (tab.dataset.tab !== 'contest') {
             audio.updateNoise(false, 0);
-        } else if (noiseToggle.checked) {
-            updateHFNoise();
+            audio.updateQSB(false, 0);
+        } else {
+            if (noiseToggle.checked) updateHFNoise();
+            if (qsbToggle.checked) updateQSB();
         }
 
         tabs.forEach(t => { t.classList.remove('tab--active'); t.setAttribute('aria-selected', 'false'); });
@@ -796,7 +825,15 @@
         const panel = document.getElementById(`panel-${tab.dataset.tab}`);
         if (panel) panel.classList.add('panel--active');
 
-        // Scroll tab into view on mobile
+        // Initialize state if empty
+        if (tab.dataset.tab === 'trainer' && !currentChallenge) {
+            newChallenge();
+        } else if (tab.dataset.tab === 'contest' && !currentContestQSO.callsign) {
+            startNewQSO();
+        } else if (tab.dataset.tab === 'visual-decode' && !visualChallenge) {
+            startVisualChallenge();
+        }
+
         tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
 
@@ -843,12 +880,11 @@
                 }
                 deferredInstallPrompt = null;
             } else {
-                // iOS or unsupported: Show visual help dialog
                 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
                 if (isIOS) {
                     iosInstallModal.setAttribute('aria-hidden', 'false');
                 } else {
-                    showToast('To install: click your browser menu (⋮) and select "Install app".');
+                    showToast('To install: click browser menu (⋮) and select "Install app".');
                 }
             }
         });
@@ -877,6 +913,7 @@
             kochSession = { correct: 0, wrong: 0 };
             updateKochPanel();
             saveAllSettings();
+            newChallenge();
         });
     }
 
@@ -993,7 +1030,6 @@
         kochSessionAccuracy.textContent = accuracy;
     }
 
-    // Click on Koch character to preview tone
     if (kochCharacters) {
         kochCharacters.addEventListener('click', (e) => {
             const item = e.target.closest('.koch-char');
@@ -1003,14 +1039,34 @@
         });
     }
 
+    // Scaled progressive challenge groups
     function generateKochChallenge() {
+        const level = parseInt(kochLevelSlider.value, 10);
         const chars = getKochChars();
         const newest = chars[chars.length - 1];
         const weighted = chars.concat([newest, newest, newest]);
+
+        // Progressive group count based on level
+        let numGroups = 1;
+        let groupLen = 3;
+        if (level <= 3) {
+            numGroups = 1;
+            groupLen = 3;
+        } else if (level <= 8) {
+            numGroups = 2;
+            groupLen = 3;
+        } else if (level <= 15) {
+            numGroups = 2;
+            groupLen = 4;
+        } else {
+            numGroups = 3;
+            groupLen = 5;
+        }
+
         const groups = [];
-        for (let g = 0; g < 5; g++) {
+        for (let g = 0; g < numGroups; g++) {
             let seg = '';
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < groupLen; i++) {
                 seg += weighted[Math.floor(Math.random() * weighted.length)];
             }
             groups.push(seg);
@@ -1061,8 +1117,8 @@
     }
 
     function normalizeTrainerAnswer(value) {
-        const normalized = value.trim().toUpperCase();
-        return difficulty === 'koch' ? normalized.replace(/\s+/g, '') : normalized;
+        const normalized = value.trim().toUpperCase().replace(/[<>\.\,\/]/g, '');
+        return (difficulty === 'koch') ? normalized.replace(/\s+/g, '') : normalized.replace(/\s+/g, ' ');
     }
 
     function newChallenge() {
@@ -1112,7 +1168,7 @@
                 const total = kochSession.correct + kochSession.wrong;
                 const accuracy = Math.round((kochSession.correct / total) * 100);
                 if (accuracy >= 90 && kochSession.correct >= 10) {
-                    trainerFeedback.textContent = `🎯 Correct! Accuracy is ${accuracy}% — You're ready for Lesson ${parseInt(kochLevelSlider.value, 10) + 1}!`;
+                    trainerFeedback.textContent = `🎯 Correct! Accuracy is ${accuracy}% — Ready for Lesson ${parseInt(kochLevelSlider.value, 10) + 1}!`;
                 }
                 updateKochPanel();
             }
@@ -1192,6 +1248,15 @@
     trainerReplay.addEventListener('click', () => {
         if (currentChallengeMorse) audio.playMorse(currentChallengeMorse, trainerLamp);
     });
+
+    if (trainerStop) {
+        trainerStop.addEventListener('click', () => {
+            audio.stop();
+            if (autoNextTimeout) { clearTimeout(autoNextTimeout); autoNextTimeout = null; }
+            trainerFeedback.textContent = 'Practice stopped.';
+            trainerFeedback.className = 'trainer__feedback';
+        });
+    }
 
     trainerResetStats.addEventListener('click', () => {
         if (confirm('Reset practice score and streak?')) {
@@ -1283,13 +1348,15 @@
 
         const typedCall = contestCallsign.value.trim().toUpperCase();
         const typedRst = (contestRst.value.trim().toUpperCase() || '599').replace(/N/g, '9');
-        const typedExch = contestExchange.value.trim().toUpperCase();
+        const typedExch = contestExchange.value.trim().toUpperCase().replace(/\s+/g, ' ');
 
         const correctCall = currentContestQSO.callsign.toUpperCase();
         const correctRst = currentContestQSO.rst.toUpperCase();
-        const correctExch = currentContestQSO.exchange.toUpperCase();
+        const correctExch = currentContestQSO.exchange.toUpperCase().replace(/\s+/g, ' ');
 
-        const isCorrect = (typedCall === correctCall && typedRst === correctRst && typedExch === correctExch);
+        // Space-tolerant exchange matching
+        const isExchMatch = (typedExch === correctExch || typedExch.replace(/\s/g, '') === correctExch.replace(/\s/g, ''));
+        const isCorrect = (typedCall === correctCall && typedRst === correctRst && isExchMatch);
 
         if (isCorrect) {
             contestStats.qsos++;
@@ -1344,7 +1411,6 @@
         contestQSOsVal.textContent = contestStats.qsos;
         contestBustedVal.textContent = contestStats.busted;
         
-        // Calculate Run Rate (QSOs / hour)
         if (contestStartTime && contestStats.qsos > 0) {
             const elapsedHours = (Date.now() - contestStartTime) / (1000 * 60 * 60);
             const rate = Math.round(contestStats.qsos / Math.max(0.02, elapsedHours));
@@ -1401,6 +1467,15 @@
     contestReplay.addEventListener('click', () => {
         if (currentContestQSO.morse) audio.playMorse(currentContestQSO.morse, contestLamp);
     });
+
+    if (contestStop) {
+        contestStop.addEventListener('click', () => {
+            audio.stop();
+            if (autoNextContestTimeout) { clearTimeout(autoNextContestTimeout); autoNextContestTimeout = null; }
+            contestFeedback.textContent = 'Contest practice paused.';
+            contestFeedback.className = 'trainer__feedback';
+        });
+    }
 
     contestReveal.addEventListener('click', () => {
         if (!currentContestQSO.callsign) return;
@@ -1510,8 +1585,12 @@
 
     function generateVisualChallenge() {
         switch (visualDifficulty) {
-            case 'numbers':
-                return Math.floor(Math.random() * 10).toString();
+            case 'numbers': {
+                const count = Math.floor(Math.random() * 2) + 1;
+                let r = '';
+                for (let i = 0; i < count; i++) r += Math.floor(Math.random() * 10).toString();
+                return r;
+            }
             case 'words':
                 return COMMON_WORDS[Math.floor(Math.random() * COMMON_WORDS.length)];
             case 'callsigns': {
@@ -1526,6 +1605,11 @@
 
     function startVisualChallenge() {
         audio.stop();
+        if (autoNextVisualTimeout) {
+            clearTimeout(autoNextVisualTimeout);
+            autoNextVisualTimeout = null;
+        }
+
         visualChallenge = generateVisualChallenge();
         visualChallengeMorse = textToMorse(visualChallenge);
 
@@ -1559,7 +1643,7 @@
         } else {
             visualStats.wrong++;
             visualStats.streak = 0;
-            vDecodeFeedback.textContent = `❌ Try again! (Expected ${expected.length} char)`;
+            vDecodeFeedback.textContent = `❌ Try again! Expected "${expected}"`;
             vDecodeFeedback.className = 'trainer__feedback trainer__feedback--wrong';
             vDecodeInput.select();
         }
@@ -1586,7 +1670,7 @@
     });
     vDecodeReveal.addEventListener('click', () => {
         if (!visualChallenge) return;
-        vDecodeFeedback.textContent = `👁 Answer: "${visualChallenge}"`;
+        vDecodeFeedback.textContent = `👁 Answer: "${visualChallenge}" (${visualChallengeMorse})`;
         vDecodeFeedback.className = 'trainer__feedback trainer__feedback--reveal';
         vDecodeCheck.style.display = 'none';
         vDecodeNext.style.display = 'inline-flex';
@@ -1683,7 +1767,6 @@
         const dataArray = new Float32Array(bufferLength);
         analyserNode.getFloatTimeDomainData(dataArray);
 
-        // Calculate RMS Level for VU Meter
         let sumSquares = 0;
         for (let i = 0; i < bufferLength; i++) {
             sumSquares += dataArray[i] * dataArray[i];
@@ -1768,14 +1851,12 @@
 
         waveformCtx.clearRect(0, 0, width, height);
 
-        // Background
         const grad = waveformCtx.createLinearGradient(0, 0, 0, height);
         grad.addColorStop(0, '#151917');
         grad.addColorStop(1, '#0e1110');
         waveformCtx.fillStyle = grad;
         waveformCtx.fillRect(0, 0, width, height);
 
-        // Center zero line
         waveformCtx.strokeStyle = 'rgba(39, 197, 179, 0.12)';
         waveformCtx.lineWidth = 1;
         waveformCtx.beginPath();
@@ -1986,7 +2067,6 @@
 
     // ─── Global Keyboard Shortcuts ───────────────────
     document.addEventListener('keydown', (e) => {
-        // Ignore if user is typing in a textarea or input (except specific keys)
         const isInput = ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName);
 
         // Ctrl+1 through Ctrl+7 for tab switching
@@ -2031,10 +2111,11 @@
         // Ctrl+R to reveal answer
         if (e.ctrlKey && (e.key === 'r' || e.key === 'R')) {
             const activePanel = document.querySelector('.panel--active');
-            if (activePanel && (activePanel.id === 'panel-trainer' || activePanel.id === 'panel-contest')) {
+            if (activePanel) {
                 e.preventDefault();
                 if (activePanel.id === 'panel-trainer') revealAnswer();
                 else if (activePanel.id === 'panel-contest') contestReveal.click();
+                else if (activePanel.id === 'panel-visual-decode') vDecodeReveal.click();
             }
         }
     });
