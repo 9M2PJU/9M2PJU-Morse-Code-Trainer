@@ -1,10 +1,63 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="9M2PJU Morse Code Lab icon">
-  <rect width="512" height="512" rx="96" fill="#101211"/>
-  <rect x="70" y="86" width="372" height="340" rx="52" fill="#1d211f" stroke="#46524d" stroke-width="18"/>
-  <path d="M132 178h62" stroke="#27c5b3" stroke-width="30" stroke-linecap="round"/>
-  <circle cx="250" cy="178" r="16" fill="#d4a84f"/>
-  <path d="M302 178h78" stroke="#27c5b3" stroke-width="30" stroke-linecap="round"/>
-  <path d="M134 258h244" stroke="#46524d" stroke-width="18" stroke-linecap="round"/>
-  <path d="M154 334c42 30 76 45 102 45s60-15 102-45" fill="none" stroke="#d4a84f" stroke-width="22" stroke-linecap="round"/>
-  <path d="M166 260l54-56 60 112 66-98" fill="none" stroke="#27c5b3" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="9M2PJU Morse Code Lab Official Icon">
+  <defs>
+    <linearGradient id="iconBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#151a17"/>
+      <stop offset="100%" stop-color="#090c0b"/>
+    </linearGradient>
+    <linearGradient id="iconBezelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#46544e"/>
+      <stop offset="50%" stop-color="#2a332f"/>
+      <stop offset="100%" stop-color="#1a201d"/>
+    </linearGradient>
+    <linearGradient id="iconTealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5fe0d1"/>
+      <stop offset="100%" stop-color="#27c5b3"/>
+    </linearGradient>
+    <linearGradient id="iconGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f5cc76"/>
+      <stop offset="100%" stop-color="#d4a84f"/>
+    </linearGradient>
+    <filter id="iconGlowTeal" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="iconGlowGold" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Outer Squircle / Base Chassis -->
+  <rect x="24" y="24" width="464" height="464" rx="108" fill="url(#iconBgGrad)" stroke="url(#iconBezelGrad)" stroke-width="16"/>
+  <rect x="48" y="48" width="416" height="416" rx="84" fill="none" stroke="rgba(39, 197, 179, 0.18)" stroke-width="6"/>
+
+  <!-- Morse Code Pulses across Top Header ( — · — ) -->
+  <rect x="110" y="102" width="88" height="26" rx="13" fill="url(#iconTealGrad)" filter="url(#iconGlowTeal)"/>
+  <circle cx="256" cy="115" r="17" fill="url(#iconGoldGrad)" filter="url(#iconGlowGold)"/>
+  <rect x="314" y="102" width="88" height="26" rx="13" fill="url(#iconTealGrad)" filter="url(#iconGlowTeal)"/>
+
+  <!-- CW RF Sine Waveform Emission -->
+  <path d="M96 200 Q 136 150, 176 200 T 256 200 T 336 200 T 416 200" fill="none" stroke="url(#iconTealGrad)" stroke-width="14" stroke-linecap="round" filter="url(#iconGlowTeal)" opacity="0.9"/>
+
+  <!-- Precision Telegraph Straight Key Mechanism -->
+  <!-- Base Plate -->
+  <rect x="94" y="340" width="324" height="42" rx="21" fill="#1d2421" stroke="#36433d" stroke-width="8"/>
+  <circle cx="150" cy="361" r="12" fill="url(#iconGoldGrad)"/>
+  <circle cx="362" cy="361" r="12" fill="url(#iconGoldGrad)"/>
+
+  <!-- Pivot Bearing Pillar -->
+  <rect x="232" y="254" width="48" height="96" rx="12" fill="#29332e" stroke="#485850" stroke-width="8"/>
+  <circle cx="256" cy="285" r="14" fill="url(#iconGoldGrad)"/>
+
+  <!-- Key Lever Arm -->
+  <path d="M140 298 L256 280 L368 226" stroke="#485850" stroke-width="26" stroke-linecap="round"/>
+  <path d="M140 298 L256 280 L368 226" stroke="url(#iconTealGrad)" stroke-width="10" stroke-linecap="round"/>
+
+  <!-- Key Finger Knob -->
+  <ellipse cx="376" cy="218" rx="38" ry="24" fill="#141a17" stroke="url(#iconGoldGrad)" stroke-width="10"/>
+  <ellipse cx="376" cy="214" rx="22" ry="12" fill="url(#iconGoldGrad)"/>
+
+  <!-- Key Contact Gap & Gold Spark -->
+  <circle cx="154" cy="324" r="14" fill="url(#iconGoldGrad)" filter="url(#iconGlowGold)"/>
+  <path d="M154 298 L154 324" stroke="#f5cc76" stroke-width="8" stroke-linecap="round"/>
 </svg>

@@ -7,29 +7,30 @@
     <!-- Primary Meta Tags -->
     <title>9M2PJU Morse Code Lab</title>
     <meta name="title" content="9M2PJU Morse Code Lab">
-    <meta name="description" content="A professional Morse and CW practice lab for encoding, decoding, Koch learning, contest copy, and offline training.">
-    <meta name="keywords" content="Morse code, Morse code trainer, Morse code encoder, Morse code decoder, ham radio, amateur radio, CW practice, 9M2PJU">
+    <meta name="description" content="A professional Morse and CW practice lab for encoding, decoding, Koch learning, contest copy, visual signaling, and offline training.">
+    <meta name="keywords" content="Morse code, Morse code trainer, Morse code encoder, Morse code decoder, ham radio, amateur radio, CW practice, Koch method, 9M2PJU">
     <meta name="author" content="9M2PJU">
     <meta name="theme-color" content="#101211">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="9M2PJU Morse Lab">
+    <meta name="apple-mobile-web-app-title" content="Morse Lab">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="9M2PJU Morse Code Lab">
     <meta property="og:description" content="A professional Morse and CW practice lab for encoding, decoding, Koch learning, contest copy, and offline training.">
-    <meta property="og:image" content="/og-image.png">
+    <meta property="og:image" content="app-icon-512.png">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:title" content="9M2PJU Morse Code Lab">
     <meta property="twitter:description" content="A professional Morse and CW practice lab for encoding, decoding, Koch learning, contest copy, and offline training.">
-    <meta property="twitter:image" content="/og-image.png">
+    <meta property="twitter:image" content="app-icon-512.png">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="apple-touch-icon" href="app-icon-192.png">
     <link rel="stylesheet" href="style.css">
@@ -38,74 +39,107 @@
 <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <div class="app">
-        <!-- Background -->
-        <div class="bg-grid"></div>
+        <!-- Background Grid -->
+        <div class="bg-grid" aria-hidden="true"></div>
 
         <!-- Header -->
         <header class="header">
             <div class="header__brand">
                 <div class="header__logo">
-                    <img src="brand-logo.svg" alt="" class="header__logo-mark" width="42" height="42">
+                    <img src="brand-logo.svg" alt="9M2PJU Morse Code Lab Logo" class="header__logo-mark" width="46" height="46">
                 </div>
-                <div>
-                    <h1 class="header__title">9M2PJU Morse Code Lab</h1>
-                    <p class="header__subtitle">CW training console for serious copy practice</p>
+                <div class="header__text">
+                    <div class="header__title-row">
+                        <h1 class="header__title">9M2PJU Morse Code Lab</h1>
+                        <span class="header__badge">CW CONSOLE</span>
+                    </div>
+                    <p class="header__subtitle">Precision CW trainer, contest simulator &amp; signal lab</p>
                 </div>
             </div>
-            <button class="btn btn--ghost install-btn" id="install-app" hidden title="Install app">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-                <span>Install</span>
-            </button>
+
+            <!-- Header Quick Actions -->
+            <div class="header__actions">
+                <!-- Master Volume Control -->
+                <div class="header__volume" title="Master Sidetone Volume">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                    </svg>
+                    <input type="range" id="master-volume-slider" class="volume-slider" min="0" max="100" value="80" aria-label="Master Volume">
+                    <span id="master-volume-val" class="volume-val">80%</span>
+                </div>
+
+                <!-- Shortcuts button -->
+                <button class="btn btn--ghost btn--icon" id="shortcuts-btn" title="Keyboard Shortcuts (Ctrl+/)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <span class="sr-only">Keyboard Shortcuts</span>
+                </button>
+
+                <!-- PWA Install Button -->
+                <button class="btn btn--primary install-btn" id="install-app" title="Install 9M2PJU Morse Lab as App">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true">
+                        <path d="M12 3v12"/>
+                        <path d="m7 10 5 5 5-5"/>
+                        <path d="M5 21h14"/>
+                    </svg>
+                    <span>Install App</span>
+                </button>
+            </div>
         </header>
 
         <!-- Tab Navigation -->
-        <nav class="tabs" role="tablist">
-            <button class="tab tab--active" role="tab" aria-selected="true" data-tab="encoder" id="tab-encoder">
-                <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h10M4 17h13"/></svg>
-                <span>Encoder</span>
-            </button>
-            <button class="tab" role="tab" aria-selected="false" data-tab="decoder" id="tab-decoder">
-                <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
-                <span>Decoder</span>
-            </button>
-            <button class="tab" role="tab" aria-selected="false" data-tab="audio-decoder" id="tab-audio-decoder">
-                <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
-                <span>Audio Decode</span>
-            </button>
-            <button class="tab" role="tab" aria-selected="false" data-tab="trainer" id="tab-trainer">
-                <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/></svg>
-                <span>Trainer</span>
-            </button>
-            <button class="tab" role="tab" aria-selected="false" data-tab="contest" id="tab-contest">
-                <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 7 7 7 7"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 17 7 17 7"/><path d="M4 22h16"/><path d="M10 22V2h4v20"/><path d="M8 9h8l-1 13H9L8 9z"/></svg>
-                <span>Contest</span>
-            </button>
-            <button class="tab" role="tab" aria-selected="false" data-tab="visual-encode" id="tab-visual-encode">
-                <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/><circle cx="12" cy="12" r="4"/></svg>
-                <span>Visual Encode</span>
-            </button>
-            <button class="tab" role="tab" aria-selected="false" data-tab="visual-decode" id="tab-visual-decode">
-                <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                <span>Visual Decode</span>
-            </button>
-
+        <nav class="tabs-nav" aria-label="Feature Tabs">
+            <div class="tabs" role="tablist">
+                <button class="tab tab--active" role="tab" aria-selected="true" aria-controls="panel-encoder" data-tab="encoder" id="tab-encoder">
+                    <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h13"/></svg>
+                    <span>Encoder</span>
+                </button>
+                <button class="tab" role="tab" aria-selected="false" aria-controls="panel-decoder" data-tab="decoder" id="tab-decoder">
+                    <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+                    <span>Decoder</span>
+                </button>
+                <button class="tab" role="tab" aria-selected="false" aria-controls="panel-audio-decoder" data-tab="audio-decoder" id="tab-audio-decoder">
+                    <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+                    <span>Audio Decode</span>
+                </button>
+                <button class="tab" role="tab" aria-selected="false" aria-controls="panel-trainer" data-tab="trainer" id="tab-trainer">
+                    <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/></svg>
+                    <span>Trainer</span>
+                </button>
+                <button class="tab" role="tab" aria-selected="false" aria-controls="panel-contest" data-tab="contest" id="tab-contest">
+                    <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 7 7 7 7"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 17 7 17 7"/><path d="M4 22h16"/><path d="M10 22V2h4v20"/><path d="M8 9h8l-1 13H9L8 9z"/></svg>
+                    <span>Contest</span>
+                </button>
+                <button class="tab" role="tab" aria-selected="false" aria-controls="panel-visual-encode" data-tab="visual-encode" id="tab-visual-encode">
+                    <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/><circle cx="12" cy="12" r="4"/></svg>
+                    <span>Visual Encode</span>
+                </button>
+                <button class="tab" role="tab" aria-selected="false" aria-controls="panel-visual-decode" data-tab="visual-decode" id="tab-visual-decode">
+                    <svg class="tab__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span>Visual Decode</span>
+                </button>
+            </div>
         </nav>
 
         <!-- Main Content Area -->
         <main class="content" id="main-content">
 
-            <!-- === ENCODER PANEL === -->
+            <!-- === 1. ENCODER PANEL === -->
             <section class="panel panel--active" id="panel-encoder" role="tabpanel" aria-labelledby="tab-encoder">
                 <div class="panel__header">
                     <h2 class="panel__title">Text → Morse Code</h2>
-                    <p class="panel__desc">Type or paste text to convert it to Morse code, then play it back as audio.</p>
+                    <p class="panel__desc">Type or paste text to convert it into high-fidelity Morse CW audio and synchronized visual pulses.</p>
                 </div>
 
-                <!-- Localized Controls -->
                 <div class="panel__controls">
                     <label class="audio-control" for="wpm-slider-encoder">
                         <span class="audio-control__label">Speed</span>
-                        <input type="range" id="wpm-slider-encoder" class="audio-control__slider" min="5" max="40" value="20">
+                        <input type="range" id="wpm-slider-encoder" class="audio-control__slider" min="5" max="45" value="20">
                         <span class="audio-control__value" id="wpm-value-encoder">20 WPM</span>
                     </label>
                     <label class="audio-control" for="freq-slider-encoder">
@@ -114,14 +148,15 @@
                         <span class="audio-control__value" id="freq-value-encoder">600 Hz</span>
                     </label>
                 </div>
+
                 <div class="encoder">
                     <div class="encoder__input-group">
                         <label for="encoder-input" class="sr-only">Text input</label>
-                        <textarea id="encoder-input" class="textarea" placeholder="Type your message here..." rows="4" spellcheck="false"></textarea>
+                        <textarea id="encoder-input" class="textarea" placeholder="Type your message here (e.g. CQ CQ DE 9M2PJU K)..." rows="4" spellcheck="false"></textarea>
                         <div class="encoder__actions">
-                            <button class="btn btn--primary" id="encoder-play" title="Play Morse audio">
+                            <button class="btn btn--primary" id="encoder-play" title="Play Morse audio (Space)">
                                 <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5,3 19,12 5,21"/></svg>
-                                <span>Play</span>
+                                <span>Play Audio</span>
                             </button>
                             <button class="btn btn--ghost" id="encoder-stop" title="Stop playback" disabled>
                                 <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
@@ -129,36 +164,42 @@
                             </button>
                             <button class="btn btn--ghost" id="encoder-copy" title="Copy Morse code">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                                <span>Copy</span>
+                                <span>Copy Morse</span>
                             </button>
                             <button class="btn btn--ghost" id="encoder-clear" title="Clear all">✕ Clear</button>
                         </div>
                     </div>
+
                     <div class="encoder__output-group">
-                        <label class="field-label">Morse Code Output</label>
+                        <div class="output-header">
+                            <label class="field-label">Morse Code Output</label>
+                            <div class="signal-lamp-wrapper" title="Audio Sync LED">
+                                <span class="lamp-label">LED Sync</span>
+                                <div class="signal-lamp" id="encoder-lamp"></div>
+                            </div>
+                        </div>
                         <div class="morse-output" id="encoder-output" aria-live="polite">
                             <span class="morse-output__placeholder">Morse code will appear here…</span>
                         </div>
                     </div>
-                    <!-- Visual signal -->
-                    <div class="signal-lamp" id="encoder-lamp"></div>
                 </div>
             </section>
 
-            <!-- === DECODER PANEL === -->
+            <!-- === 2. DECODER PANEL === -->
             <section class="panel" id="panel-decoder" role="tabpanel" aria-labelledby="tab-decoder">
                 <div class="panel__header">
                     <h2 class="panel__title">Morse Code → Text</h2>
-                    <p class="panel__desc">Enter Morse code using dots (.) and dashes (-), separated by spaces. Use &nbsp;<code>/</code>&nbsp; or &nbsp;<code>|</code>&nbsp; for word breaks.</p>
+                    <p class="panel__desc">Enter Morse code using dots (<code>.</code>) and dashes (<code>-</code>) separated by spaces. Use <code>/</code> or <code>|</code> for word breaks.</p>
                 </div>
+
                 <div class="decoder">
                     <div class="decoder__input-group">
                         <label for="decoder-input" class="sr-only">Morse code input</label>
-                        <textarea id="decoder-input" class="textarea textarea--mono" placeholder=".- / -... / -.-." rows="4" spellcheck="false"></textarea>
+                        <textarea id="decoder-input" class="textarea textarea--mono" placeholder=".- / -... / -.-. / -.." rows="4" spellcheck="false"></textarea>
                         <div class="decoder__actions">
-                            <button class="btn btn--primary" id="decoder-play" title="Play decoded audio">
+                            <button class="btn btn--primary" id="decoder-play" title="Play Morse audio">
                                 <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5,3 19,12 5,21"/></svg>
-                                <span>Play</span>
+                                <span>Play Audio</span>
                             </button>
                             <button class="btn btn--ghost" id="decoder-stop" title="Stop playback" disabled>
                                 <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
@@ -166,32 +207,37 @@
                             </button>
                             <button class="btn btn--ghost" id="decoder-copy" title="Copy decoded text">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                                <span>Copy</span>
+                                <span>Copy Text</span>
                             </button>
                             <button class="btn btn--ghost" id="decoder-clear" title="Clear all">✕ Clear</button>
                         </div>
                     </div>
+
                     <div class="decoder__output-group">
-                        <label class="field-label">Decoded Text</label>
+                        <div class="output-header">
+                            <label class="field-label">Decoded Plain Text</label>
+                            <div class="signal-lamp-wrapper" title="Audio Sync LED">
+                                <span class="lamp-label">LED Sync</span>
+                                <div class="signal-lamp" id="decoder-lamp"></div>
+                            </div>
+                        </div>
                         <div class="text-output" id="decoder-output" aria-live="polite">
                             <span class="text-output__placeholder">Decoded text will appear here…</span>
                         </div>
                     </div>
-                    <div class="signal-lamp" id="decoder-lamp"></div>
                 </div>
             </section>
 
-            <!-- === AUDIO DECODER PANEL === -->
+            <!-- === 3. AUDIO DECODER PANEL === -->
             <section class="panel" id="panel-audio-decoder" role="tabpanel" aria-labelledby="tab-audio-decoder">
                 <div class="panel__header">
                     <h2 class="panel__title">🎤 Audio Morse Decoder</h2>
-                    <p class="panel__desc">Use your microphone to listen to Morse code tones and decode them in real-time. Set the target frequency to match the tone you're receiving.</p>
+                    <p class="panel__desc">Listen to Morse CW tones via your microphone and decode them in real-time with Goertzel frequency detection.</p>
                 </div>
 
-                <!-- Localized Controls (Tone selection is critical here) -->
                 <div class="panel__controls">
                     <label class="audio-control" for="freq-slider-decoder">
-                        <span class="audio-control__label">Listen Tone</span>
+                        <span class="audio-control__label">Target Tone</span>
                         <input type="range" id="freq-slider-decoder" class="audio-control__slider" min="300" max="1200" value="600" step="10">
                         <span class="audio-control__value" id="freq-value-decoder">600 Hz</span>
                     </label>
@@ -201,38 +247,43 @@
                         <span class="audio-control__value" id="threshold-value">10</span>
                     </label>
                 </div>
-                <div class="audio-decoder">
 
-                    <!-- Start/Stop -->
+                <div class="audio-decoder">
+                    <!-- Actions -->
                     <div class="audio-decoder__actions">
                         <button class="btn btn--primary btn--lg-icon" id="audio-start">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
-                            Start Listening
+                            <span>Start Listening</span>
                         </button>
                         <button class="btn btn--ghost" id="audio-stop" disabled>
                             <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
-                            Stop
+                            <span>Stop</span>
                         </button>
-                        <button class="btn btn--ghost" id="audio-clear">
-                            ✕ Clear
-                        </button>
+                        <button class="btn btn--ghost" id="audio-clear">✕ Clear</button>
                     </div>
 
-                    <!-- Visualizer -->
+                    <!-- Visualizer & VU Level Meter -->
                     <div class="audio-decoder__visualizer">
-                        <canvas id="audio-waveform" class="waveform-canvas" width="800" height="120"></canvas>
+                        <div class="visualizer-container">
+                            <canvas id="audio-waveform" class="waveform-canvas" width="800" height="120"></canvas>
+                            <!-- Live VU Meter -->
+                            <div class="vu-meter" title="Mic Input Signal Level">
+                                <div class="vu-meter__bar" id="audio-vu-bar"></div>
+                            </div>
+                        </div>
+
                         <div class="audio-decoder__indicators">
-                            <div class="signal-lamp signal-lamp--lg" id="audio-lamp"></div>
-                            <span class="audio-decoder__status" id="audio-status">Idle</span>
+                            <div class="signal-lamp" id="audio-lamp"></div>
+                            <span class="audio-decoder__status" id="audio-status">Idle · Ready to listen</span>
                             <span class="audio-decoder__magnitude" id="audio-magnitude">Level: —</span>
                         </div>
                     </div>
 
-                    <!-- Morse buffer -->
+                    <!-- Detected Morse -->
                     <div class="audio-decoder__morse-group">
-                        <label class="field-label">Detected Morse</label>
+                        <label class="field-label">Detected Morse Stream</label>
                         <div class="morse-output" id="audio-morse-output" aria-live="polite">
-                            <span class="morse-output__placeholder">Start listening to detect Morse code…</span>
+                            <span class="morse-output__placeholder">Start listening to detect incoming Morse code…</span>
                         </div>
                     </div>
 
@@ -243,12 +294,12 @@
                             <span class="text-output__placeholder">Decoded text will appear here…</span>
                         </div>
                         <div class="audio-decoder__copy-actions">
-                            <button class="btn btn--ghost" id="audio-copy-morse" title="Copy Morse">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                            <button class="btn btn--ghost btn--sm" id="audio-copy-morse" title="Copy Morse">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                                 Copy Morse
                             </button>
-                            <button class="btn btn--ghost" id="audio-copy-text" title="Copy Text">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                            <button class="btn btn--ghost btn--sm" id="audio-copy-text" title="Copy Text">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                                 Copy Text
                             </button>
                         </div>
@@ -256,19 +307,24 @@
                 </div>
             </section>
 
-            <!-- === TRAINER PANEL === -->
+            <!-- === 4. PRACTICE TRAINER PANEL === -->
             <section class="panel" id="panel-trainer" role="tabpanel" aria-labelledby="tab-trainer">
                 <div class="panel__header">
-                    <h2 class="panel__title">Practice Mode</h2>
-                    <p class="panel__desc">Listen to Morse code and type what you hear. Train your ear to recognize characters at increasing speeds.</p>
+                    <h2 class="panel__title">🎓 Practice Mode (Koch &amp; CW Training)</h2>
+                    <p class="panel__desc">Train your subconscious ear to instantly recognize CW characters without counting dots and dashes.</p>
                 </div>
 
-                <!-- Localized Controls -->
+                <!-- Controls -->
                 <div class="panel__controls">
                     <label class="audio-control" for="wpm-slider-trainer">
                         <span class="audio-control__label">Speed</span>
                         <input type="range" id="wpm-slider-trainer" class="audio-control__slider" min="5" max="50" value="20">
                         <span class="audio-control__value" id="wpm-value-trainer">20 WPM</span>
+                    </label>
+                    <label class="audio-control" for="farnsworth-slider" title="Farnsworth spacing adds extra space between characters while keeping character sound crisp.">
+                        <span class="audio-control__label">Farnsworth</span>
+                        <input type="range" id="farnsworth-slider" class="audio-control__slider" min="5" max="60" value="20">
+                        <span class="audio-control__value" id="farnsworth-value">20</span>
                     </label>
                     <label class="audio-control" for="freq-slider-trainer">
                         <span class="audio-control__label">Tone</span>
@@ -276,84 +332,96 @@
                         <span class="audio-control__value" id="freq-value-trainer">600 Hz</span>
                     </label>
                     <label class="audio-control" for="koch-level-slider" title="The Koch Method introduces characters one by one.">
-                        <span class="audio-control__label">Koch Level</span>
+                        <span class="audio-control__label">Koch Lesson</span>
                         <input type="range" id="koch-level-slider" class="audio-control__slider" min="1" max="40" value="1">
                         <span class="audio-control__value" id="koch-level-value">1</span>
                     </label>
-                    <label class="audio-control" for="farnsworth-slider" title="Farnsworth increases spacing between characters while keeping them fast.">
-                        <span class="audio-control__label">Farnsworth</span>
-                        <input type="range" id="farnsworth-slider" class="audio-control__slider" min="5" max="60" value="20">
-                        <span class="audio-control__value" id="farnsworth-value">20</span>
-                    </label>
                 </div>
+
                 <div class="trainer">
-                    <!-- Difficulty selector -->
-                    <div class="trainer__difficulty">
-                        <span class="field-label">Difficulty</span>
-                        <div class="btn-group" id="difficulty-group">
-                            <button class="btn btn--sm btn--toggle btn--toggle--active" data-difficulty="koch">Koch</button>
-                            <button class="btn btn--sm btn--toggle" data-difficulty="letters">Letters</button>
-                            <button class="btn btn--sm btn--toggle" data-difficulty="numbers">Numbers</button>
-                            <button class="btn btn--sm btn--toggle" data-difficulty="mixed">Mixed</button>
-                            <button class="btn btn--sm btn--toggle" data-difficulty="words">Words</button>
-                            <button class="btn btn--sm btn--toggle" data-difficulty="callsigns">Callsigns</button>
-                            <button class="btn btn--sm btn--toggle" data-difficulty="prosigns">Prosigns</button>
-                            <button class="btn btn--sm btn--toggle" data-difficulty="abbreviations">Abbreviations</button>
+                    <!-- Trainer Options: Difficulty + Auto-advance switch -->
+                    <div class="trainer__options-row">
+                        <div class="trainer__difficulty">
+                            <span class="field-label">Mode</span>
+                            <div class="btn-group" id="difficulty-group">
+                                <button class="btn btn--sm btn--toggle btn--toggle--active" data-difficulty="koch">Koch</button>
+                                <button class="btn btn--sm btn--toggle" data-difficulty="letters">Letters</button>
+                                <button class="btn btn--sm btn--toggle" data-difficulty="numbers">Numbers</button>
+                                <button class="btn btn--sm btn--toggle" data-difficulty="mixed">Mixed</button>
+                                <button class="btn btn--sm btn--toggle" data-difficulty="words">Words</button>
+                                <button class="btn btn--sm btn--toggle" data-difficulty="callsigns">Callsigns</button>
+                                <button class="btn btn--sm btn--toggle" data-difficulty="prosigns">Prosigns</button>
+                                <button class="btn btn--sm btn--toggle" data-difficulty="abbreviations">Abbr</button>
+                            </div>
+                        </div>
+
+                        <!-- Auto-advance switch -->
+                        <div class="toggle-control-wrapper">
+                            <label class="toggle-control" for="trainer-continuous-toggle" title="Automatically advance to next challenge after a correct answer">
+                                <input type="checkbox" id="trainer-continuous-toggle" class="toggle-checkbox" checked>
+                                <span class="toggle-control__label">Auto-Advance</span>
+                            </label>
                         </div>
                     </div>
 
+                    <!-- Koch Lesson Information Bar -->
                     <div class="koch-panel" id="koch-panel">
                         <div class="koch-panel__summary">
-                            <span class="koch-panel__eyebrow">Koch Lesson</span>
+                            <span class="koch-panel__eyebrow">Koch Method Lesson</span>
                             <strong id="koch-lesson-title">Lesson 1 · K M</strong>
-                            <span id="koch-lesson-help">Copy five-character groups using only the active lesson characters.</span>
+                            <span id="koch-lesson-help">Click any character below to hear its CW tone. Reach ≥90% accuracy over 10+ copies to advance!</span>
                         </div>
                         <div class="koch-panel__chars" id="koch-characters" aria-label="Koch lesson characters"></div>
                         <div class="koch-panel__stats">
                             <span><b id="koch-session-correct">0</b> copied</span>
                             <span><b id="koch-session-accuracy">—</b> accuracy</span>
-                            <button class="btn btn--sm btn--ghost" id="koch-promote" type="button">Next Lesson</button>
+                            <button class="btn btn--sm btn--accent" id="koch-promote" type="button">Next Lesson ➔</button>
                         </div>
                     </div>
 
-                    <!-- Challenge area -->
+                    <!-- Challenge Card -->
                     <div class="trainer__challenge">
                         <div class="challenge-card" id="challenge-card">
-                            <div class="challenge-card__morse" id="challenge-morse">Press "New Challenge" to start</div>
+                            <div class="challenge-card__status" id="challenge-status">Click "New Challenge" or press Enter</div>
+                            <div class="challenge-card__morse" id="challenge-morse">READY</div>
                             <div class="challenge-card__visual" id="challenge-visual"></div>
                         </div>
-                        <div class="signal-lamp signal-lamp--lg" id="trainer-lamp"></div>
+                        <div class="signal-lamp" id="trainer-lamp"></div>
                     </div>
 
-                    <!-- Answer input -->
+                    <!-- Answer Input Field & Workflow Buttons -->
                     <div class="trainer__answer">
                         <label for="trainer-input" class="sr-only">Your answer</label>
                         <input type="text" id="trainer-input" class="input input--lg" placeholder="Type your answer…" autocomplete="off" spellcheck="false">
+                        
                         <div class="trainer__answer-actions">
-                            <button class="btn btn--primary" id="trainer-new">
+                            <button class="btn btn--primary" id="trainer-new" title="New Challenge (Enter)">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-                                New Challenge
+                                <span>New Challenge</span>
                             </button>
-                            <button class="btn btn--accent" id="trainer-check" disabled>
+                            <button class="btn btn--accent" id="trainer-check" disabled title="Check Answer (Enter)">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>
-                                Check
+                                <span>Check [Enter]</span>
+                            </button>
+                            <button class="btn btn--primary" id="trainer-next" style="display: none;" title="Next Challenge (Enter)">
+                                <span>Next ➔ [Enter]</span>
+                            </button>
+                            <button class="btn btn--ghost" id="trainer-replay" title="Replay Audio (Space)">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5,3 19,12 5,21"/></svg>
+                                <span>Replay [Space]</span>
+                            </button>
+                            <button class="btn btn--ghost" id="trainer-reveal" title="Reveal Answer (Ctrl+R)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                <span>Reveal</span>
                             </button>
                             <button class="btn btn--ghost" id="trainer-stop" style="display: none;">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
-                                Stop
-                            </button>
-                            <button class="btn btn--ghost" id="trainer-replay">
-                                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5,3 19,12 5,21"/></svg>
-                                Replay
-                            </button>
-                            <button class="btn btn--ghost" id="trainer-reveal">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                Reveal
+                                <span>Stop</span>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Score -->
+                    <!-- Score Grid -->
                     <div class="trainer__score">
                         <div class="score-card">
                             <span class="score-card__label">Correct</span>
@@ -373,23 +441,27 @@
                         </div>
                     </div>
 
-                    <!-- Feedback -->
-                    <div class="trainer__feedback" id="trainer-feedback"></div>
+                    <!-- Feedback & Reset -->
+                    <div class="trainer__bottom-row">
+                        <div class="trainer__feedback" id="trainer-feedback"></div>
+                        <button class="btn btn--ghost btn--sm" id="trainer-reset-stats" title="Reset Practice Score">Reset Stats</button>
+                    </div>
                 </div>
             </section>
 
-            <!-- === CONTEST TRAINER PANEL === -->
+            <!-- === 5. CONTEST TRAINER PANEL === -->
             <section class="panel" id="panel-contest" role="tabpanel" aria-labelledby="tab-contest">
                 <div class="panel__header">
                     <h2 class="panel__title">🏆 Contest Trainer</h2>
-                    <p class="panel__desc">Simulate ham radio contest QSO exchanges. Listen to the Morse code, then log the callsign, RST, and exchange info. Practice your pileup skills!</p>
+                    <p class="panel__desc">Simulate authentic CW contest pileups. Copy callsigns, RST, and exchanges with realistic atmospheric QSB fading and HF noise.</p>
                 </div>
+
                 <div class="contest">
-                    <!-- Contest Local Audio Settings -->
+                    <!-- Contest Audio Settings -->
                     <div class="contest__settings">
                         <div class="audio-control">
                             <span class="audio-control__label">Speed</span>
-                            <input type="range" id="contest-wpm-slider" class="audio-control__slider" min="5" max="60" value="25">
+                            <input type="range" id="contest-wpm-slider" class="audio-control__slider" min="10" max="60" value="25">
                             <span class="audio-control__value" id="contest-wpm-value">25 WPM</span>
                         </div>
                         <div class="audio-control">
@@ -400,77 +472,93 @@
                         <div class="audio-control">
                             <label class="audio-control__label" for="noise-toggle">HF Noise</label>
                             <input type="checkbox" id="noise-toggle" class="toggle-checkbox">
-                            <input type="range" id="noise-volume" class="audio-control__slider" min="0" max="100" value="30">
+                            <input type="range" id="noise-volume" class="audio-control__slider" min="0" max="100" value="25" aria-label="HF Noise Level">
                         </div>
                         <div class="audio-control">
                             <label class="audio-control__label" for="qsb-toggle">QSB Fading</label>
                             <input type="checkbox" id="qsb-toggle" class="toggle-checkbox">
-                            <input type="range" id="qsb-level" class="audio-control__slider" min="0" max="100" value="40">
+                            <input type="range" id="qsb-level" class="audio-control__slider" min="0" max="100" value="40" aria-label="QSB Fading Depth">
                         </div>
                     </div>
 
-                    <!-- Contest type selector -->
-                    <div class="contest__type">
-                        <span class="field-label">Contest Type</span>
-                        <div class="btn-group" id="contest-type-group">
-                            <button class="btn btn--sm btn--toggle btn--toggle--active" data-contest="general">General</button>
-                            <button class="btn btn--sm btn--toggle" data-contest="dx">DX Contest</button>
-                            <button class="btn btn--sm btn--toggle" data-contest="fieldday">Field Day</button>
-                            <button class="btn btn--sm btn--toggle" data-contest="sota">SOTA</button>
+                    <!-- Contest Options: Type + Auto-advance -->
+                    <div class="contest__options-row">
+                        <div class="contest__type">
+                            <span class="field-label">Contest Type</span>
+                            <div class="btn-group" id="contest-type-group">
+                                <button class="btn btn--sm btn--toggle btn--toggle--active" data-contest="general">General</button>
+                                <button class="btn btn--sm btn--toggle" data-contest="dx">DX Contest</button>
+                                <button class="btn btn--sm btn--toggle" data-contest="fieldday">Field Day</button>
+                                <button class="btn btn--sm btn--toggle" data-contest="sota">SOTA</button>
+                            </div>
+                        </div>
+
+                        <div class="toggle-control-wrapper">
+                            <label class="toggle-control" for="contest-continuous-toggle" title="Auto-advance after successful QSO log">
+                                <input type="checkbox" id="contest-continuous-toggle" class="toggle-checkbox" checked>
+                                <span class="toggle-control__label">Auto-Advance</span>
+                            </label>
                         </div>
                     </div>
 
-                    <!-- QSO Exchange display -->
+                    <!-- QSO Exchange Card -->
                     <div class="contest__exchange">
                         <div class="challenge-card" id="contest-card">
                             <div class="contest__qso-label">Incoming QSO Exchange</div>
-                            <div class="challenge-card__morse" id="contest-morse">Press "New QSO" to start</div>
+                            <div class="challenge-card__morse" id="contest-morse">Press "New QSO" to begin</div>
                             <div class="challenge-card__visual" id="contest-visual"></div>
                         </div>
-                        <div class="signal-lamp signal-lamp--lg" id="contest-lamp"></div>
+                        <div class="signal-lamp" id="contest-lamp"></div>
                     </div>
 
-                    <!-- Log entry form -->
+                    <!-- Log Entry Form with N1MM-Style Smart Tab/Enter Jump -->
                     <div class="contest__log-entry">
                         <div class="contest__fields">
                             <div class="contest__field">
-                                <label for="contest-callsign" class="field-label">Callsign</label>
+                                <label for="contest-callsign" class="field-label">Callsign <span class="field-hint">(Space ➔ RST)</span></label>
                                 <input type="text" id="contest-callsign" class="input" placeholder="e.g. W1AW" autocomplete="off" spellcheck="false">
                             </div>
                             <div class="contest__field">
-                                <label for="contest-rst" class="field-label">RST</label>
+                                <div class="field-label-row">
+                                    <label for="contest-rst" class="field-label">RST</label>
+                                    <button type="button" class="btn-quick-fill" id="contest-quick-599" title="Fill 599">599</button>
+                                </div>
                                 <input type="text" id="contest-rst" class="input" placeholder="599" autocomplete="off" spellcheck="false">
                             </div>
                             <div class="contest__field">
-                                <label for="contest-exchange" class="field-label">Exchange</label>
-                                <input type="text" id="contest-exchange" class="input" placeholder="e.g. 001 or zone" autocomplete="off" spellcheck="false">
+                                <label for="contest-exchange" class="field-label">Exchange <span class="field-hint">(Enter ➔ Log)</span></label>
+                                <input type="text" id="contest-exchange" class="input" placeholder="e.g. 001 / Zone" autocomplete="off" spellcheck="false">
                             </div>
                         </div>
+
                         <div class="contest__actions">
-                            <button class="btn btn--primary" id="contest-new">
+                            <button class="btn btn--primary" id="contest-new" title="New QSO (Enter)">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-                                New QSO
+                                <span>New QSO</span>
                             </button>
-                            <button class="btn btn--accent" id="contest-log" disabled>
+                            <button class="btn btn--accent" id="contest-log" disabled title="Log QSO (Enter in Exchange field)">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>
-                                Log QSO
+                                <span>Log QSO [Enter]</span>
                             </button>
-                            <button class="btn btn--ghost" id="contest-replay">
+                            <button class="btn btn--primary" id="contest-next" style="display: none;">
+                                <span>Next QSO ➔ [Enter]</span>
+                            </button>
+                            <button class="btn btn--ghost" id="contest-replay" title="Replay QSO (Space)">
                                 <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5,3 19,12 5,21"/></svg>
-                                Replay
-                            </button>
-                            <button class="btn btn--ghost" id="contest-stop" style="display: none;">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
-                                Stop
+                                <span>Replay [Space]</span>
                             </button>
                             <button class="btn btn--ghost" id="contest-reveal">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                Reveal
+                                <span>Reveal</span>
+                            </button>
+                            <button class="btn btn--ghost" id="contest-stop" style="display: none;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+                                <span>Stop</span>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Contest Score -->
+                    <!-- Contest Score & Run Rate -->
                     <div class="trainer__score">
                         <div class="score-card">
                             <span class="score-card__label">QSOs</span>
@@ -481,8 +569,8 @@
                             <span class="score-card__value score-card__value--wrong" id="contest-busted">0</span>
                         </div>
                         <div class="score-card">
-                            <span class="score-card__label">Streak</span>
-                            <span class="score-card__value score-card__value--streak" id="contest-streak">0</span>
+                            <span class="score-card__label">Run Rate</span>
+                            <span class="score-card__value score-card__value--streak" id="contest-rate">0 /hr</span>
                         </div>
                         <div class="score-card">
                             <span class="score-card__label">Accuracy</span>
@@ -495,7 +583,16 @@
 
                     <!-- QSO Log Table -->
                     <div class="contest__log-table-wrapper">
-                        <label class="field-label">QSO Log</label>
+                        <div class="log-table-header">
+                            <label class="field-label">Contest QSO Log</label>
+                            <div class="log-table-actions">
+                                <button class="btn btn--ghost btn--sm" id="contest-export-csv" title="Export Log to CSV">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    Export CSV
+                                </button>
+                                <button class="btn btn--ghost btn--sm" id="contest-clear-log" title="Clear QSO Log">Clear Log</button>
+                            </div>
+                        </div>
                         <div class="contest__log-table-scroll">
                             <table class="contest__log-table" id="contest-log-table">
                                 <thead>
@@ -508,6 +605,9 @@
                                     </tr>
                                 </thead>
                                 <tbody id="contest-log-body">
+                                    <tr>
+                                        <td colspan="5" class="table-empty">No QSOs logged yet. Click "New QSO" to practice!</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -515,36 +615,36 @@
                 </div>
             </section>
 
-            <!-- === VISUAL ENCODE PANEL === -->
+            <!-- === 6. VISUAL ENCODE PANEL === -->
             <section class="panel" id="panel-visual-encode" role="tabpanel" aria-labelledby="tab-visual-encode">
                 <div class="panel__header">
-                    <h2 class="panel__title">Text → Signal Lamp</h2>
-                    <p class="panel__desc">Convert text into visual light pulses. Perfect for practicing maritime signaling.</p>
+                    <h2 class="panel__title">Text → Signal Lamp (Maritime)</h2>
+                    <p class="panel__desc">Convert text messages into visual light flashes using an authentic maritime signaling lamp.</p>
                 </div>
 
                 <div class="panel__controls">
                     <label class="audio-control" for="wpm-slider-v-encode">
-                        <span class="audio-control__label">Speed</span>
-                        <input type="range" id="wpm-slider-v-encode" class="audio-control__slider" min="5" max="30" value="10">
+                        <span class="audio-control__label">Lamp Speed</span>
+                        <input type="range" id="wpm-slider-v-encode" class="audio-control__slider" min="4" max="25" value="10">
                         <span class="audio-control__value" id="wpm-value-v-encode">10 WPM</span>
                     </label>
                     <div class="audio-control">
-                        <label class="audio-control__label" for="v-encode-sound">Sound</label>
+                        <label class="audio-control__label" for="v-encode-sound">Audio Sidetone</label>
                         <input type="checkbox" id="v-encode-sound" class="toggle-checkbox">
                     </div>
                 </div>
 
                 <div class="visual-encoder">
                     <div class="lamp-container">
-                        <div id="v-encode-lamp" class="signal-lamp"></div>
+                        <div id="v-encode-lamp" class="signal-lamp signal-lamp--maritime"></div>
                     </div>
                     
                     <div class="encoder__input-group">
-                        <textarea id="v-encode-input" class="textarea" placeholder="Type message for the lamp..." rows="3"></textarea>
+                        <textarea id="v-encode-input" class="textarea" placeholder="Type message for the maritime signal lamp..." rows="3"></textarea>
                         <div class="encoder__actions">
                             <button class="btn btn--primary" id="v-encode-play">
                                 <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5,3 19,12 5,21"/></svg>
-                                <span>Signal</span>
+                                <span>Signal Lamp</span>
                             </button>
                             <button class="btn btn--ghost" id="v-encode-stop" disabled>
                                 <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
@@ -555,53 +655,121 @@
                 </div>
             </section>
 
-            <!-- === VISUAL DECODE PANEL === -->
+            <!-- === 7. VISUAL DECODE PANEL === -->
             <section class="panel" id="panel-visual-decode" role="tabpanel" aria-labelledby="tab-visual-decode">
                 <div class="panel__header">
                     <h2 class="panel__title">Signal Lamp Receiver</h2>
-                    <p class="panel__desc">Watch the lamp and identify the Morse code being signaled.</p>
+                    <p class="panel__desc">Watch the signal lamp flashes and copy the Morse characters. Train your visual receiving skills.</p>
                 </div>
 
                 <div class="panel__controls">
                     <label class="audio-control" for="wpm-slider-v-decode">
-                        <span class="audio-control__label">Speed</span>
-                        <input type="range" id="wpm-slider-v-decode" class="audio-control__slider" min="5" max="30" value="10">
+                        <span class="audio-control__label">Lamp Speed</span>
+                        <input type="range" id="wpm-slider-v-decode" class="audio-control__slider" min="4" max="25" value="10">
                         <span class="audio-control__value" id="wpm-value-v-decode">10 WPM</span>
                     </label>
                     <div class="audio-control">
-                        <label class="audio-control__label" for="v-decode-sound">Sound</label>
+                        <label class="audio-control__label" for="v-decode-sound">Audio Sidetone</label>
                         <input type="checkbox" id="v-decode-sound" class="toggle-checkbox">
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn btn--sm" id="v-decode-new">New Challenge</button>
                     </div>
                 </div>
 
                 <div class="visual-decoder">
-                    <div class="lamp-container">
-                        <div id="v-decode-lamp" class="signal-lamp"></div>
-                        <button class="btn btn--icon lamp-replay" id="v-decode-replay" title="Replay signal">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                        </button>
+                    <!-- Difficulty tiers -->
+                    <div class="v-decode__difficulty">
+                        <span class="field-label">Difficulty</span>
+                        <div class="btn-group" id="v-decode-diff-group">
+                            <button class="btn btn--sm btn--toggle btn--toggle--active" data-vdiff="letters">Letters</button>
+                            <button class="btn btn--sm btn--toggle" data-vdiff="numbers">Numbers</button>
+                            <button class="btn btn--sm btn--toggle" data-vdiff="words">Words</button>
+                            <button class="btn btn--sm btn--toggle" data-vdiff="callsigns">Callsigns</button>
+                        </div>
                     </div>
 
+                    <!-- Maritime Lamp Display -->
+                    <div class="lamp-container">
+                        <div id="v-decode-lamp" class="signal-lamp signal-lamp--maritime"></div>
+                    </div>
+
+                    <!-- Input & Action Buttons -->
                     <div class="decoder__input-group">
-                        <input type="text" id="v-decode-input" class="input" placeholder="What was signaled?" autocomplete="off" spellcheck="false">
-                        <div id="v-decode-feedback" class="feedback-msg"></div>
+                        <input type="text" id="v-decode-input" class="input input--lg" placeholder="Type what was signaled…" autocomplete="off" spellcheck="false">
+                        
+                        <div class="trainer__answer-actions">
+                            <button class="btn btn--primary" id="v-decode-new">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                <span>New Signal</span>
+                            </button>
+                            <button class="btn btn--accent" id="v-decode-check" disabled>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>
+                                <span>Check [Enter]</span>
+                            </button>
+                            <button class="btn btn--primary" id="v-decode-next" style="display: none;">
+                                <span>Next ➔ [Enter]</span>
+                            </button>
+                            <button class="btn btn--ghost" id="v-decode-replay" title="Replay Signal (Space)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                                <span>Replay [Space]</span>
+                            </button>
+                            <button class="btn btn--ghost" id="v-decode-reveal">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                <span>Reveal</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Visual score -->
+                        <div class="trainer__score">
+                            <div class="score-card">
+                                <span class="score-card__label">Correct</span>
+                                <span class="score-card__value score-card__value--correct" id="v-score-correct">0</span>
+                            </div>
+                            <div class="score-card">
+                                <span class="score-card__label">Wrong</span>
+                                <span class="score-card__value score-card__value--wrong" id="v-score-wrong">0</span>
+                            </div>
+                            <div class="score-card">
+                                <span class="score-card__label">Streak</span>
+                                <span class="score-card__value score-card__value--streak" id="v-score-streak">0</span>
+                            </div>
+                            <div class="score-card">
+                                <span class="score-card__label">Accuracy</span>
+                                <span class="score-card__value" id="v-score-accuracy">—</span>
+                            </div>
+                        </div>
+
+                        <div id="v-decode-feedback" class="trainer__feedback"></div>
                     </div>
                 </div>
             </section>
 
-
         </main>
 
-        <!-- Morse Code Reference Chart (always visible at bottom) -->
-        <section class="reference">
+        <!-- Morse Code Reference Chart Section -->
+        <section class="reference" id="reference-section">
             <details>
                 <summary class="reference__toggle">
-                    <h3 class="reference__title">📜 Morse Code Reference Chart</h3>
+                    <div class="reference__toggle-header">
+                        <h3 class="reference__title">📜 Interactive Morse Code Reference Chart</h3>
+                        <span class="reference__badge">Click any tile to listen</span>
+                    </div>
                 </summary>
                 <div class="reference__content">
+                    <!-- Search & Filter Controls -->
+                    <div class="reference__controls">
+                        <div class="reference__search-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <input type="search" id="ref-search-input" class="reference__search-input" placeholder="Filter chart by character, meaning, or code (e.g. A, SOS, .-)..." autocomplete="off" spellcheck="false">
+                        </div>
+                        <div class="reference__categories" id="ref-categories">
+                            <button class="btn btn--sm btn--toggle btn--toggle--active" data-refcat="all">All</button>
+                            <button class="btn btn--sm btn--toggle" data-refcat="letters">Letters (A-Z)</button>
+                            <button class="btn btn--sm btn--toggle" data-refcat="numbers">Numbers (0-9)</button>
+                            <button class="btn btn--sm btn--toggle" data-refcat="punctuation">Punctuation</button>
+                            <button class="btn btn--sm btn--toggle" data-refcat="prosigns">Prosigns</button>
+                        </div>
+                    </div>
+
+                    <!-- Chart Grid -->
                     <div class="reference__chart" id="reference-chart">
                         <!-- Populated by JS -->
                     </div>
@@ -609,11 +777,54 @@
             </details>
         </section>
 
-
         <!-- Footer -->
         <footer class="footer">
-            <p>9M2PJU Morse Code Lab by <a href="https://hamradio.my" target="_blank" rel="noopener">9M2PJU</a></p>
+            <div class="footer__content">
+                <p><strong>9M2PJU Morse Code Lab</strong> · Built with pure HTML5 / Web Audio by <a href="https://hamradio.my" target="_blank" rel="noopener">9M2PJU</a></p>
+                <p class="footer__tagline">Amateur Radio CW Practice Console · 73 de 9M2PJU</p>
+            </div>
         </footer>
+    </div>
+
+    <!-- Keyboard Shortcuts Modal -->
+    <div class="modal" id="shortcuts-modal" aria-hidden="true" role="dialog" aria-labelledby="modal-shortcuts-title">
+        <div class="modal__backdrop" id="shortcuts-modal-backdrop"></div>
+        <div class="modal__dialog">
+            <div class="modal__header">
+                <h3 class="modal__title" id="modal-shortcuts-title">⌨️ Keyboard Shortcuts</h3>
+                <button class="btn-close" id="shortcuts-close" aria-label="Close modal">✕</button>
+            </div>
+            <div class="modal__body">
+                <table class="shortcuts-table">
+                    <tbody>
+                        <tr><td><kbd>Enter</kbd></td><td>Check answer / Next challenge / Log QSO</td></tr>
+                        <tr><td><kbd>Space</kbd></td><td>Replay active Morse challenge audio</td></tr>
+                        <tr><td><kbd>Ctrl</kbd> + <kbd>R</kbd></td><td>Reveal answer</td></tr>
+                        <tr><td><kbd>Ctrl</kbd> + <kbd>1</kbd>–<kbd>7</kbd></td><td>Switch panels (Encoder ➔ Visual Decode)</td></tr>
+                        <tr><td><kbd>Esc</kbd></td><td>Close dialog / stop audio</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- iOS / PWA Install Helper Sheet -->
+    <div class="modal" id="ios-install-modal" aria-hidden="true" role="dialog" aria-labelledby="modal-install-title">
+        <div class="modal__backdrop" id="ios-modal-backdrop"></div>
+        <div class="modal__dialog">
+            <div class="modal__header">
+                <h3 class="modal__title" id="modal-install-title">📱 Install 9M2PJU Morse Lab</h3>
+                <button class="btn-close" id="ios-install-close" aria-label="Close modal">✕</button>
+            </div>
+            <div class="modal__body install-steps">
+                <p>Install this app on your device for fast, full-screen, offline CW practice:</p>
+                <ol>
+                    <li>Tap the <strong>Share</strong> button <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="vertical-align: middle;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> in your browser toolbar.</li>
+                    <li>Scroll down and select <strong>"Add to Home Screen"</strong>.</li>
+                    <li>Tap <strong>Add</strong> at top right.</li>
+                </ol>
+            </div>
+        </div>
     </div>
 
     <script src="morse.js"></script>

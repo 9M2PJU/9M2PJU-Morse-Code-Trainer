@@ -1,13 +1,13 @@
 {
     "name": "9M2PJU Morse Code Lab",
-    "short_name": "9M2PJU Morse",
-    "description": "A professional offline Morse and CW practice lab.",
-    "start_url": ".",
-    "scope": ".",
+    "short_name": "Morse Lab",
+    "description": "Professional CW and Morse practice lab with Koch learning, contest logging, visual signaling, and audio decoding.",
+    "start_url": "./",
+    "scope": "./",
     "display": "standalone",
     "background_color": "#101211",
     "theme_color": "#101211",
-    "orientation": "portrait-primary",
+    "orientation": "any",
     "categories": ["education", "utilities", "productivity"],
     "icons": [
         {
@@ -24,7 +24,7 @@
         },
         {
             "src": "app-icon.svg",
-            "sizes": "any",
+            "sizes": "512x512",
             "type": "image/svg+xml",
             "purpose": "any maskable"
         }
@@ -32,12 +32,24 @@
     "shortcuts": [
         {
             "name": "Koch Practice",
-            "short_name": "Koch",
+            "short_name": "Practice",
             "url": "./?tab=trainer",
             "description": "Start Morse code listening practice"
         },
         {
-            "name": "Encoder",
+            "name": "Contest Trainer",
+            "short_name": "Contest",
+            "url": "./?tab=contest",
+            "description": "Simulate contest QSO exchanges"
+        },
+        {
+            "name": "Audio Decoder",
+            "short_name": "Audio Decode",
+            "url": "./?tab=audio-decoder",
+            "description": "Decode Morse from microphone audio"
+        },
+        {
+            "name": "Text Encoder",
             "short_name": "Encode",
             "url": "./?tab=encoder",
             "description": "Convert text to Morse code"

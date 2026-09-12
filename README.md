@@ -6,7 +6,7 @@
 
 ![9M2PJU Morse Code Lab](https://img.shields.io/badge/9M2PJU-Morse%20Code%20Lab-27c5b3?style=for-the-badge)
 ![Built By](https://img.shields.io/badge/Built%20By-9M2PJU-orange?style=for-the-badge)
-![Version](https://img.shields.io/badge/Version-2.6.0-green?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-2.7.0-green?style=for-the-badge)
 
 [![GitHub stars](https://img.shields.io/github/stars/9M2PJU/9M2PJU-Morse-Code-Trainer?style=social)](https://github.com/9M2PJU/9M2PJU-Morse-Code-Trainer/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/9M2PJU/9M2PJU-Morse-Code-Trainer?style=social)](https://github.com/9M2PJU/9M2PJU-Morse-Code-Trainer/network)

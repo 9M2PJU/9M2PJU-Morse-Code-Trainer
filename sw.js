@@ -1,4 +1,4 @@
-const CACHE_NAME = '9m2pju-morse-code-lab-v6';
+const CACHE_NAME = '9m2pju-morse-code-lab-v7';
 const APP_SHELL = [
     './',
     './index.html',
