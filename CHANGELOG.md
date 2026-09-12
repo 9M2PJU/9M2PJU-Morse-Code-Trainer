@@ -2,6 +2,20 @@
 
 All notable changes to **9M2PJU Morse Code Lab** will be documented in this file.
 
+## [v2.8.0] - 2026-09-12
+### ✨ Added
+- **Comprehensive SEO & Meta Suite**:
+  - Full OpenGraph (`og:site_name`, `og:image`, `og:locale`, `og:url`, `og:title`, `og:description`) and Twitter Cards metadata targeting amateur radio, CW practice, and Morse tools.
+  - Canonical URL (`https://morse.hamradio.my/`) and crawler robots directives.
+  - Standard `robots.txt` and `sitemap.xml` for search index discovery.
+- **Answer Engine Optimization (AEO) & Schema.org JSON-LD**:
+  - `WebApplication` / `SoftwareApplication` schema with feature listings, zero-cost, and offline capabilities.
+  - `FAQPage` schema addressing the Koch method, Farnsworth timing, Goertzel audio decoding, and Morse ITU timing standards for AI engines (Google Gemini/AI Overview, Perplexity, ChatGPT Search, Bing Copilot).
+  - `HowTo` schema detailing the step-by-step Koch method CW mastery process.
+  - On-page semantic CW Knowledge Base & FAQ section matching the dark cyberpunk console aesthetic.
+- **Service Worker Cache Upgrade**:
+  - Upgraded cache suite to `v8`.
+
 ## [v2.7.0] - 2026-09-12
 ### ✨ Added
 - **Official Brand Logo & Vector PWA Icons**:

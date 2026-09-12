@@ -1,0 +1,5 @@
+# Robots.txt for 9M2PJU Morse Code Lab (https://morse.hamradio.my)
+User-agent: *
+Allow: /
+
+Sitemap: https://morse.hamradio.my/sitemap.xml
