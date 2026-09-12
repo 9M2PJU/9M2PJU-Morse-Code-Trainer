@@ -673,10 +673,150 @@ body {
     color: var(--accent);
 }
 
+.btn--warning {
+    background: rgba(239, 182, 83, 0.16);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+}
+
+.btn--warning:hover:not(:disabled) {
+    background: var(--gold);
+    color: #171207;
+    box-shadow: 0 4px 14px var(--gold-glow);
+}
+
+.btn--danger {
+    background: rgba(240, 98, 86, 0.14);
+    border: 1px solid var(--red);
+    color: var(--red);
+}
+
+.btn--danger:hover:not(:disabled) {
+    background: var(--red);
+    color: #fff;
+    box-shadow: 0 4px 14px var(--red-glow);
+}
+
 .btn-group {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
+}
+
+/* ---------- Session Bar & Status Badges ---------- */
+.session-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    margin-bottom: var(--space-md);
+    flex-wrap: wrap;
+}
+
+.session-bar__left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+.session-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border);
+}
+
+.session-badge--idle {
+    background: var(--bg-input);
+    color: var(--text-muted);
+    border-color: var(--border);
+}
+
+.session-badge--active {
+    background: rgba(43, 213, 117, 0.12);
+    color: var(--green);
+    border-color: rgba(43, 213, 117, 0.35);
+    box-shadow: 0 0 10px rgba(43, 213, 117, 0.2);
+}
+
+.session-badge--paused {
+    background: rgba(239, 182, 83, 0.12);
+    color: var(--gold);
+    border-color: rgba(239, 182, 83, 0.35);
+    box-shadow: 0 0 10px rgba(239, 182, 83, 0.2);
+}
+
+.session-timer {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    background: var(--bg-input);
+    padding: 3px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    letter-spacing: 1px;
+}
+
+.session-rate {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.session-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+}
+
+/* Preset pills */
+.presets-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-xs);
+}
+
+.preset-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-right: 2px;
+}
+
+.btn-preset {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.btn-preset:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(39, 197, 179, 0.1);
 }
 
 .btn-quick-fill {
@@ -1673,6 +1813,46 @@ details[open] > .reference__content {
     gap: 8px;
     font-size: 0.9rem;
     color: var(--text-secondary);
+}
+
+/* ---------- Session Summary Card ---------- */
+.summary-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm);
+    margin-top: var(--space-xs);
+}
+
+.summary-stat {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.summary-stat__label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.summary-stat__val {
+    font-size: 1.05rem;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.summary-stat__val--accent {
+    color: var(--accent);
+}
+
+.summary-stat__val--correct {
+    color: var(--green);
 }
 
 /* ---------- Toast Notifications ---------- */

@@ -304,8 +304,12 @@
                                 <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5,3 19,12 5,21"/></svg>
                                 <span>Play Audio</span>
                             </button>
-                            <button class="btn btn--ghost" id="encoder-stop" title="Stop playback" disabled>
+                            <button class="btn btn--warning" id="encoder-pause" style="display: none;" title="Pause playback">
                                 <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                                <span>Pause</span>
+                            </button>
+                            <button class="btn btn--ghost" id="encoder-stop" title="Stop playback" disabled>
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><rect x="6" y="4" width="12" height="12" rx="1"/></svg>
                                 <span>Stop</span>
                             </button>
                             <button class="btn btn--ghost" id="encoder-copy" title="Copy Morse code">
@@ -347,8 +351,12 @@
                                 <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5,3 19,12 5,21"/></svg>
                                 <span>Play Audio</span>
                             </button>
-                            <button class="btn btn--ghost" id="decoder-stop" title="Stop playback" disabled>
+                            <button class="btn btn--warning" id="decoder-pause" style="display: none;" title="Pause playback">
                                 <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                                <span>Pause</span>
+                            </button>
+                            <button class="btn btn--ghost" id="decoder-stop" title="Stop playback" disabled>
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><rect x="6" y="4" width="12" height="12" rx="1"/></svg>
                                 <span>Stop</span>
                             </button>
                             <button class="btn btn--ghost" id="decoder-copy" title="Copy decoded text">
@@ -400,6 +408,10 @@
                         <button class="btn btn--primary btn--lg-icon" id="audio-start">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
                             <span>Start Listening</span>
+                        </button>
+                        <button class="btn btn--warning btn--lg-icon" id="audio-pause" style="display: none;">
+                            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                            <span>Pause</span>
                         </button>
                         <button class="btn btn--ghost" id="audio-stop" disabled>
                             <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
@@ -485,6 +497,29 @@
                 </div>
 
                 <div class="trainer">
+                    <!-- Session Control Bar -->
+                    <div class="session-bar" id="trainer-session-bar">
+                        <div class="session-bar__left">
+                            <span class="session-badge session-badge--idle" id="trainer-session-badge">● IDLE</span>
+                            <span class="session-timer" id="trainer-session-timer" title="Session Duration">⏱ 00:00</span>
+                            <span class="session-rate" id="trainer-session-rate">0 copies/min</span>
+                        </div>
+                        <div class="session-actions">
+                            <button class="btn btn--sm btn--primary" id="trainer-session-start" title="Start timed training session">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><polygon points="5,3 19,12 5,21"/></svg>
+                                <span>Start Session</span>
+                            </button>
+                            <button class="btn btn--sm btn--warning" id="trainer-session-pause" style="display: none;" title="Pause training session">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                                <span>Pause</span>
+                            </button>
+                            <button class="btn btn--sm btn--ghost" id="trainer-session-end" style="display: none;" title="End session and see summary">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+                                <span>End Session</span>
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Trainer Options: Difficulty + Auto-advance switch -->
                     <div class="trainer__options-row">
                         <div class="trainer__difficulty">
@@ -560,9 +595,9 @@
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 <span>Reveal</span>
                             </button>
-                            <button class="btn btn--ghost" id="trainer-stop" style="display: none;">
+                            <button class="btn btn--ghost" id="trainer-stop" style="display: none;" title="Stop active tone (Esc)">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
-                                <span>Stop</span>
+                                <span>Stop Tone</span>
                             </button>
                         </div>
                     </div>
@@ -603,6 +638,29 @@
                 </div>
 
                 <div class="contest">
+                    <!-- Contest Session Control Bar -->
+                    <div class="session-bar" id="contest-session-bar">
+                        <div class="session-bar__left">
+                            <span class="session-badge session-badge--idle" id="contest-session-badge">● READY</span>
+                            <span class="session-timer" id="contest-session-timer" title="Contest Run Clock">⏱ 00:00</span>
+                            <span class="session-rate" id="contest-rate-header">0 QSOs/hr</span>
+                        </div>
+                        <div class="session-actions">
+                            <button class="btn btn--sm btn--primary" id="contest-session-start" title="Start Contest Run (F1)">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><polygon points="5,3 19,12 5,21"/></svg>
+                                <span>Start Contest</span>
+                            </button>
+                            <button class="btn btn--sm btn--warning" id="contest-session-pause" style="display: none;" title="Pause Contest Run">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                                <span>Pause</span>
+                            </button>
+                            <button class="btn btn--sm btn--ghost" id="contest-session-end" style="display: none;" title="End Contest Run and show score card">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+                                <span>End Contest</span>
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Contest Audio Settings -->
                     <div class="contest__settings">
                         <div class="audio-control">
@@ -651,7 +709,7 @@
                     <div class="contest__exchange">
                         <div class="challenge-card" id="contest-card">
                             <div class="contest__qso-label">Incoming QSO Exchange</div>
-                            <div class="challenge-card__morse" id="contest-morse">Press "New QSO" to begin</div>
+                            <div class="challenge-card__morse" id="contest-morse">Press "Start Contest" or "New QSO"</div>
                             <div class="challenge-card__visual" id="contest-visual"></div>
                         </div>
                         <div class="signal-lamp" id="contest-lamp"></div>
@@ -697,9 +755,9 @@
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 <span>Reveal</span>
                             </button>
-                            <button class="btn btn--ghost" id="contest-stop" style="display: none;">
+                            <button class="btn btn--ghost" id="contest-stop" style="display: none;" title="Stop audio transmission (Esc)">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
-                                <span>Stop</span>
+                                <span>Stop Audio</span>
                             </button>
                         </div>
                     </div>
@@ -752,7 +810,7 @@
                                 </thead>
                                 <tbody id="contest-log-body">
                                     <tr>
-                                        <td colspan="5" class="table-empty">No QSOs logged yet. Click "New QSO" to practice!</td>
+                                        <td colspan="5" class="table-empty">No QSOs logged yet. Click "Start Contest" to practice!</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -784,6 +842,16 @@
                     <div class="lamp-container">
                         <div id="v-encode-lamp" class="signal-lamp signal-lamp--maritime"></div>
                     </div>
+
+                    <!-- Quick Maritime Presets -->
+                    <div class="presets-row">
+                        <span class="preset-label">Presets:</span>
+                        <button type="button" class="btn-preset" data-vpreset="SOS">SOS</button>
+                        <button type="button" class="btn-preset" data-vpreset="CQ CQ CQ">CQ</button>
+                        <button type="button" class="btn-preset" data-vpreset="MAYDAY MAYDAY">MAYDAY</button>
+                        <button type="button" class="btn-preset" data-vpreset="TEST DE 9M2PJU">TEST</button>
+                        <button type="button" class="btn-preset" data-vpreset="QRZ?">QRZ?</button>
+                    </div>
                     
                     <div class="encoder__input-group">
                         <textarea id="v-encode-input" class="textarea" placeholder="Type message for the maritime signal lamp..." rows="3"></textarea>
@@ -792,10 +860,15 @@
                                 <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5,3 19,12 5,21"/></svg>
                                 <span>Signal Lamp</span>
                             </button>
-                            <button class="btn btn--ghost" id="v-encode-stop" disabled>
+                            <button class="btn btn--warning" id="v-encode-pause" style="display: none;" title="Pause flashing">
                                 <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                                <span>Pause</span>
+                            </button>
+                            <button class="btn btn--ghost" id="v-encode-stop" disabled title="Stop lamp transmission">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><rect x="6" y="4" width="12" height="12" rx="1"/></svg>
                                 <span>Stop</span>
                             </button>
+                            <button class="btn btn--ghost" id="v-encode-clear" title="Clear message">✕ Clear</button>
                         </div>
                     </div>
                 </div>
@@ -821,14 +894,23 @@
                 </div>
 
                 <div class="visual-decoder">
-                    <!-- Difficulty tiers -->
-                    <div class="v-decode__difficulty">
-                        <span class="field-label">Difficulty</span>
-                        <div class="btn-group" id="v-decode-diff-group">
-                            <button class="btn btn--sm btn--toggle btn--toggle--active" data-vdiff="letters">Letters</button>
-                            <button class="btn btn--sm btn--toggle" data-vdiff="numbers">Numbers</button>
-                            <button class="btn btn--sm btn--toggle" data-vdiff="words">Words</button>
-                            <button class="btn btn--sm btn--toggle" data-vdiff="callsigns">Callsigns</button>
+                    <!-- Difficulty tiers + Auto-advance -->
+                    <div class="trainer__options-row">
+                        <div class="v-decode__difficulty">
+                            <span class="field-label">Difficulty</span>
+                            <div class="btn-group" id="v-decode-diff-group">
+                                <button class="btn btn--sm btn--toggle btn--toggle--active" data-vdiff="letters">Letters</button>
+                                <button class="btn btn--sm btn--toggle" data-vdiff="numbers">Numbers</button>
+                                <button class="btn btn--sm btn--toggle" data-vdiff="words">Words</button>
+                                <button class="btn btn--sm btn--toggle" data-vdiff="callsigns">Callsigns</button>
+                            </div>
+                        </div>
+
+                        <div class="toggle-control-wrapper">
+                            <label class="toggle-control" for="v-decode-continuous-toggle" title="Auto-advance after correct answer">
+                                <input type="checkbox" id="v-decode-continuous-toggle" class="toggle-checkbox" checked>
+                                <span class="toggle-control__label">Auto-Advance</span>
+                            </label>
                         </div>
                     </div>
 
@@ -842,24 +924,28 @@
                         <input type="text" id="v-decode-input" class="input input--lg" placeholder="Type what was signaled…" autocomplete="off" spellcheck="false">
                         
                         <div class="trainer__answer-actions">
-                            <button class="btn btn--primary" id="v-decode-new">
+                            <button class="btn btn--primary" id="v-decode-new" title="New Signal (Enter)">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
                                 <span>New Signal</span>
                             </button>
-                            <button class="btn btn--accent" id="v-decode-check" disabled>
+                            <button class="btn btn--accent" id="v-decode-check" disabled title="Check Answer (Enter)">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>
                                 <span>Check [Enter]</span>
                             </button>
-                            <button class="btn btn--primary" id="v-decode-next" style="display: none;">
+                            <button class="btn btn--primary" id="v-decode-next" style="display: none;" title="Next Signal (Enter)">
                                 <span>Next ➔ [Enter]</span>
                             </button>
                             <button class="btn btn--ghost" id="v-decode-replay" title="Replay Signal (Space)">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
                                 <span>Replay [Space]</span>
                             </button>
-                            <button class="btn btn--ghost" id="v-decode-reveal">
+                            <button class="btn btn--ghost" id="v-decode-reveal" title="Reveal Answer (Ctrl+R)">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 <span>Reveal</span>
+                            </button>
+                            <button class="btn btn--ghost" id="v-decode-stop" style="display: none;" title="Stop active flashing (Esc)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+                                <span>Stop Flash</span>
                             </button>
                         </div>
                         
@@ -1014,6 +1100,20 @@
                     <li>Scroll down and select <strong>"Add to Home Screen"</strong>.</li>
                     <li>Tap <strong>Add</strong> at top right.</li>
                 </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- Session / Contest Summary Report Modal -->
+    <div class="modal" id="session-summary-modal" aria-hidden="true" role="dialog" aria-labelledby="modal-summary-title">
+        <div class="modal__backdrop" id="session-summary-backdrop"></div>
+        <div class="modal__dialog">
+            <div class="modal__header">
+                <h3 class="modal__title" id="modal-summary-title">📊 Session Summary</h3>
+                <button class="btn-close" id="session-summary-close" aria-label="Close modal">✕</button>
+            </div>
+            <div class="modal__body" id="session-summary-body">
+                <!-- Dynamically populated by JS -->
             </div>
         </div>
     </div>

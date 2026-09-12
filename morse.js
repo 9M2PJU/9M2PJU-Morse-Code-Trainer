@@ -115,12 +115,17 @@
             this.ctx = null;
             this.masterGain = null;
             this.isPlaying = false;
-            this.scheduledNodes = [];
-            this.activeLamps = new Set();
-            this.lampTimers = [];
-            this.pendingResolvers = [];
+            this.isPaused = false;
+            this.activeOsc = null;
+            this.activeGain = null;
+            this.activeLamp = null;
+            this.activeTimers = [];
+            this.resumeResolver = null;
+            this.playbackQueue = [];
+            this.playbackIndex = 0;
             this.masterVolume = 0.8;
-            
+            this.pendingResolvers = [];
+
             // HF Noise
             this.noiseNode = null;
             this.noiseGain = null;
@@ -205,34 +210,63 @@
             };
         }
 
-        playTone(startTime, duration, freq) {
-            if (!this.ctx) return duration;
-            const osc = this.ctx.createOscillator();
-            const gain = this.ctx.createGain();
+        sleep(ms) {
+            if (ms <= 0) return Promise.resolve();
+            return new Promise(resolve => {
+                const timerId = setTimeout(() => {
+                    const idx = this.activeTimers.indexOf(timerId);
+                    if (idx !== -1) this.activeTimers.splice(idx, 1);
+                    resolve();
+                }, ms);
+                this.activeTimers.push(timerId);
+            });
+        }
 
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, startTime);
+        playTone(duration, freq) {
+            if (!this.ctx || duration <= 0) return;
+            try {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
 
-            // Smooth clickless envelope (3ms ramp)
-            const attackTime = 0.003;
-            gain.gain.setValueAtTime(0, startTime);
-            gain.gain.linearRampToValueAtTime(0.75, startTime + attackTime);
-            gain.gain.setValueAtTime(0.75, Math.max(startTime + attackTime, startTime + duration - attackTime));
-            gain.gain.linearRampToValueAtTime(0, startTime + duration);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
 
-            osc.connect(gain);
-            
-            if (this.isQSBEnabled && this.qsbGain) {
-                gain.connect(this.qsbGain);
-                this.qsbGain.connect(this.masterGain);
-            } else {
-                gain.connect(this.masterGain);
+                const now = this.ctx.currentTime;
+                const attack = 0.003;
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.75, now + attack);
+                gain.gain.setValueAtTime(0.75, Math.max(now + attack, now + duration - attack));
+                gain.gain.linearRampToValueAtTime(0, now + duration);
+
+                osc.connect(gain);
+                if (this.isQSBEnabled && this.qsbGain) {
+                    gain.connect(this.qsbGain);
+                    this.qsbGain.connect(this.masterGain);
+                } else {
+                    gain.connect(this.masterGain);
+                }
+
+                osc.start(now);
+                osc.stop(now + duration + 0.01);
+                this.activeOsc = osc;
+                this.activeGain = gain;
+            } catch (e) {
+                console.warn('Tone error:', e);
             }
+        }
 
-            osc.start(startTime);
-            osc.stop(startTime + duration);
-            this.scheduledNodes.push(osc);
-            return duration;
+        stopTone() {
+            if (this.activeOsc) {
+                try {
+                    this.activeOsc.stop();
+                    this.activeOsc.disconnect();
+                } catch (e) {}
+                this.activeOsc = null;
+            }
+            if (this.activeGain) {
+                try { this.activeGain.disconnect(); } catch (e) {}
+                this.activeGain = null;
+            }
         }
 
         setupNoise() {
@@ -318,74 +352,104 @@
             }
         }
 
-        scheduleLamp(lamp, startTime, duration) {
-            if (!lamp || !this.ctx) return;
-            this.activeLamps.add(lamp);
-            const now = this.ctx.currentTime;
-            const onDelay = Math.max(0, (startTime - now) * 1000);
-            const offDelay = onDelay + duration * 1000;
-
-            this.lampTimers.push(
-                setTimeout(() => lamp.classList.add('signal-lamp--on'), onDelay),
-                setTimeout(() => lamp.classList.remove('signal-lamp--on'), offDelay)
-            );
-        }
-
         async playMorse(morseString, lampElement, options = {}) {
             await this.init();
             this.stop();
+
             this.isPlaying = true;
+            this.isPaused = false;
+            this.activeLamp = lampElement || null;
             const muted = !!options.muted;
 
-            const s = this.getSettings(lampElement);
-            let currentTime = this.ctx.currentTime + 0.05;
             const chars = morseString.replace(/\s+/g, ' ').trim();
+            this.playbackQueue = chars.split('');
+            this.playbackIndex = 0;
 
-            for (let i = 0; i < chars.length; i++) {
-                if (!this.isPlaying) break;
-                const ch = chars[i];
-                if (ch === '.') {
-                    if (!muted) this.playTone(currentTime, s.dot, s.freq);
-                    if (lampElement) this.scheduleLamp(lampElement, currentTime, s.dot);
-                    currentTime += s.dot + s.symbolGap;
-                } else if (ch === '-') {
-                    if (!muted) this.playTone(currentTime, s.dash, s.freq);
-                    if (lampElement) this.scheduleLamp(lampElement, currentTime, s.dash);
-                    currentTime += s.dash + s.symbolGap;
-                } else if (ch === '/') {
-                    currentTime += s.wordGap - s.symbolGap;
-                } else if (ch === ' ') {
-                    currentTime += s.letterGap - s.symbolGap;
-                }
-            }
-
-            const totalDuration = (currentTime - this.ctx.currentTime) * 1000;
-            return new Promise(resolve => {
+            return new Promise(async (resolve) => {
                 this.pendingResolvers.push(resolve);
-                const timerId = setTimeout(() => {
-                    this.isPlaying = false;
-                    const idx = this.pendingResolvers.indexOf(resolve);
-                    if (idx !== -1) this.pendingResolvers.splice(idx, 1);
-                    resolve();
-                }, Math.max(0, totalDuration));
-                this.lampTimers.push(timerId);
+
+                while (this.isPlaying && this.playbackIndex < this.playbackQueue.length) {
+                    if (this.isPaused) {
+                        await new Promise(r => { this.resumeResolver = r; });
+                    }
+                    if (!this.isPlaying) break;
+
+                    const ch = this.playbackQueue[this.playbackIndex];
+                    const s = this.getSettings(lampElement);
+
+                    if (ch === '.') {
+                        if (lampElement) lampElement.classList.add('signal-lamp--on');
+                        if (!muted) this.playTone(s.dot, s.freq);
+                        await this.sleep(s.dot * 1000);
+                        if (lampElement) lampElement.classList.remove('signal-lamp--on');
+                        this.stopTone();
+                        if (this.isPlaying && !this.isPaused) await this.sleep(s.symbolGap * 1000);
+                    } else if (ch === '-') {
+                        if (lampElement) lampElement.classList.add('signal-lamp--on');
+                        if (!muted) this.playTone(s.dash, s.freq);
+                        await this.sleep(s.dash * 1000);
+                        if (lampElement) lampElement.classList.remove('signal-lamp--on');
+                        this.stopTone();
+                        if (this.isPlaying && !this.isPaused) await this.sleep(s.symbolGap * 1000);
+                    } else if (ch === ' ') {
+                        const gap = Math.max(0, s.letterGap - s.symbolGap);
+                        await this.sleep(gap * 1000);
+                    } else if (ch === '/') {
+                        const gap = Math.max(0, s.wordGap - s.symbolGap);
+                        await this.sleep(gap * 1000);
+                    }
+
+                    if (this.isPlaying && !this.isPaused) {
+                        this.playbackIndex++;
+                    }
+                }
+
+                this.isPlaying = false;
+                this.isPaused = false;
+                if (lampElement) lampElement.classList.remove('signal-lamp--on');
+                this.stopTone();
+
+                const idx = this.pendingResolvers.indexOf(resolve);
+                if (idx !== -1) this.pendingResolvers.splice(idx, 1);
+                resolve();
             });
+        }
+
+        pause() {
+            if (!this.isPlaying || this.isPaused) return;
+            this.isPaused = true;
+            this.stopTone();
+            if (this.activeLamp) this.activeLamp.classList.remove('signal-lamp--on');
+            this.activeTimers.forEach(id => clearTimeout(id));
+            this.activeTimers = [];
+        }
+
+        resume() {
+            if (!this.isPlaying || !this.isPaused) return;
+            this.isPaused = false;
+            if (this.resumeResolver) {
+                const res = this.resumeResolver;
+                this.resumeResolver = null;
+                res();
+            }
         }
 
         stop() {
             this.isPlaying = false;
-            this.scheduledNodes.forEach(node => {
-                try { node.stop(); } catch (e) { /* already stopped */ }
-            });
-            this.scheduledNodes = [];
-            this.lampTimers.forEach(id => clearTimeout(id));
-            this.lampTimers = [];
-            this.activeLamps.forEach(lamp => {
-                if (lamp) lamp.classList.remove('signal-lamp--on');
-            });
-            this.activeLamps.clear();
+            this.isPaused = false;
+            if (this.resumeResolver) {
+                const res = this.resumeResolver;
+                this.resumeResolver = null;
+                res();
+            }
+            this.stopTone();
+            this.activeTimers.forEach(id => clearTimeout(id));
+            this.activeTimers = [];
+            if (this.activeLamp) this.activeLamp.classList.remove('signal-lamp--on');
+            this.activeLamp = null;
+            this.playbackQueue = [];
+            this.playbackIndex = 0;
 
-            // Resolve any hanging playMorse promises immediately
             while (this.pendingResolvers.length > 0) {
                 const res = this.pendingResolvers.shift();
                 if (res) res();
@@ -462,10 +526,18 @@
     const iosInstallClose = document.getElementById('ios-install-close');
     const iosBackdrop = document.getElementById('ios-modal-backdrop');
 
+    // Session Summary Modal
+    const sessionSummaryModal = document.getElementById('session-summary-modal');
+    const sessionSummaryBackdrop = document.getElementById('session-summary-backdrop');
+    const sessionSummaryClose = document.getElementById('session-summary-close');
+    const sessionSummaryBody = document.getElementById('session-summary-body');
+    const modalSummaryTitle = document.getElementById('modal-summary-title');
+
     // Encoder / Decoder
     const encoderInput = document.getElementById('encoder-input');
     const encoderOutput = document.getElementById('encoder-output');
     const encoderPlay = document.getElementById('encoder-play');
+    const encoderPause = document.getElementById('encoder-pause');
     const encoderStop = document.getElementById('encoder-stop');
     const encoderCopy = document.getElementById('encoder-copy');
     const encoderClear = document.getElementById('encoder-clear');
@@ -476,6 +548,7 @@
     const decoderInput = document.getElementById('decoder-input');
     const decoderOutput = document.getElementById('decoder-output');
     const decoderPlay = document.getElementById('decoder-play');
+    const decoderPause = document.getElementById('decoder-pause');
     const decoderStop = document.getElementById('decoder-stop');
     const decoderCopy = document.getElementById('decoder-copy');
     const decoderClear = document.getElementById('decoder-clear');
@@ -515,6 +588,15 @@
     const scoreAccuracy = document.getElementById('score-accuracy');
     const trainerFeedback = document.getElementById('trainer-feedback');
 
+    // Trainer Session Bar
+    const trainerSessionBar = document.getElementById('trainer-session-bar');
+    const trainerSessionBadge = document.getElementById('trainer-session-badge');
+    const trainerSessionTimer = document.getElementById('trainer-session-timer');
+    const trainerSessionRate = document.getElementById('trainer-session-rate');
+    const trainerSessionStart = document.getElementById('trainer-session-start');
+    const trainerSessionPause = document.getElementById('trainer-session-pause');
+    const trainerSessionEnd = document.getElementById('trainer-session-end');
+
     // Contest Trainer
     const contestWpmSlider = document.getElementById('contest-wpm-slider');
     const contestWpmValue = document.getElementById('contest-wpm-value');
@@ -548,11 +630,22 @@
     const contestFeedback = document.getElementById('contest-feedback');
     const contestLogBody = document.getElementById('contest-log-body');
 
+    // Contest Session Bar
+    const contestSessionBar = document.getElementById('contest-session-bar');
+    const contestSessionBadge = document.getElementById('contest-session-badge');
+    const contestSessionTimer = document.getElementById('contest-session-timer');
+    const contestRateHeader = document.getElementById('contest-rate-header');
+    const contestSessionStart = document.getElementById('contest-session-start');
+    const contestSessionPause = document.getElementById('contest-session-pause');
+    const contestSessionEnd = document.getElementById('contest-session-end');
+
     // Visual Encode & Decode
     const vEncodeLamp = document.getElementById('v-encode-lamp');
     const vEncodeInput = document.getElementById('v-encode-input');
     const vEncodePlay = document.getElementById('v-encode-play');
+    const vEncodePause = document.getElementById('v-encode-pause');
     const vEncodeStop = document.getElementById('v-encode-stop');
+    const vEncodeClear = document.getElementById('v-encode-clear');
     const vEncodeWpm = document.getElementById('wpm-slider-v-encode');
     const vEncodeWpmValue = document.getElementById('wpm-value-v-encode');
     const vEncodeSound = document.getElementById('v-encode-sound');
@@ -564,6 +657,8 @@
     const vDecodeNext = document.getElementById('v-decode-next');
     const vDecodeReplay = document.getElementById('v-decode-replay');
     const vDecodeReveal = document.getElementById('v-decode-reveal');
+    const vDecodeStop = document.getElementById('v-decode-stop');
+    const vDecodeContinuousToggle = document.getElementById('v-decode-continuous-toggle');
     const vDecodeFeedback = document.getElementById('v-decode-feedback');
     const vDecodeWpm = document.getElementById('wpm-slider-v-decode');
     const vDecodeWpmValue = document.getElementById('wpm-value-v-decode');
@@ -576,6 +671,7 @@
 
     // Audio Morse Decoder
     const audioStartBtn = document.getElementById('audio-start');
+    const audioPauseBtn = document.getElementById('audio-pause');
     const audioStopBtn = document.getElementById('audio-stop');
     const audioClearBtn = document.getElementById('audio-clear');
     const audioLamp = document.getElementById('audio-lamp');
@@ -687,6 +783,42 @@
         }
     }
 
+    function formatDuration(ms) {
+        const totalSecs = Math.max(0, Math.floor(ms / 1000));
+        const mins = Math.floor(totalSecs / 60);
+        const secs = totalSecs % 60;
+        return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function showSessionSummary(title, statsList, extraActionBtn = null) {
+        if (!sessionSummaryModal || !sessionSummaryBody) return;
+        if (modalSummaryTitle) modalSummaryTitle.textContent = title;
+
+        let statsGridHTML = '<div class="summary-stat-grid">';
+        statsList.forEach(stat => {
+            statsGridHTML += `
+                <div class="summary-stat">
+                    <span class="summary-stat__label">${stat.label}</span>
+                    <span class="summary-stat__val ${stat.className || ''}">${stat.value}</span>
+                </div>
+            `;
+        });
+        statsGridHTML += '</div>';
+
+        sessionSummaryBody.innerHTML = statsGridHTML;
+        if (extraActionBtn) {
+            sessionSummaryBody.appendChild(extraActionBtn);
+        }
+        sessionSummaryModal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeSessionSummary() {
+        if (sessionSummaryModal) sessionSummaryModal.setAttribute('aria-hidden', 'true');
+    }
+
+    if (sessionSummaryClose) sessionSummaryClose.addEventListener('click', closeSessionSummary);
+    if (sessionSummaryBackdrop) sessionSummaryBackdrop.addEventListener('click', closeSessionSummary);
+
     // ─── Settings Synchronization ────────────────────
     function syncGlobalSettings(type, value) {
         if (type === 'wpm') {
@@ -719,8 +851,9 @@
             farnsworth: parseInt(farnsworthSlider.value, 10),
             kochLevel: parseInt(kochLevelSlider.value, 10),
             kochSession,
-            trainerContinuous: trainerContinuousToggle.checked,
-            contestContinuous: contestContinuousToggle.checked,
+            trainerContinuous: trainerContinuousToggle ? trainerContinuousToggle.checked : true,
+            contestContinuous: contestContinuousToggle ? contestContinuousToggle.checked : true,
+            visualContinuous: vDecodeContinuousToggle ? vDecodeContinuousToggle.checked : true,
             noiseEnabled: noiseToggle.checked,
             noiseVol: parseInt(noiseVolume.value, 10),
             qsbEnabled: qsbToggle.checked,
@@ -758,6 +891,7 @@
 
         if (trainerContinuousToggle) trainerContinuousToggle.checked = data.trainerContinuous !== false;
         if (contestContinuousToggle) contestContinuousToggle.checked = data.contestContinuous !== false;
+        if (vDecodeContinuousToggle) vDecodeContinuousToggle.checked = data.visualContinuous !== false;
 
         noiseToggle.checked = !!data.noiseEnabled;
         noiseVolume.value = data.noiseVol || 25;
@@ -918,6 +1052,29 @@
     }
 
     // ─── 1. ENCODER ──────────────────────────────────
+    function setEncoderState(state) {
+        if (state === 'playing') {
+            encoderPlay.style.display = 'none';
+            if (encoderPause) {
+                encoderPause.style.display = 'inline-flex';
+                encoderPause.querySelector('span').textContent = 'Pause';
+            }
+            encoderStop.disabled = false;
+        } else if (state === 'paused') {
+            encoderPlay.style.display = 'none';
+            if (encoderPause) {
+                encoderPause.style.display = 'inline-flex';
+                encoderPause.querySelector('span').textContent = 'Resume';
+            }
+            encoderStop.disabled = false;
+        } else {
+            encoderPlay.style.display = 'inline-flex';
+            encoderPlay.disabled = false;
+            if (encoderPause) encoderPause.style.display = 'none';
+            encoderStop.disabled = true;
+        }
+    }
+
     encoderInput.addEventListener('input', () => {
         const text = encoderInput.value;
         if (!text.trim()) {
@@ -934,17 +1091,26 @@
             showToast('Type some text in the box above to encode first.');
             return;
         }
-        encoderPlay.disabled = true;
-        encoderStop.disabled = false;
+        setEncoderState('playing');
         await audio.playMorse(lastEncoderMorse, encoderLamp);
-        encoderPlay.disabled = false;
-        encoderStop.disabled = true;
+        setEncoderState('idle');
     });
+
+    if (encoderPause) {
+        encoderPause.addEventListener('click', () => {
+            if (audio.isPlaying && !audio.isPaused) {
+                audio.pause();
+                setEncoderState('paused');
+            } else if (audio.isPlaying && audio.isPaused) {
+                audio.resume();
+                setEncoderState('playing');
+            }
+        });
+    }
 
     encoderStop.addEventListener('click', () => {
         audio.stop();
-        encoderPlay.disabled = false;
-        encoderStop.disabled = true;
+        setEncoderState('idle');
     });
 
     encoderCopy.addEventListener('click', () => {
@@ -957,9 +1123,33 @@
         encoderOutput.innerHTML = '<span class="morse-output__placeholder">Morse code will appear here…</span>';
         lastEncoderMorse = '';
         audio.stop();
+        setEncoderState('idle');
     });
 
     // ─── 2. DECODER ──────────────────────────────────
+    function setDecoderState(state) {
+        if (state === 'playing') {
+            decoderPlay.style.display = 'none';
+            if (decoderPause) {
+                decoderPause.style.display = 'inline-flex';
+                decoderPause.querySelector('span').textContent = 'Pause';
+            }
+            decoderStop.disabled = false;
+        } else if (state === 'paused') {
+            decoderPlay.style.display = 'none';
+            if (decoderPause) {
+                decoderPause.style.display = 'inline-flex';
+                decoderPause.querySelector('span').textContent = 'Resume';
+            }
+            decoderStop.disabled = false;
+        } else {
+            decoderPlay.style.display = 'inline-flex';
+            decoderPlay.disabled = false;
+            if (decoderPause) decoderPause.style.display = 'none';
+            decoderStop.disabled = true;
+        }
+    }
+
     decoderInput.addEventListener('input', () => {
         const morse = decoderInput.value;
         if (!morse.trim()) {
@@ -977,17 +1167,26 @@
             showToast('Enter dots and dashes to decode and play.');
             return;
         }
-        decoderPlay.disabled = true;
-        decoderStop.disabled = false;
+        setDecoderState('playing');
         await audio.playMorse(morse, decoderLamp);
-        decoderPlay.disabled = false;
-        decoderStop.disabled = true;
+        setDecoderState('idle');
     });
+
+    if (decoderPause) {
+        decoderPause.addEventListener('click', () => {
+            if (audio.isPlaying && !audio.isPaused) {
+                audio.pause();
+                setDecoderState('paused');
+            } else if (audio.isPlaying && audio.isPaused) {
+                audio.resume();
+                setDecoderState('playing');
+            }
+        });
+    }
 
     decoderStop.addEventListener('click', () => {
         audio.stop();
-        decoderPlay.disabled = false;
-        decoderStop.disabled = true;
+        setDecoderState('idle');
     });
 
     decoderCopy.addEventListener('click', () => {
@@ -1000,9 +1199,139 @@
         decoderOutput.innerHTML = '<span class="text-output__placeholder">Decoded text will appear here…</span>';
         lastDecoderText = '';
         audio.stop();
+        setDecoderState('idle');
     });
 
     // ─── 4. PRACTICE TRAINER ─────────────────────────
+    let trainerSession = {
+        active: false,
+        paused: false,
+        startTime: 0,
+        pausedAt: 0,
+        totalPausedMs: 0,
+        timerInterval: null,
+        startCorrect: 0,
+        startWrong: 0
+    };
+
+    function tickTrainerSession() {
+        if (!trainerSession.active) return;
+        let elapsed = 0;
+        if (trainerSession.paused) {
+            elapsed = trainerSession.pausedAt - trainerSession.startTime - trainerSession.totalPausedMs;
+        } else {
+            elapsed = Date.now() - trainerSession.startTime - trainerSession.totalPausedMs;
+        }
+        if (trainerSessionTimer) trainerSessionTimer.textContent = `⏱ ${formatDuration(elapsed)}`;
+
+        const elapsedMins = elapsed / (1000 * 60);
+        const sessionCopies = (stats.correct - trainerSession.startCorrect) + (stats.wrong - trainerSession.startWrong);
+        const rate = elapsedMins > 0.05 ? (sessionCopies / elapsedMins).toFixed(1) : '0.0';
+        if (trainerSessionRate) trainerSessionRate.textContent = `${rate} copies/min`;
+    }
+
+    function startTrainerSession() {
+        if (trainerSession.active && !trainerSession.paused) return;
+        if (trainerSession.paused) {
+            // Resume from pause
+            trainerSession.paused = false;
+            trainerSession.totalPausedMs += (Date.now() - trainerSession.pausedAt);
+            if (trainerSessionBadge) {
+                trainerSessionBadge.textContent = '● ACTIVE';
+                trainerSessionBadge.className = 'session-badge session-badge--active';
+            }
+            if (trainerSessionPause) trainerSessionPause.querySelector('span').textContent = 'Pause';
+            if (trainerInput) trainerInput.disabled = false;
+            if (!currentChallenge) newChallenge();
+            showToast('Training session resumed.');
+            return;
+        }
+
+        // New session start
+        trainerSession.active = true;
+        trainerSession.paused = false;
+        trainerSession.startTime = Date.now();
+        trainerSession.pausedAt = 0;
+        trainerSession.totalPausedMs = 0;
+        trainerSession.startCorrect = stats.correct;
+        trainerSession.startWrong = stats.wrong;
+
+        if (trainerSessionBadge) {
+            trainerSessionBadge.textContent = '● ACTIVE';
+            trainerSessionBadge.className = 'session-badge session-badge--active';
+        }
+        if (trainerSessionStart) trainerSessionStart.style.display = 'none';
+        if (trainerSessionPause) {
+            trainerSessionPause.style.display = 'inline-flex';
+            trainerSessionPause.querySelector('span').textContent = 'Pause';
+        }
+        if (trainerSessionEnd) trainerSessionEnd.style.display = 'inline-flex';
+        if (trainerStop) trainerStop.style.display = 'inline-flex';
+
+        if (trainerSession.timerInterval) clearInterval(trainerSession.timerInterval);
+        trainerSession.timerInterval = setInterval(tickTrainerSession, 500);
+        tickTrainerSession();
+
+        newChallenge();
+        showToast('🚀 Timed practice session started!');
+    }
+
+    function pauseTrainerSession() {
+        if (!trainerSession.active) return;
+        if (!trainerSession.paused) {
+            trainerSession.paused = true;
+            trainerSession.pausedAt = Date.now();
+            audio.stop();
+            if (autoNextTimeout) { clearTimeout(autoNextTimeout); autoNextTimeout = null; }
+            if (trainerSessionBadge) {
+                trainerSessionBadge.textContent = '❚❚ PAUSED';
+                trainerSessionBadge.className = 'session-badge session-badge--paused';
+            }
+            if (trainerSessionPause) trainerSessionPause.querySelector('span').textContent = 'Resume';
+            if (trainerInput) trainerInput.disabled = true;
+            trainerFeedback.textContent = 'Session paused. Click Resume to continue.';
+            trainerFeedback.className = 'trainer__feedback';
+        } else {
+            startTrainerSession();
+        }
+    }
+
+    function endTrainerSession() {
+        if (!trainerSession.active) return;
+        const elapsed = (trainerSession.paused ? trainerSession.pausedAt : Date.now()) - trainerSession.startTime - trainerSession.totalPausedMs;
+
+        if (trainerSession.timerInterval) {
+            clearInterval(trainerSession.timerInterval);
+            trainerSession.timerInterval = null;
+        }
+        trainerSession.active = false;
+        trainerSession.paused = false;
+
+        if (trainerSessionBadge) {
+            trainerSessionBadge.textContent = '● IDLE';
+            trainerSessionBadge.className = 'session-badge session-badge--idle';
+        }
+        if (trainerSessionStart) trainerSessionStart.style.display = 'inline-flex';
+        if (trainerSessionPause) trainerSessionPause.style.display = 'none';
+        if (trainerSessionEnd) trainerSessionEnd.style.display = 'none';
+
+        const sessionCorrect = stats.correct - trainerSession.startCorrect;
+        const sessionWrong = stats.wrong - trainerSession.startWrong;
+        const totalCopies = sessionCorrect + sessionWrong;
+        const accuracy = totalCopies > 0 ? `${Math.round((sessionCorrect / totalCopies) * 100)}%` : '—';
+        const elapsedMins = elapsed / (1000 * 60);
+        const rate = elapsedMins > 0.05 ? (totalCopies / elapsedMins).toFixed(1) : '0.0';
+
+        showSessionSummary('🎓 Training Session Summary', [
+            { label: 'Mode', value: difficulty.toUpperCase(), className: 'summary-stat__val--accent' },
+            { label: 'Session Duration', value: formatDuration(elapsed) },
+            { label: 'Correct Copies', value: sessionCorrect, className: 'summary-stat__val--correct' },
+            { label: 'Missed Copies', value: sessionWrong },
+            { label: 'Session Accuracy', value: accuracy, className: 'summary-stat__val--accent' },
+            { label: 'Copy Rate', value: `${rate} /min` }
+        ]);
+    }
+
     function getKochChars() {
         const level = parseInt(kochLevelSlider.value, 10);
         const charCount = Math.min(Math.max(level + 1, 2), KOCH_SEQUENCE.length);
@@ -1131,6 +1460,7 @@
         trainerNext.style.display = 'none';
         trainerCheck.style.display = 'inline-flex';
         trainerCheck.disabled = false;
+        if (trainerStop) trainerStop.style.display = 'inline-flex';
         
         currentChallenge = generateChallenge();
         currentChallengeMorse = textToMorse(currentChallenge);
@@ -1193,6 +1523,7 @@
         }
 
         updateScore();
+        if (trainerSession.active) tickTrainerSession();
         saveAllSettings();
     }
 
@@ -1253,10 +1584,14 @@
         trainerStop.addEventListener('click', () => {
             audio.stop();
             if (autoNextTimeout) { clearTimeout(autoNextTimeout); autoNextTimeout = null; }
-            trainerFeedback.textContent = 'Practice stopped.';
+            trainerFeedback.textContent = 'Audio stopped.';
             trainerFeedback.className = 'trainer__feedback';
         });
     }
+
+    if (trainerSessionStart) trainerSessionStart.addEventListener('click', startTrainerSession);
+    if (trainerSessionPause) trainerSessionPause.addEventListener('click', pauseTrainerSession);
+    if (trainerSessionEnd) trainerSessionEnd.addEventListener('click', endTrainerSession);
 
     trainerResetStats.addEventListener('click', () => {
         if (confirm('Reset practice score and streak?')) {
@@ -1288,6 +1623,146 @@
     const FIELD_DAY_CLASSES = ['1A', '2A', '3A', '4A', '5A', '1B', '2B', '1C', '1D', '1E', '1F'];
     const SOTA_REFS = ['SP/BA-001', 'G/LD-001', 'W6/SC-001', 'VK2/HU-001', 'JA/SO-001'];
 
+    let contestSession = {
+        active: false,
+        paused: false,
+        startTime: 0,
+        pausedAt: 0,
+        totalPausedMs: 0,
+        timerInterval: null,
+        startQsos: 0,
+        startBusted: 0
+    };
+
+    function tickContestSession() {
+        if (!contestSession.active) return;
+        let elapsed = 0;
+        if (contestSession.paused) {
+            elapsed = contestSession.pausedAt - contestSession.startTime - contestSession.totalPausedMs;
+        } else {
+            elapsed = Date.now() - contestSession.startTime - contestSession.totalPausedMs;
+        }
+        if (contestSessionTimer) contestSessionTimer.textContent = `⏱ ${formatDuration(elapsed)}`;
+
+        const elapsedHours = elapsed / (1000 * 60 * 60);
+        const sessionQsos = contestStats.qsos - contestSession.startQsos;
+        const rate = elapsedHours > 0.005 ? Math.round(sessionQsos / elapsedHours) : 0;
+        if (contestRateHeader) contestRateHeader.textContent = `${rate} QSOs/hr`;
+        if (contestRateVal) contestRateVal.textContent = `${rate} /hr`;
+    }
+
+    function startContestSession() {
+        if (contestSession.active && !contestSession.paused) return;
+        if (contestSession.paused) {
+            contestSession.paused = false;
+            contestSession.totalPausedMs += (Date.now() - contestSession.pausedAt);
+            if (contestSessionBadge) {
+                contestSessionBadge.textContent = '● RUNNING';
+                contestSessionBadge.className = 'session-badge session-badge--active';
+            }
+            if (contestSessionPause) contestSessionPause.querySelector('span').textContent = 'Pause';
+            if (contestCallsign) contestCallsign.disabled = false;
+            if (!currentContestQSO.callsign) startNewQSO();
+            showToast('Contest run resumed.');
+            return;
+        }
+
+        contestSession.active = true;
+        contestSession.paused = false;
+        contestSession.startTime = Date.now();
+        contestSession.pausedAt = 0;
+        contestSession.totalPausedMs = 0;
+        contestSession.startQsos = contestStats.qsos;
+        contestSession.startBusted = contestStats.busted;
+
+        if (contestSessionBadge) {
+            contestSessionBadge.textContent = '● RUNNING';
+            contestSessionBadge.className = 'session-badge session-badge--active';
+        }
+        if (contestSessionStart) contestSessionStart.style.display = 'none';
+        if (contestSessionPause) {
+            contestSessionPause.style.display = 'inline-flex';
+            contestSessionPause.querySelector('span').textContent = 'Pause';
+        }
+        if (contestSessionEnd) contestSessionEnd.style.display = 'inline-flex';
+        if (contestStop) contestStop.style.display = 'inline-flex';
+
+        if (contestSession.timerInterval) clearInterval(contestSession.timerInterval);
+        contestSession.timerInterval = setInterval(tickContestSession, 500);
+        tickContestSession();
+
+        startNewQSO();
+        showToast('🏆 Contest run started!');
+    }
+
+    function pauseContestSession() {
+        if (!contestSession.active) return;
+        if (!contestSession.paused) {
+            contestSession.paused = true;
+            contestSession.pausedAt = Date.now();
+            audio.stop();
+            if (autoNextContestTimeout) { clearTimeout(autoNextContestTimeout); autoNextContestTimeout = null; }
+            if (contestSessionBadge) {
+                contestSessionBadge.textContent = '❚❚ PAUSED';
+                contestSessionBadge.className = 'session-badge session-badge--paused';
+            }
+            if (contestSessionPause) contestSessionPause.querySelector('span').textContent = 'Resume';
+            if (contestCallsign) contestCallsign.disabled = true;
+            contestFeedback.textContent = 'Contest run paused. Click Resume to continue.';
+            contestFeedback.className = 'trainer__feedback';
+        } else {
+            startContestSession();
+        }
+    }
+
+    function endContestSession() {
+        if (!contestSession.active) return;
+        const elapsed = (contestSession.paused ? contestSession.pausedAt : Date.now()) - contestSession.startTime - contestSession.totalPausedMs;
+
+        if (contestSession.timerInterval) {
+            clearInterval(contestSession.timerInterval);
+            contestSession.timerInterval = null;
+        }
+        contestSession.active = false;
+        contestSession.paused = false;
+
+        if (contestSessionBadge) {
+            contestSessionBadge.textContent = '● READY';
+            contestSessionBadge.className = 'session-badge session-badge--idle';
+        }
+        if (contestSessionStart) contestSessionStart.style.display = 'inline-flex';
+        if (contestSessionPause) contestSessionPause.style.display = 'none';
+        if (contestSessionEnd) contestSessionEnd.style.display = 'none';
+
+        const sessionQsos = contestStats.qsos - contestSession.startQsos;
+        const sessionBusted = contestStats.busted - contestSession.startBusted;
+        const total = sessionQsos + sessionBusted;
+        const accuracy = total > 0 ? `${Math.round((sessionQsos / total) * 100)}%` : '—';
+        const elapsedHours = elapsed / (1000 * 60 * 60);
+        const rate = elapsedHours > 0.005 ? Math.round(sessionQsos / elapsedHours) : 0;
+
+        const exportBtn = document.createElement('button');
+        exportBtn.className = 'btn btn--primary';
+        exportBtn.style.width = '100%';
+        exportBtn.style.marginTop = '16px';
+        exportBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Download Contest Log (CSV)</span>
+        `;
+        exportBtn.addEventListener('click', () => {
+            if (contestExportCsv) contestExportCsv.click();
+        });
+
+        showSessionSummary('🏆 Contest Run Summary', [
+            { label: 'Contest Type', value: contestType.toUpperCase(), className: 'summary-stat__val--accent' },
+            { label: 'Run Duration', value: formatDuration(elapsed) },
+            { label: 'QSOs Logged', value: sessionQsos, className: 'summary-stat__val--correct' },
+            { label: 'Busted QSOs', value: sessionBusted },
+            { label: 'Accuracy', value: accuracy, className: 'summary-stat__val--accent' },
+            { label: 'QSO Rate', value: `${rate} /hr` }
+        ], exportBtn);
+    }
+
     function generateContestQSO() {
         const prefix = CALLSIGN_PREFIXES[Math.floor(Math.random() * CALLSIGN_PREFIXES.length)];
         const num = Math.floor(Math.random() * 10);
@@ -1315,182 +1790,6 @@
         const morse = `${callsign} ${rst} ${exchange}`;
         return { callsign, rst: rst.replace(/n/g, '9'), exchange, morse: textToMorse(morse) };
     }
-
-    function startNewQSO() {
-        audio.stop();
-        if (autoNextContestTimeout) {
-            clearTimeout(autoNextContestTimeout);
-            autoNextContestTimeout = null;
-        }
-
-        if (!contestStartTime) contestStartTime = Date.now();
-
-        contestNext.style.display = 'none';
-        contestLog.style.display = 'inline-flex';
-        contestLog.disabled = false;
-
-        currentContestQSO = generateContestQSO();
-        contestMorse.innerHTML = formatMorseHTML(currentContestQSO.morse);
-        contestVisual.innerHTML = createVisualMorse(currentContestQSO.morse);
-
-        contestCallsign.value = '';
-        contestRst.value = '';
-        contestExchange.value = '';
-        contestFeedback.textContent = '';
-        contestFeedback.className = 'trainer__feedback';
-
-        contestCallsign.focus();
-        audio.playMorse(currentContestQSO.morse, contestLamp);
-    }
-
-    function logQSO() {
-        if (!currentContestQSO.callsign) return;
-
-        const typedCall = contestCallsign.value.trim().toUpperCase();
-        const typedRst = (contestRst.value.trim().toUpperCase() || '599').replace(/N/g, '9');
-        const typedExch = contestExchange.value.trim().toUpperCase().replace(/\s+/g, ' ');
-
-        const correctCall = currentContestQSO.callsign.toUpperCase();
-        const correctRst = currentContestQSO.rst.toUpperCase();
-        const correctExch = currentContestQSO.exchange.toUpperCase().replace(/\s+/g, ' ');
-
-        // Space-tolerant exchange matching
-        const isExchMatch = (typedExch === correctExch || typedExch.replace(/\s/g, '') === correctExch.replace(/\s/g, ''));
-        const isCorrect = (typedCall === correctCall && typedRst === correctRst && isExchMatch);
-
-        if (isCorrect) {
-            contestStats.qsos++;
-            contestStats.streak++;
-            contestFeedback.textContent = `✅ QSO Logged! ${correctCall} ${correctRst} ${correctExch}`;
-            contestFeedback.className = 'trainer__feedback trainer__feedback--correct';
-            addQSOToHistory(currentContestQSO, 'Correct');
-
-            if (contestContinuousToggle.checked) {
-                autoNextContestTimeout = setTimeout(startNewQSO, 1800);
-            } else {
-                contestLog.style.display = 'none';
-                contestNext.style.display = 'inline-flex';
-                contestNext.focus();
-            }
-        } else {
-            contestStats.busted++;
-            contestStats.streak = 0;
-            contestFeedback.textContent = `❌ Busted! Expected: ${correctCall} ${correctRst} ${correctExch}`;
-            contestFeedback.className = 'trainer__feedback trainer__feedback--wrong';
-            addQSOToHistory(currentContestQSO, 'Busted');
-        }
-
-        updateContestStats();
-        contestLog.disabled = true;
-        saveAllSettings();
-    }
-
-    function addQSOToHistory(qso, result) {
-        qsoHistory.unshift({ ...qso, result, id: qsoHistory.length + 1, time: new Date().toLocaleTimeString() });
-        if (qsoHistory.length > 100) qsoHistory.pop();
-        renderQSOLog();
-    }
-
-    function renderQSOLog() {
-        if (!qsoHistory.length) {
-            contestLogBody.innerHTML = '<tr><td colspan="5" class="table-empty">No QSOs logged yet. Click "New QSO" to practice!</td></tr>';
-            return;
-        }
-        contestLogBody.innerHTML = qsoHistory.map(h => `
-            <tr>
-                <td>${h.id}</td>
-                <td><strong>${h.callsign}</strong></td>
-                <td>${h.rst}</td>
-                <td>${h.exchange}</td>
-                <td class="${h.result === 'Correct' ? 'result--correct' : 'result--wrong'}">${h.result}</td>
-            </tr>
-        `).join('');
-    }
-
-    function updateContestStats() {
-        contestQSOsVal.textContent = contestStats.qsos;
-        contestBustedVal.textContent = contestStats.busted;
-        
-        if (contestStartTime && contestStats.qsos > 0) {
-            const elapsedHours = (Date.now() - contestStartTime) / (1000 * 60 * 60);
-            const rate = Math.round(contestStats.qsos / Math.max(0.02, elapsedHours));
-            contestRateVal.textContent = `${rate} /hr`;
-        } else {
-            contestRateVal.textContent = '—';
-        }
-
-        const total = contestStats.qsos + contestStats.busted;
-        contestAccuracyVal.textContent = total > 0 ? `${Math.round((contestStats.qsos / total) * 100)}%` : '—';
-    }
-
-    // N1MM-style smart navigation between fields
-    contestCallsign.addEventListener('keydown', (e) => {
-        if (e.key === ' ' || e.key === 'Enter' || e.key === 'Tab') {
-            e.preventDefault();
-            if (contestCallsign.value.trim()) {
-                contestRst.focus();
-                if (!contestRst.value) contestRst.value = '599';
-                contestRst.select();
-            }
-        }
-    });
-
-    contestRst.addEventListener('keydown', (e) => {
-        if (e.key === ' ' || e.key === 'Enter' || e.key === 'Tab') {
-            e.preventDefault();
-            contestExchange.focus();
-            contestExchange.select();
-        }
-    });
-
-    contestExchange.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            if (!contestLog.disabled && contestLog.style.display !== 'none') {
-                logQSO();
-            } else if (contestNext.style.display !== 'none') {
-                startNewQSO();
-            }
-        }
-    });
-
-    if (contestQuick599) {
-        contestQuick599.addEventListener('click', () => {
-            contestRst.value = '599';
-            contestExchange.focus();
-        });
-    }
-
-    contestNew.addEventListener('click', startNewQSO);
-    contestLog.addEventListener('click', logQSO);
-    contestNext.addEventListener('click', startNewQSO);
-    contestReplay.addEventListener('click', () => {
-        if (currentContestQSO.morse) audio.playMorse(currentContestQSO.morse, contestLamp);
-    });
-
-    if (contestStop) {
-        contestStop.addEventListener('click', () => {
-            audio.stop();
-            if (autoNextContestTimeout) { clearTimeout(autoNextContestTimeout); autoNextContestTimeout = null; }
-            contestFeedback.textContent = 'Contest practice paused.';
-            contestFeedback.className = 'trainer__feedback';
-        });
-    }
-
-    contestReveal.addEventListener('click', () => {
-        if (!currentContestQSO.callsign) return;
-        contestFeedback.textContent = `👁 Exchange: ${currentContestQSO.callsign} ${currentContestQSO.rst} ${currentContestQSO.exchange}`;
-        contestFeedback.className = 'trainer__feedback trainer__feedback--reveal';
-    });
-
-    contestTypeGroup.addEventListener('click', (e) => {
-        const btn = e.target.closest('[data-contest]');
-        if (!btn) return;
-        contestTypeGroup.querySelectorAll('.btn--toggle').forEach(b => b.classList.remove('btn--toggle--active'));
-        btn.classList.add('btn--toggle--active');
-        contestType = btn.dataset.contest;
-        startNewQSO();
-    });
 
     const updateHFNoise = () => {
         audio.updateNoise(noiseToggle.checked, parseInt(noiseVolume.value, 10));
@@ -1547,6 +1846,39 @@
     });
 
     // ─── 6 & 7. VISUAL MORSE ─────────────────────────
+    function setVEncodeState(state) {
+        if (state === 'playing') {
+            vEncodePlay.style.display = 'none';
+            if (vEncodePause) {
+                vEncodePause.style.display = 'inline-flex';
+                vEncodePause.querySelector('span').textContent = 'Pause';
+            }
+            vEncodeStop.disabled = false;
+        } else if (state === 'paused') {
+            vEncodePlay.style.display = 'none';
+            if (vEncodePause) {
+                vEncodePause.style.display = 'inline-flex';
+                vEncodePause.querySelector('span').textContent = 'Resume';
+            }
+            vEncodeStop.disabled = false;
+        } else {
+            vEncodePlay.style.display = 'inline-flex';
+            vEncodePlay.disabled = false;
+            if (vEncodePause) vEncodePause.style.display = 'none';
+            vEncodeStop.disabled = true;
+        }
+    }
+
+    document.querySelectorAll('.btn-preset').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const preset = btn.dataset.vpreset;
+            if (preset && vEncodeInput) {
+                vEncodeInput.value = preset;
+                showToast(`Maritime preset "${preset}" loaded.`);
+            }
+        });
+    });
+
     vEncodeWpm.addEventListener('input', () => {
         const val = vEncodeWpm.value;
         vEncodeWpmValue.textContent = `${val} WPM`;
@@ -1569,19 +1901,36 @@
             showToast('Type a message to signal with the lamp.');
             return;
         }
-        vEncodePlay.disabled = true;
-        vEncodeStop.disabled = false;
+        setVEncodeState('playing');
         const morse = textToMorse(text);
         await audio.playMorse(morse, vEncodeLamp, { muted: !vEncodeSound.checked });
-        vEncodePlay.disabled = false;
-        vEncodeStop.disabled = true;
+        setVEncodeState('idle');
     });
+
+    if (vEncodePause) {
+        vEncodePause.addEventListener('click', () => {
+            if (audio.isPlaying && !audio.isPaused) {
+                audio.pause();
+                setVEncodeState('paused');
+            } else if (audio.isPlaying && audio.isPaused) {
+                audio.resume();
+                setVEncodeState('playing');
+            }
+        });
+    }
 
     vEncodeStop.addEventListener('click', () => {
         audio.stop();
-        vEncodePlay.disabled = false;
-        vEncodeStop.disabled = true;
+        setVEncodeState('idle');
     });
+
+    if (vEncodeClear) {
+        vEncodeClear.addEventListener('click', () => {
+            vEncodeInput.value = '';
+            audio.stop();
+            setVEncodeState('idle');
+        });
+    }
 
     function generateVisualChallenge() {
         switch (visualDifficulty) {
@@ -1616,6 +1965,7 @@
         vDecodeNext.style.display = 'none';
         vDecodeCheck.style.display = 'inline-flex';
         vDecodeCheck.disabled = false;
+        if (vDecodeStop) vDecodeStop.style.display = 'inline-flex';
 
         vDecodeInput.value = '';
         vDecodeInput.disabled = false;
@@ -1637,9 +1987,14 @@
             vDecodeFeedback.textContent = `✅ Correct! "${expected}"`;
             vDecodeFeedback.className = 'trainer__feedback trainer__feedback--correct';
             vDecodeInput.disabled = true;
-            vDecodeCheck.style.display = 'none';
-            vDecodeNext.style.display = 'inline-flex';
-            vDecodeNext.focus();
+
+            if (vDecodeContinuousToggle && vDecodeContinuousToggle.checked) {
+                autoNextVisualTimeout = setTimeout(startVisualChallenge, 1500);
+            } else {
+                vDecodeCheck.style.display = 'none';
+                vDecodeNext.style.display = 'inline-flex';
+                vDecodeNext.focus();
+            }
         } else {
             visualStats.wrong++;
             visualStats.streak = 0;
@@ -1668,6 +2023,16 @@
             audio.playMorse(visualChallengeMorse, vDecodeLamp, { muted: !vDecodeSound.checked });
         }
     });
+
+    if (vDecodeStop) {
+        vDecodeStop.addEventListener('click', () => {
+            audio.stop();
+            if (autoNextVisualTimeout) { clearTimeout(autoNextVisualTimeout); autoNextVisualTimeout = null; }
+            vDecodeFeedback.textContent = 'Flashing stopped.';
+            vDecodeFeedback.className = 'trainer__feedback';
+        });
+    }
+
     vDecodeReveal.addEventListener('click', () => {
         if (!visualChallenge) return;
         vDecodeFeedback.textContent = `👁 Answer: "${visualChallenge}" (${visualChallengeMorse})`;
@@ -1685,6 +2050,10 @@
             }
         }
     });
+
+    if (vDecodeContinuousToggle) {
+        vDecodeContinuousToggle.addEventListener('change', saveAllSettings);
+    }
 
     if (vDecodeDiffGroup) {
         vDecodeDiffGroup.addEventListener('click', (e) => {
@@ -1704,6 +2073,7 @@
     let audioProcessorInterval = null;
     let waveformAnimFrame = null;
     let isListening = false;
+    let isListeningPaused = false;
 
     let decoderState = {
         morseBuffer: '',
@@ -1762,7 +2132,7 @@
     }
 
     function processAudioFrame() {
-        if (!isListening || !analyserNode) return;
+        if (!isListening || isListeningPaused || !analyserNode) return;
         const bufferLength = analyserNode.fftSize;
         const dataArray = new Float32Array(bufferLength);
         analyserNode.getFloatTimeDomainData(dataArray);
@@ -1866,7 +2236,7 @@
 
         const isToneOn = audioLamp.classList.contains('signal-lamp--on');
         waveformCtx.lineWidth = 2;
-        waveformCtx.strokeStyle = isToneOn ? '#27c5b3' : '#6b7771';
+        waveformCtx.strokeStyle = (isListeningPaused ? '#e5c07b' : (isToneOn ? '#27c5b3' : '#6b7771'));
         waveformCtx.beginPath();
 
         const sliceWidth = width / bufferLength;
@@ -1881,7 +2251,7 @@
         waveformCtx.lineTo(width, height / 2);
         waveformCtx.stroke();
 
-        if (isToneOn) {
+        if (isToneOn && !isListeningPaused) {
             waveformCtx.shadowColor = '#27c5b3';
             waveformCtx.shadowBlur = 12;
             waveformCtx.strokeStyle = 'rgba(39, 197, 179, 0.4)';
@@ -1911,6 +2281,7 @@
             source.connect(analyserNode);
 
             isListening = true;
+            isListeningPaused = false;
             decoderState = {
                 morseBuffer: '', fullMorse: '', decodedText: '',
                 toneOn: false, toneStartTime: 0, silenceStartTime: 0,
@@ -1919,6 +2290,10 @@
             updateAudioOutputs();
 
             audioStartBtn.disabled = true;
+            if (audioPauseBtn) {
+                audioPauseBtn.style.display = 'inline-flex';
+                audioPauseBtn.querySelector('span').textContent = 'Pause';
+            }
             audioStopBtn.disabled = false;
             audioStatus.textContent = '🎧 Listening… (Tone detection active)';
             audioStatus.classList.add('audio-decoder__status--listening');
@@ -1931,8 +2306,28 @@
         }
     }
 
+    function toggleAudioPause() {
+        if (!isListening) return;
+        if (!isListeningPaused) {
+            isListeningPaused = true;
+            if (audioPauseBtn) audioPauseBtn.querySelector('span').textContent = 'Resume';
+            audioStatus.textContent = '❚❚ Paused · Microphone suspended';
+            audioStatus.classList.remove('audio-decoder__status--listening');
+            audioLamp.classList.remove('signal-lamp--on');
+            if (audioVuBar) audioVuBar.style.height = '0%';
+            showToast('Microphone listening paused.');
+        } else {
+            isListeningPaused = false;
+            if (audioPauseBtn) audioPauseBtn.querySelector('span').textContent = 'Pause';
+            audioStatus.textContent = '🎧 Listening… (Tone detection active)';
+            audioStatus.classList.add('audio-decoder__status--listening');
+            showToast('Microphone listening resumed.');
+        }
+    }
+
     function stopListening() {
         isListening = false;
+        isListeningPaused = false;
         if (audioProcessorInterval) {
             clearInterval(audioProcessorInterval);
             audioProcessorInterval = null;
@@ -1956,6 +2351,7 @@
 
         audioLamp.classList.remove('signal-lamp--on');
         audioStartBtn.disabled = false;
+        if (audioPauseBtn) audioPauseBtn.style.display = 'none';
         audioStopBtn.disabled = true;
         audioStatus.textContent = 'Stopped · Idle';
         audioStatus.classList.remove('audio-decoder__status--listening');
@@ -1964,6 +2360,7 @@
     }
 
     audioStartBtn.addEventListener('click', startListening);
+    if (audioPauseBtn) audioPauseBtn.addEventListener('click', toggleAudioPause);
     audioStopBtn.addEventListener('click', stopListening);
     audioClearBtn.addEventListener('click', () => {
         decoderState = {
@@ -2087,6 +2484,7 @@
         // Escape closes modals or stops audio
         if (e.key === 'Escape') {
             closeShortcuts();
+            closeSessionSummary();
             if (iosInstallModal) iosInstallModal.setAttribute('aria-hidden', 'true');
             audio.stop();
             return;
